@@ -8,20 +8,79 @@
 
 import Foundation
 
-/// 表示一个 xlsx sheet 的列的类型(除了 Header 行，其他行都是这个类型)
-public enum DataType: Equatable, Sendable {
-    case text
-    case number
-    case date
-    case boolean
-    case url
-    case percentage
+public struct NumberColumnType: ColumnTypeProtocol {
+    public let value: Double?
+    public init(_ value: Double?) {
+        self.value = value
+    }
+
+    public var cellType: Cell.CellType {
+        .double(value)
+    }
 }
 
-/// 表示空值的处理方式
-public enum TypedNilHandling<V: ColumnTypeProtocol> {
-    /// 保留空值，Excel中会显示为空单元格
-    case keepEmpty
-    /// 使用默认值，Excel中会显示为默认值，默认值为 V.ValueType 的默认值
-    case useDefault(V.ValueType)
+public struct IntColumnType: ColumnTypeProtocol {
+    public let value: Int?
+    public init(_ value: Int?) {
+        self.value = value
+    }
+
+    public var cellType: Cell.CellType {
+        .int(value)
+    }
+}
+
+public struct TextColumnType: ColumnTypeProtocol {
+    public let value: String?
+    public init(_ value: String?) {
+        self.value = value
+    }
+
+    public var cellType: Cell.CellType {
+        .string(value)
+    }
+}
+
+public struct DateColumnType: ColumnTypeProtocol {
+    public let value: Date?
+    public init(_ value: Date?) {
+        self.value = value
+    }
+
+    public var cellType: Cell.CellType {
+        .date(value)
+    }
+}
+
+public struct BoolColumnType: ColumnTypeProtocol {
+    public let value: Bool?
+    public init(_ value: Bool?) {
+        self.value = value
+    }
+
+    public var cellType: Cell.CellType {
+        .boolean(value)
+    }
+}
+
+public struct URLColumnType: ColumnTypeProtocol {
+    public let value: URL?
+    public init(_ value: URL?) {
+        self.value = value
+    }
+
+    public var cellType: Cell.CellType {
+        .url(value)
+    }
+}
+
+public struct PercentageColumnType: ColumnTypeProtocol {
+    public let value: Double?
+    public init(_ value: Double?) {
+        self.value = value
+    }
+
+    public var cellType: Cell.CellType {
+        .double(value)
+    }
 }

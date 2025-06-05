@@ -1,6 +1,6 @@
-import Testing
 @testable import Objects2XLSX
+import Testing
 
 @Test func example() async throws {
-    // Write your test here and use APIs like `#expect(...)` to check expected conditions.
+    let column = Column(name: "name", keyPath: \Student.name, nilHandling: .defaultValue("abc"))
 }

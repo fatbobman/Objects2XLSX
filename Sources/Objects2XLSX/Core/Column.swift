@@ -29,6 +29,30 @@ public struct Column<ObjectType, InputType, OutputType> where OutputType: Column
     /// when
     public var when: (ObjectType) -> Bool
 
+    /// 根据对象，行，列，样式 ID 生成 Cell
+    public func cell(for object: ObjectType, row: Int, column: Int, styleID: Int?) -> Cell {
+        let rawValue = object[keyPath: keyPath]
+        let outputValue: OutputType = if let conditionalMapping, let filter {
+            conditionalMapping(filter(object), rawValue)
+        } else {
+            mapping(rawValue)
+        }
+
+        // 应用 nilHandling 处理并转换为 CellType
+        let cellValue = processValueForCell(outputValue)
+        return Cell(row: row, column: column, value: cellValue, styleID: styleID)
+    }
+
+    /// 根据 nilHandling 的设置处理值，并转换为 Cell.CellType
+    private func processValueForCell(_ outputValue: OutputType) -> Cell.CellType {
+        switch nilHandling {
+            case .keepEmpty:
+                outputValue.cellType
+            case let .defaultValue(defaultValue):
+                OutputType(outputValue.value ?? defaultValue).cellType
+        }
+    }
+
     public init(
         name: String,
         keyPath: KeyPath<ObjectType, InputType>,
@@ -48,6 +72,52 @@ public struct Column<ObjectType, InputType, OutputType> where OutputType: Column
         filter = nil
         self.when = when
     }
+
+    public static func conditional(
+        name: String,
+        keyPath: KeyPath<ObjectType, InputType>,
+        width: Int? = nil,
+        style: ColumnStyle? = nil,
+        filter: @escaping (ObjectType) -> Bool,
+        then thenMapping: @escaping (InputType) -> OutputType,
+        else elseMapping: @escaping (InputType) -> OutputType,
+        nilHandling: TypedNilHandling<OutputType> = .keepEmpty,
+        when: @escaping (ObjectType) -> Bool = { _ in true }) -> Self
+    {
+        var col = self.init(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            style: style,
+            mapping: thenMapping,
+            nilHandling: nilHandling,
+            when: when)
+        col.conditionalMapping = { condition, input in
+            condition ? thenMapping(input) : elseMapping(input)
+        }
+        col.filter = filter
+        return col
+    }
+}
+
+extension Column {
+    /// 设置列的显示条件，当条件为 true 时，列显示，否则不显示
+    /// - Parameter condition: 条件
+    /// - Returns: 新的列
+    public func when(_ condition: @escaping (ObjectType) -> Bool) -> Self {
+        var newSelf = self
+        newSelf.when = condition
+        return newSelf
+    }
+
+    /// 设置列的禁用条件，当条件为 true 时，列不显示
+    /// - Parameter condition: 条件
+    /// - Returns: 新的列
+    public func disable(_ condition: @escaping (ObjectType) -> Bool) -> Self {
+        var newSelf = self
+        newSelf.when = { !condition($0) }
+        return newSelf
+    }
 }
 
 extension Column where InputType == Double, OutputType == NumberColumnType {
@@ -58,7 +128,7 @@ extension Column where InputType == Double, OutputType == NumberColumnType {
         style: ColumnStyle? = nil,
         nilHandling: TypedNilHandling<OutputType> = .keepEmpty)
     {
-        let mapping: (InputType) -> NumberColumnType = { NumberColumnType($0) }
+        let mapping: (InputType) -> NumberColumnType = { .number($0) }
         self.init(
             name: name,
             keyPath: keyPath,
@@ -67,4 +137,105 @@ extension Column where InputType == Double, OutputType == NumberColumnType {
             mapping: mapping,
             nilHandling: nilHandling)
     }
+}
+
+extension Column where InputType == Int, OutputType == IntColumnType {
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, InputType>,
+        width: Int? = nil,
+        style: ColumnStyle? = nil,
+        nilHandling: TypedNilHandling<OutputType> = .keepEmpty)
+    {
+        let mapping: (InputType) -> IntColumnType = { .int($0) }
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            style: style,
+            mapping: mapping,
+            nilHandling: nilHandling)
+    }
+}
+
+extension Column where InputType == String, OutputType == TextColumnType {
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, InputType>,
+        width: Int? = nil,
+        style: ColumnStyle? = nil,
+        nilHandling: TypedNilHandling<OutputType> = .keepEmpty)
+    {
+        let mapping: (InputType) -> TextColumnType = { .text($0) }
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            style: style,
+            mapping: mapping,
+            nilHandling: nilHandling)
+    }
+}
+
+extension Column where InputType == Date, OutputType == DateColumnType {
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, InputType>,
+        width: Int? = nil,
+        style: ColumnStyle? = nil,
+        nilHandling: TypedNilHandling<OutputType> = .keepEmpty)
+    {
+        let mapping: (InputType) -> DateColumnType = { .date($0) }
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            style: style,
+            mapping: mapping,
+            nilHandling: nilHandling)
+    }
+}
+
+extension Column where InputType == Bool, OutputType == BoolColumnType {
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, InputType>,
+        width: Int? = nil,
+        style: ColumnStyle? = nil,
+        nilHandling: TypedNilHandling<OutputType> = .keepEmpty)
+    {
+        let mapping: (InputType) -> BoolColumnType = { .boolean($0) }
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            style: style,
+            mapping: mapping,
+            nilHandling: nilHandling)
+    }
+}
+
+extension Column where InputType == URL, OutputType == URLColumnType {
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, InputType>,
+        width: Int? = nil,
+        style: ColumnStyle? = nil,
+        nilHandling: TypedNilHandling<OutputType> = .keepEmpty)
+    {
+        let mapping: (InputType) -> URLColumnType = { .url($0) }
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            style: style,
+            mapping: mapping,
+            nilHandling: nilHandling)
+    }
+}
+
+extension Column {
+    /// 获取转换后 value 唯一的文本列表，用于合成 xlsx 的共享字符串
+    public func uniqueTexts(objects: [ObjectType]) -> [String]
+    where OutputType == TextColumnType { [] }
 }
