@@ -9,7 +9,7 @@
 import Foundation
 
 /// 列的风格
-public struct ColumnStyle: Equatable, Sendable, Hashable {
+public struct CellStyle: Equatable, Sendable, Hashable {
     public let font: Font?
     public let fillColor: Color?
     public let alignment: Alignment?

@@ -54,7 +54,7 @@ final class StyleRegistor {
         return alignmentPool.count - 1
     }
 
-    func registerStyle(_ style: ColumnStyle?) -> Int? {
+    func registerStyle(_ style: CellStyle?) -> Int? {
         guard let style else { return nil }
 
         let fontID = registerFont(style.font)

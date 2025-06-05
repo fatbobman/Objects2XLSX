@@ -19,7 +19,9 @@ public struct Column<ObjectType, InputType, OutputType> where OutputType: Column
     /// 空值处理方式
     public let nilHandling: TypedNilHandling<OutputType>
     /// 列的风格
-    public let style: ColumnStyle?
+    public let bodyStyle: CellStyle?
+    /// 列的 header 风格
+    public let headerStyle: CellStyle?
     /// 对应的 keyPath
     public let keyPath: KeyPath<ObjectType, InputType>
     /// mapping
@@ -59,7 +61,8 @@ public struct Column<ObjectType, InputType, OutputType> where OutputType: Column
         name: String,
         keyPath: KeyPath<ObjectType, InputType>,
         width: Int? = nil,
-        style: ColumnStyle? = nil,
+        bodyStyle: CellStyle? = nil,
+        headerStyle: CellStyle? = nil,
         mapping: @escaping (InputType) -> OutputType,
         nilHandling: TypedNilHandling<OutputType> = .keepEmpty,
         when: @escaping (ObjectType) -> Bool = { _ in true })
@@ -68,8 +71,9 @@ public struct Column<ObjectType, InputType, OutputType> where OutputType: Column
         self.keyPath = keyPath
         self.width = width
         self.mapping = mapping
-        self.style = style
+        self.bodyStyle = bodyStyle
         self.nilHandling = nilHandling
+        self.headerStyle = headerStyle
         conditionalMapping = nil
         filter = nil
         self.when = when
@@ -79,7 +83,8 @@ public struct Column<ObjectType, InputType, OutputType> where OutputType: Column
         name: String,
         keyPath: KeyPath<ObjectType, InputType>,
         width: Int? = nil,
-        style: ColumnStyle? = nil,
+        bodyStyle: CellStyle? = nil,
+        headerStyle: CellStyle? = nil,
         filter: @escaping (ObjectType) -> Bool,
         then thenMapping: @escaping (InputType) -> OutputType,
         else elseMapping: @escaping (InputType) -> OutputType,
@@ -90,7 +95,8 @@ public struct Column<ObjectType, InputType, OutputType> where OutputType: Column
             name: name,
             keyPath: keyPath,
             width: width,
-            style: style,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
             mapping: thenMapping,
             nilHandling: nilHandling,
             when: when)
@@ -127,7 +133,8 @@ extension Column where InputType == Double, OutputType == NumberColumnType {
         name: String,
         keyPath: KeyPath<ObjectType, InputType>,
         width: Int? = nil,
-        style: ColumnStyle? = nil,
+        bodyStyle: CellStyle? = nil,
+        headerStyle: CellStyle? = nil,
         nilHandling: TypedNilHandling<OutputType> = .keepEmpty)
     {
         let mapping: (InputType) -> NumberColumnType = { .number($0) }
@@ -135,7 +142,8 @@ extension Column where InputType == Double, OutputType == NumberColumnType {
             name: name,
             keyPath: keyPath,
             width: width,
-            style: style,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
             mapping: mapping,
             nilHandling: nilHandling)
     }
@@ -146,7 +154,8 @@ extension Column where InputType == Int, OutputType == IntColumnType {
         name: String,
         keyPath: KeyPath<ObjectType, InputType>,
         width: Int? = nil,
-        style: ColumnStyle? = nil,
+        bodyStyle: CellStyle? = nil,
+        headerStyle: CellStyle? = nil,
         nilHandling: TypedNilHandling<OutputType> = .keepEmpty)
     {
         let mapping: (InputType) -> IntColumnType = { .int($0) }
@@ -154,7 +163,8 @@ extension Column where InputType == Int, OutputType == IntColumnType {
             name: name,
             keyPath: keyPath,
             width: width,
-            style: style,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
             mapping: mapping,
             nilHandling: nilHandling)
     }
@@ -165,7 +175,8 @@ extension Column where InputType == String, OutputType == TextColumnType {
         name: String,
         keyPath: KeyPath<ObjectType, InputType>,
         width: Int? = nil,
-        style: ColumnStyle? = nil,
+        bodyStyle: CellStyle? = nil,
+        headerStyle: CellStyle? = nil,
         nilHandling: TypedNilHandling<OutputType> = .keepEmpty)
     {
         let mapping: (InputType) -> TextColumnType = { .text($0) }
@@ -173,7 +184,8 @@ extension Column where InputType == String, OutputType == TextColumnType {
             name: name,
             keyPath: keyPath,
             width: width,
-            style: style,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
             mapping: mapping,
             nilHandling: nilHandling)
     }
@@ -184,7 +196,8 @@ extension Column where InputType == Date, OutputType == DateColumnType {
         name: String,
         keyPath: KeyPath<ObjectType, InputType>,
         width: Int? = nil,
-        style: ColumnStyle? = nil,
+        bodyStyle: CellStyle? = nil,
+        headerStyle: CellStyle? = nil,
         nilHandling: TypedNilHandling<OutputType> = .keepEmpty)
     {
         let mapping: (InputType) -> DateColumnType = { .date($0) }
@@ -192,7 +205,8 @@ extension Column where InputType == Date, OutputType == DateColumnType {
             name: name,
             keyPath: keyPath,
             width: width,
-            style: style,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
             mapping: mapping,
             nilHandling: nilHandling)
     }
@@ -203,7 +217,8 @@ extension Column where InputType == Bool, OutputType == BoolColumnType {
         name: String,
         keyPath: KeyPath<ObjectType, InputType>,
         width: Int? = nil,
-        style: ColumnStyle? = nil,
+        bodyStyle: CellStyle? = nil,
+        headerStyle: CellStyle? = nil,
         nilHandling: TypedNilHandling<OutputType> = .keepEmpty)
     {
         let mapping: (InputType) -> BoolColumnType = { .boolean($0) }
@@ -211,7 +226,8 @@ extension Column where InputType == Bool, OutputType == BoolColumnType {
             name: name,
             keyPath: keyPath,
             width: width,
-            style: style,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
             mapping: mapping,
             nilHandling: nilHandling)
     }
@@ -222,7 +238,8 @@ extension Column where InputType == URL, OutputType == URLColumnType {
         name: String,
         keyPath: KeyPath<ObjectType, InputType>,
         width: Int? = nil,
-        style: ColumnStyle? = nil,
+        bodyStyle: CellStyle? = nil,
+        headerStyle: CellStyle? = nil,
         nilHandling: TypedNilHandling<OutputType> = .keepEmpty)
     {
         let mapping: (InputType) -> URLColumnType = { .url($0) }
@@ -230,7 +247,8 @@ extension Column where InputType == URL, OutputType == URLColumnType {
             name: name,
             keyPath: keyPath,
             width: width,
-            style: style,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
             mapping: mapping,
             nilHandling: nilHandling)
     }
