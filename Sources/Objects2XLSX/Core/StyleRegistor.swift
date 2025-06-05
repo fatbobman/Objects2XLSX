@@ -7,6 +7,7 @@
 // Copyright © 2025 Fatbobman. All rights reserved.
 
 import Foundation
+import Synchronization
 
 final class StyleRegistor {
     private(set) var fontPool: [Font: Int] = [:]
