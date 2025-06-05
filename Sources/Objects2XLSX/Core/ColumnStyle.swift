@@ -9,8 +9,14 @@
 import Foundation
 
 /// 列的风格
-public struct ColumnStyle: Equatable, Sendable {
+public struct ColumnStyle: Equatable, Sendable, Hashable {
     public let font: Font?
-    public let backgroundColor: Color?
+    public let fillColor: Color?
     public let alignment: Alignment?
+
+    public init(font: Font? = nil, fillColor: Color? = nil, alignment: Alignment? = nil) {
+        self.font = font
+        self.fillColor = fillColor
+        self.alignment = alignment
+    }
 }

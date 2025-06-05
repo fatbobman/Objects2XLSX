@@ -8,19 +8,19 @@
 
 import Foundation
 
-public struct Font: Equatable, Sendable {
+public struct Font: Equatable, Sendable, Hashable {
     public let size: Int
     public let name: String
     public let bold: Bool
     public let color: Color
 }
 
-public enum Alignment: Equatable, Sendable {
+public enum Alignment: Equatable, Sendable, Hashable {
     case leading
     case center
     case trailing
 }
 
-public enum Color: Equatable, Sendable {
+public enum Color: Equatable, Sendable, Hashable {
     case red, blue
 }

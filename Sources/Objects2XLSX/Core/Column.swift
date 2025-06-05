@@ -10,6 +10,8 @@ import Foundation
 
 /// 表示一个 xlsx sheet 的列的声明
 public struct Column<ObjectType, InputType, OutputType> where OutputType: ColumnTypeProtocol {
+    /// 列的唯一 ID
+    public let id = UUID()
     /// 列的名称
     public let name: String
     /// 列的宽度（字符宽度）
@@ -238,4 +240,8 @@ extension Column {
     /// 获取转换后 value 唯一的文本列表，用于合成 xlsx 的共享字符串
     public func uniqueTexts(objects: [ObjectType]) -> [String]
     where OutputType == TextColumnType { [] }
+}
+
+extension Column {
+    // 根据设置，返回 style，用于生成 xlsx 的 style 表，并给出 header 和 body 的 styleID
 }
