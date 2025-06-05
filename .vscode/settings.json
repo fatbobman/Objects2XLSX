@@ -1,0 +1,7 @@
+{
+  "swiftformat.configSearchPaths": [".swiftformat"],
+  "swiftformat.enable": true,
+  "editor.formatOnSave": true,
+  "swiftlint.configSearchPaths": [".swiftlint.yml", "../.swiftlint.yml"],
+  "swiftlint.onlyEnableWithConfig": true
+}
