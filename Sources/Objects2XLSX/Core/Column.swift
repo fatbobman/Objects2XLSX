@@ -9,7 +9,8 @@
 import Foundation
 
 /// 表示一个 xlsx sheet 的列的声明
-public struct Column<ObjectType, InputType, OutputType> where OutputType: ColumnTypeProtocol {
+public struct Column<ObjectType, InputType, OutputType>: ColumnProtocol
+where OutputType: ColumnTypeProtocol {
     /// 列的唯一 ID
     public let id = UUID()
     /// 列的名称
@@ -32,30 +33,6 @@ public struct Column<ObjectType, InputType, OutputType> where OutputType: Column
     public var filter: ((ObjectType) -> Bool)?
     /// when
     public var when: (ObjectType) -> Bool
-
-    /// 根据对象，行，列，样式 ID 生成 Cell
-    public func cell(for object: ObjectType, row: Int, column: Int, styleID: Int?) -> Cell {
-        let rawValue = object[keyPath: keyPath]
-        let outputValue: OutputType = if let conditionalMapping, let filter {
-            conditionalMapping(filter(object), rawValue)
-        } else {
-            mapping(rawValue)
-        }
-
-        // 应用 nilHandling 处理并转换为 CellType
-        let cellValue = processValueForCell(outputValue)
-        return Cell(row: row, column: column, value: cellValue, styleID: styleID)
-    }
-
-    /// 根据 nilHandling 的设置处理值，并转换为 Cell.CellType
-    private func processValueForCell(_ outputValue: OutputType) -> Cell.CellType {
-        switch nilHandling {
-            case .keepEmpty:
-                outputValue.cellType
-            case let .defaultValue(defaultValue):
-                OutputType(outputValue.value ?? defaultValue).cellType
-        }
-    }
 
     public init(
         name: String,
@@ -125,6 +102,11 @@ extension Column {
         var newSelf = self
         newSelf.when = { !condition($0) }
         return newSelf
+    }
+
+    /// 转换为类型擦除的 AnyColumn
+    public func eraseToAnyColumn() -> AnyColumn<ObjectType> {
+        AnyColumn(self)
     }
 }
 
@@ -255,11 +237,27 @@ extension Column where InputType == URL, OutputType == URLColumnType {
 }
 
 extension Column {
-    /// 获取转换后 value 唯一的文本列表，用于合成 xlsx 的共享字符串
-    public func uniqueTexts(objects: [ObjectType]) -> [String]
-    where OutputType == TextColumnType { [] }
-}
+    /// 根据对象，行，列，样式 ID 生成 Cell
+    func generateCell(for object: ObjectType, row: Int, column: Int, styleID: Int?) -> Cell {
+        let rawValue = object[keyPath: keyPath]
+        let outputValue: OutputType = if let conditionalMapping, let filter {
+            conditionalMapping(filter(object), rawValue)
+        } else {
+            mapping(rawValue)
+        }
 
-extension Column {
-    // 根据设置，返回 style，用于生成 xlsx 的 style 表，并给出 header 和 body 的 styleID
+        // 应用 nilHandling 处理并转换为 CellType
+        let cellValue = processValueForCell(outputValue)
+        return Cell(row: row, column: column, value: cellValue, styleID: styleID)
+    }
+
+    /// 根据 nilHandling 的设置处理值，并转换为 Cell.CellType
+    func processValueForCell(_ outputValue: OutputType) -> Cell.CellType {
+        switch nilHandling {
+            case .keepEmpty:
+                outputValue.cellType
+            case let .defaultValue(defaultValue):
+                OutputType(outputValue.value ?? defaultValue).cellType
+        }
+    }
 }
