@@ -11,18 +11,16 @@ import Foundation
 /// 表示一个 xlsx sheet 的列的声明
 public struct Column<ObjectType, InputType, OutputType>: ColumnProtocol
 where OutputType: ColumnTypeProtocol {
-    /// 列的唯一 ID
-    public let id = UUID()
     /// 列的名称
-    public let name: String
+    public var name: String
     /// 列的宽度（字符宽度）
-    public let width: Int?
+    public var width: Int?
     /// 空值处理方式
     public let nilHandling: TypedNilHandling<OutputType>
     /// 列的风格
-    public let bodyStyle: CellStyle?
+    public var bodyStyle: CellStyle?
     /// 列的 header 风格
-    public let headerStyle: CellStyle?
+    public var headerStyle: CellStyle?
     /// 对应的 keyPath
     public let keyPath: KeyPath<ObjectType, InputType>
     /// mapping
@@ -238,7 +236,14 @@ extension Column where InputType == URL, OutputType == URLColumnType {
 
 extension Column {
     /// 根据对象，行，列，样式 ID 生成 Cell
-    func generateCell(for object: ObjectType, row: Int, column: Int, styleID: Int?) -> Cell {
+    func generateCell(
+        for object: ObjectType,
+        row: Int,
+        column: Int,
+        bodyStyleID: Int? = nil,
+        headerStyleID: Int? = nil,
+        isHeader: Bool = false) -> Cell
+    {
         let rawValue = object[keyPath: keyPath]
         let outputValue: OutputType = if let conditionalMapping, let filter {
             conditionalMapping(filter(object), rawValue)
@@ -248,7 +253,11 @@ extension Column {
 
         // 应用 nilHandling 处理并转换为 CellType
         let cellValue = processValueForCell(outputValue)
-        return Cell(row: row, column: column, value: cellValue, styleID: styleID)
+
+        // 根据是否为header选择合适的styleID
+        let finalStyleID = isHeader ? headerStyleID : bodyStyleID
+
+        return Cell(row: row, column: column, value: cellValue, styleID: finalStyleID)
     }
 
     /// 根据 nilHandling 的设置处理值，并转换为 Cell.CellType
@@ -259,5 +268,45 @@ extension Column {
             case let .defaultValue(defaultValue):
                 OutputType(outputValue.value ?? defaultValue).cellType
         }
+    }
+}
+
+// MARK: - Modifiers
+
+extension Column {
+    /// 设置单元格样式
+    public func bodyStyle(_ style: CellStyle?) -> Self {
+        var newSelf = self
+        newSelf.bodyStyle = style
+        return newSelf
+    }
+
+    /// 设置表头样式
+    public func headerStyle(_ style: CellStyle?) -> Self {
+        var newSelf = self
+        newSelf.headerStyle = style
+        return newSelf
+    }
+
+    /// 设置列宽
+    public func width(_ width: Int?) -> Self {
+        var newSelf = self
+        newSelf.width = width
+        return newSelf
+    }
+
+    /// 设置列名
+    public func columnName(_ name: String) -> Self {
+        var newSelf = self
+        newSelf.name = name
+        return newSelf
+    }
+
+    /// 设置样式（同时设置header和body）
+    public func style(header: CellStyle? = nil, body: CellStyle? = nil) -> Self {
+        var newSelf = self
+        newSelf.headerStyle = header
+        newSelf.bodyStyle = body
+        return newSelf
     }
 }

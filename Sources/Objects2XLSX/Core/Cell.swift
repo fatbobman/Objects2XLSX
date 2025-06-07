@@ -11,9 +11,13 @@ import Foundation
 public struct Cell: Equatable, Sendable {
     public let row: Int
     public let column: Int
-    public let position: String
     public let value: CellType
     public let styleID: Int?
+
+    /// Excel 格式的单元格地址，如 "A1"
+    public var excelAddress: String {
+        "\(columnIndexToExcelColumn(column))\(row + 1)"
+    }
 
     /// xml 中 cell 的 value 字段，对应 <v>valueString</v> 标签中的 valueString
     var valueString: String {
@@ -33,22 +37,9 @@ public struct Cell: Equatable, Sendable {
         }
     }
 
-    /// 将列索引转换为列名，例如 0 转换为 A，26 转换为 AA
-    static func columnName(for index: Int) -> String {
-        var name = ""
-        var i = index
-        repeat {
-            let remainder = i % 26
-            name = String(UnicodeScalar(remainder + 65)!) + name
-            i = i / 26 - 1
-        } while i >= 0
-        return name
-    }
-
     public init(row: Int, column: Int, value: CellType, styleID: Int? = nil) {
         self.row = row
         self.column = column
-        position = "\(Self.columnName(for: column))\(row + 1)"
         self.value = value
         self.styleID = styleID
     }
