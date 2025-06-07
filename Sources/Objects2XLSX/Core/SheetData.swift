@@ -8,110 +8,81 @@
 
 import Foundation
 
-/// 表格数据，包含生成 xlsx sheet XML 所需的所有信息
 public struct SheetData {
-    /// Sheet 的基本信息
+    /// 工作表名称
     public let name: String
-    /// 所有单元格数据
+
+    /// 所有单元格（含表头 + 内容）
     public let cells: [Cell]
-    /// 列信息（宽度、样式等）
-    public let columns: [ColumnInfo]
-    /// 行信息（高度、样式等）
-    public let rows: [RowInfo]
-    /// Sheet 的尺寸信息
-    public let dimension: SheetDimension
-    /// 是否包含表头
+
+    /// 所有列的信息（顺序对应列索引）
+    public let columns: [ResolvedColumn]
+
+    /// 所有行的信息（用于自定义行高等）
+    public let rows: [ResolvedRow]
+
+    /// 表头是否存在
     public let hasHeader: Bool
 
-    public init(
-        name: String,
-        cells: [Cell],
-        columns: [ColumnInfo],
-        rows: [RowInfo],
-        dimension: SheetDimension,
-        hasHeader: Bool = true)
-    {
-        self.name = name
-        self.cells = cells
-        self.columns = columns
-        self.rows = rows
-        self.dimension = dimension
-        self.hasHeader = hasHeader
-    }
+    /// 单元格范围（用于写入 `<dimension>`）
+    public let dimension: SheetDimension
+
+    /// 列宽定义（对应 <cols>）
+    public let columnWidths: [ColumnWidth]
+
+    /// Sheet 层面的默认样式信息（行高、列宽等）
+    public let sheetDefaults: SheetDefaults
+
+    /// 引用的样式注册器（用于生成 styles.xml）
+    private let styleRegistor: StyleRegistor
+
+    /// 引用的共享字符串注册器（用于生成 sharedStrings.xml）
+    private let shareStringRegistor: ShareStringRegistor
 }
 
-/// 列信息
-public struct ColumnInfo {
-    /// 列索引（从1开始，Excel格式）
-    public let index: Int
-    /// 列宽（Excel单位）
-    public let width: Double?
-    /// 列的默认样式ID
-    public let styleID: Int?
-    /// 是否隐藏
-    public let hidden: Bool
-
-    public init(index: Int, width: Double? = nil, styleID: Int? = nil, hidden: Bool = false) {
-        self.index = index
-        self.width = width
-        self.styleID = styleID
-        self.hidden = hidden
-    }
+public struct ResolvedColumn {
+    public let index: Int // 从 0 开始
+    public let name: String // 表头文字
+    public let width: Int? // 字符宽度（用于列宽）
+    public let headerStyleID: Int? // 表头样式
+    public let bodyStyleID: Int? // 内容样式
 }
 
-/// 行信息
-public struct RowInfo {
-    /// 行索引（从1开始，Excel格式）
-    public let index: Int
-    /// 行高（Excel单位：磅）
-    public let height: Double?
-    /// 行的默认样式ID
-    public let styleID: Int?
-    /// 是否隐藏
-    public let hidden: Bool
-    /// 是否是表头行
-    public let isHeader: Bool
-
-    public init(
-        index: Int,
-        height: Double? = nil,
-        styleID: Int? = nil,
-        hidden: Bool = false,
-        isHeader: Bool = false)
-    {
-        self.index = index
-        self.height = height
-        self.styleID = styleID
-        self.hidden = hidden
-        self.isHeader = isHeader
-    }
+public struct ResolvedRow {
+    public let index: Int // 从 0 开始
+    public let height: Double? // 自定义行高
 }
 
-/// Sheet 尺寸信息
 public struct SheetDimension {
-    /// 起始行（通常为1）
-    public let startRow: Int
-    /// 结束行
+    public let startRow: Int // Excel 行号，从 1 开始
     public let endRow: Int
-    /// 起始列（通常为1）
-    public let startColumn: Int
-    /// 结束列
+    public let startColumn: Int // Excel 列号，从 1 开始
     public let endColumn: Int
-
-    public init(startRow: Int = 1, endRow: Int, startColumn: Int = 1, endColumn: Int) {
-        self.startRow = startRow
-        self.endRow = endRow
-        self.startColumn = startColumn
-        self.endColumn = endColumn
-    }
-
-    /// Excel 格式的范围字符串，如 "A1:C10"
-    public var excelRange: String {
-        let startCell = "\(columnIndexToExcelColumn(startColumn))\(startRow)"
-        let endCell = "\(columnIndexToExcelColumn(endColumn))\(endRow)"
-        return "\(startCell):\(endCell)"
-    }
 }
+
+public struct ColumnWidth {
+    public let index: Int
+    public let width: Int
+}
+
+public struct SheetDefaults {
+    public let defaultRowHeight: Double?
+    public let defaultColumnWidth: Int?
+}
+
+// extension SheetData {
+//     /// 获取某一行的所有 cell
+//     func cellsInRow(_ rowIndex: Int) -> [Cell]
+
+//     /// 获取某一列的所有 cell
+//     func cellsInColumn(_ columnIndex: Int) -> [Cell]
+
+//     /// 查找某个 Cell（按 row + column）
+//     func cellAt(row: Int, column: Int) -> Cell?
+
+//     /// 返回 sheet 所有 cell 的 Excel 坐标
+//     func allCellAddresses() -> [String]
+// }
 
 /// 将列索引转换为 Excel 列名（如 1->A, 27->AA）
 func columnIndexToExcelColumn(_ index: Int) -> String {

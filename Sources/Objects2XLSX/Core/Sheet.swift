@@ -86,11 +86,10 @@ public struct Sheet<ObjectType> {
           */
         SheetData(
             name: name,
-            cells: [],
-            columns: [],
-            rows: [],
-            dimension: SheetDimension(startRow: 1, endRow: 1, startColumn: 1, endColumn: 1),
-            hasHeader: hasHeader)
+            columns: columns,
+            rowBodyHeight: rowBodyHeight,
+            columnWidth: columnWidth,
+            columnHeaderHeight: columnHeaderHeight)
     }
 }
 
@@ -130,5 +129,3 @@ extension Sheet {
         return newSelf
     }
 }
-
-
