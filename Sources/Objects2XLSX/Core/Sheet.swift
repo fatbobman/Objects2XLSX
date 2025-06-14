@@ -49,7 +49,7 @@ public struct Sheet<ObjectType> {
         with objects: [ObjectType],
         hasHeader: Bool = true,
         styleRegistor: StyleRegistor,
-        shareStringRegistor: ShareStringRegistor) -> SheetData
+        shareStringRegistor: ShareStringRegistor) -> SheetData? // TODO: 返回 SheetData,临时
     {
         /*
             // 1. 筛选有效列（基于 when 条件和第一个对象）
@@ -84,12 +84,7 @@ public struct Sheet<ObjectType> {
              metadata: sheetMetadata
          )
           */
-        SheetData(
-            name: name,
-            columns: columns,
-            rowBodyHeight: rowBodyHeight,
-            columnWidth: columnWidth,
-            columnHeaderHeight: columnHeaderHeight)
+        nil
     }
 }
 

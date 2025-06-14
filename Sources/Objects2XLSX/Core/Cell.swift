@@ -23,17 +23,19 @@ public struct Cell: Equatable, Sendable {
     var valueString: String {
         switch value {
             case let .string(string):
-                string ?? ""
+                string.cellValueString
             case let .double(double):
-                double?.description ?? ""
+                double.cellValueString
             case let .int(int):
-                int?.description ?? ""
-            case let .date(date):
-                date?.description ?? ""
+                int.cellValueString
+            case let .date(date, timeZone):
+                date.cellValueString(timeZone: timeZone)
             case let .boolean(boolean):
-                boolean?.description ?? ""
+                boolean.cellValueString
             case let .url(url):
-                url?.absoluteString ?? ""
+                url.cellValueString
+            case let .percentage(percentage, precision):
+                percentage.cellValueString(precision: precision)
         }
     }
 
@@ -50,8 +52,9 @@ extension Cell {
         case string(String?)
         case double(Double?)
         case int(Int?)
-        case date(Date?)
+        case date(Date?, timeZone: TimeZone = TimeZone.current)
         case boolean(Bool?)
         case url(URL?)
+        case percentage(Double?, precision: Int = 2)
     }
 }
