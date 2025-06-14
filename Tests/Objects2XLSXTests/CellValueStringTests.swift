@@ -59,11 +59,41 @@ struct CellValueStringTests {
 
     @Test("Bool cell value string")
     func boolCellValueString() throws {
-        let trueCell = Cell(row: 0, column: 0, value: .boolean(true))
-        #expect(trueCell.valueString == "1", "True cell value should match")
+        let oneCell = Cell(row: 0, column: 0, value: .boolean(true))
+        #expect(oneCell.valueString == "1", "True cell value should match")
 
-        let falseCell = Cell(row: 0, column: 1, value: .boolean(false))
-        #expect(falseCell.valueString == "0", "False cell value should match")
+        let zeroCell = Cell(row: 0, column: 1, value: .boolean(false))
+        #expect(zeroCell.valueString == "0", "False cell value should match")
+
+        let trueCell = Cell(
+            row: 0,
+            column: 0,
+            value: .boolean(true, booleanExpressions: .trueAndFalse, caseStrategy: .upper))
+        #expect(trueCell.valueString == "TRUE", "True cell value should match")
+
+        let falseCell = Cell(
+            row: 0,
+            column: 0,
+            value: .boolean(false, booleanExpressions: .trueAndFalse, caseStrategy: .lower))
+        #expect(falseCell.valueString == "false", "False cell value should match")
+
+        let falseFirstLetterUpperCell = Cell(
+            row: 0,
+            column: 0,
+            value: .boolean(
+                false,
+                booleanExpressions: .trueAndFalse,
+                caseStrategy: .firstLetterUpper))
+        #expect(falseFirstLetterUpperCell.valueString == "False", "False cell value should match")
+
+        let tCell = Cell(
+            row: 0,
+            column: 0,
+            value: .boolean(true, booleanExpressions: .tAndF, caseStrategy: .lower))
+        #expect(tCell.valueString == "t", "True cell value should match")
+
+        let fCell = Cell(row: 0, column: 0, value: .boolean(false, booleanExpressions: .tAndF))
+        #expect(fCell.valueString == "F", "False cell value should match")
 
         let nilCell = Cell(row: 0, column: 2, value: .boolean(nil))
         #expect(nilCell.valueString == "", "Nil bool cell value should be empty")

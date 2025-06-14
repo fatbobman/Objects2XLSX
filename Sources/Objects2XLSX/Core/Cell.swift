@@ -30,8 +30,10 @@ public struct Cell: Equatable, Sendable {
                 int.cellValueString
             case let .date(date, timeZone):
                 date.cellValueString(timeZone: timeZone)
-            case let .boolean(boolean):
-                boolean.cellValueString
+            case let .boolean(boolean, booleanExpressions, caseStrategy):
+                boolean.cellValueString(
+                    booleanExpressions: booleanExpressions,
+                    caseStrategy: caseStrategy)
             case let .url(url):
                 url.cellValueString
             case let .percentage(percentage, precision):
@@ -53,8 +55,69 @@ extension Cell {
         case double(Double?)
         case int(Int?)
         case date(Date?, timeZone: TimeZone = TimeZone.current)
-        case boolean(Bool?)
+        case boolean(
+            Bool?,
+            booleanExpressions: BooleanExpressions = .oneAndZero,
+            caseStrategy: CaseStrategy = .upper)
         case url(URL?)
         case percentage(Double?, precision: Int = 2)
+    }
+
+    public enum BooleanExpressions: Equatable, Sendable {
+        case trueAndFalse
+        case tAndF
+        case oneAndZero
+        case yesAndNo
+        case custom(true: String, false: String)
+
+        public var trueString: String {
+            switch self {
+                case .trueAndFalse:
+                    "TRUE"
+                case .tAndF:
+                    "T"
+                case .oneAndZero:
+                    "1"
+                case .yesAndNo:
+                    "YES"
+                case let .custom(trueString, _):
+                    trueString
+            }
+        }
+
+        public var falseString: String {
+            switch self {
+                case .trueAndFalse:
+                    "FALSE"
+                case .tAndF:
+                    "F"
+                case .oneAndZero:
+                    "0"
+                case .yesAndNo:
+                    "NO"
+                case let .custom(_, falseString):
+                    falseString
+            }
+        }
+    }
+
+    public enum CaseStrategy: Equatable, Sendable {
+        case upper
+        case lower
+        case firstLetterUpper
+
+        func apply(to string: String) -> String {
+            switch self {
+                case .upper:
+                    return string.uppercased()
+                case .lower:
+                    return string.lowercased()
+                case .firstLetterUpper:
+                    guard !string.isEmpty else {
+                        return ""
+                    }
+                    return string.prefix(1).uppercased() + string.dropFirst().lowercased()
+            }
+        }
     }
 }

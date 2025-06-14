@@ -58,10 +58,19 @@ extension Date? {
 }
 
 extension Bool? {
-    /// Returns the Excel boolean representation (1 for true, 0 for false) or an empty string if nil
-    var cellValueString: String {
+    /// Returns the Excel boolean representation (expressions by booleanExpressions, case by
+    /// caseStrategy) or an empty string if nil
+    /// - Parameters:
+    ///   - booleanExpressions: 布尔值的表达方式，默认是 1 和 0
+    ///   - caseStrategy: 布尔值的表达方式，默认是大写
+    /// - Returns:
+    func cellValueString(
+        booleanExpressions: Cell.BooleanExpressions = .oneAndZero,
+        caseStrategy: Cell.CaseStrategy = .upper) -> String
+    {
         guard let value = self else { return "" }
-        return value ? "1" : "0"
+        return caseStrategy.apply(
+            to: value ? booleanExpressions.trueString : booleanExpressions.falseString)
     }
 }
 
