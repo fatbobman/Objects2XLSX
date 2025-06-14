@@ -3,5 +3,6 @@
   "swiftformat.enable": true,
   "editor.formatOnSave": true,
   "swiftlint.configSearchPaths": [".swiftlint.yml", "../.swiftlint.yml"],
-  "swiftlint.onlyEnableWithConfig": true
+  "swiftlint.onlyEnableWithConfig": true,
+  "editor.fontSize": 15.5
 }
