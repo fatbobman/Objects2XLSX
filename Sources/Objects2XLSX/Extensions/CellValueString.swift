@@ -19,7 +19,6 @@ extension Double? {
     /// Returns the string representation of the double value or an empty string if nil
     var cellValueString: String {
         guard let value = self else { return "" }
-        // 使用更精确的格式化，避免科学计数法
         if value.isInfinite || value.isNaN {
             return ""
         }
@@ -33,7 +32,6 @@ extension Double? {
             return ""
         }
 
-        // 转换为 Decimal 避免浮点精度问题
         var decimal = Decimal(value)
         var rounded = Decimal()
         NSDecimalRound(&rounded, &decimal, precision + 2, .plain)
@@ -61,8 +59,8 @@ extension Bool? {
     /// Returns the Excel boolean representation (expressions by booleanExpressions, case by
     /// caseStrategy) or an empty string if nil
     /// - Parameters:
-    ///   - booleanExpressions: 布尔值的表达方式，默认是 1 和 0
-    ///   - caseStrategy: 布尔值的表达方式，默认是大写
+    ///   - booleanExpressions: Boolean expressions.
+    ///   - caseStrategy: Case strategy.
     /// - Returns:
     func cellValueString(
         booleanExpressions: Cell.BooleanExpressions = .oneAndZero,
