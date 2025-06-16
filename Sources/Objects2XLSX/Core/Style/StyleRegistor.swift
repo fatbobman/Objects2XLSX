@@ -7,82 +7,68 @@
 // Copyright © 2025 Fatbobman. All rights reserved.
 
 import Foundation
-import Synchronization
+import IdentifiedCollections
 
 final class StyleRegistor {
-    private(set) var fontPool: [Font: Int] = [:]
-    private(set) var fillPool: [Fill: Int] = [:]
-    private(set) var alignmentPool: [Alignment: Int] = [:]
-    private(set) var numberFormatPool: [NumberFormat] = []
-    private(set) var resolvedStylePool: [ResolvedStyle: Int] = [:]
+    private(set) var fontPool = IdentifiedArrayOf<Font>()
+    private(set) var fillPool = IdentifiedArrayOf<Fill>()
+    private(set) var alignmentPool = IdentifiedArrayOf<Alignment>()
+    private(set) var numberFormatPool = IdentifiedArrayOf<NumberFormat>()
+    private(set) var resolvedStylePool = IdentifiedArrayOf<ResolvedStyle>()
 
-    var allResolvedStyles: [ResolvedStyle] {
-        resolvedStylePool
-            .sorted { $0.value < $1.value }
-            .map(\.key)
-    }
-
-    var fonts: [Font] {
-        fontPool.sorted { $0.value < $1.value }.map(\.key)
-    }
-
-    var fills: [Fill] {
-        fillPool.sorted { $0.value < $1.value }.map(\.key)
-    }
-
-    var alignments: [Alignment] {
-        alignmentPool.sorted { $0.value < $1.value }.map(\.key)
-    }
-
-    var numberFormats: [NumberFormat] {
-        numberFormatPool
-    }
-
-    private func registerFont(_ font: Font?) -> Int? {
+    private func registerFont(_ font: Font?) -> Int? { // TODO: 考虑是返回 nil 还是 0
         guard let font else { return nil }
-        if let index = fontPool[font] { return index }
-        fontPool[font] = fontPool.count
+        if let index = fontPool.ids.firstIndex(of: font.id) {
+            return index
+        }
+        fontPool.append(font)
         return fontPool.count - 1
     }
 
     private func registerFill(_ fill: Fill?) -> Int? {
-        guard let fill else { return nil }
-        if let index = fillPool[fill] { return index }
-        fillPool[fill] = fillPool.count
+        guard let fill else {
+            return 0
+        }
+        if let index = fillPool.ids.firstIndex(of: fill.id) {
+            return index
+        }
+        fillPool.append(fill)
         return fillPool.count - 1
     }
 
     private func registerAlignment(_ alignment: Alignment?) -> Int? {
-        guard let alignment else { return nil }
-        if let index = alignmentPool[alignment] { return index }
-        alignmentPool[alignment] = alignmentPool.count
+        guard let alignment else { return 0 }
+        if let index = alignmentPool.ids.firstIndex(of: alignment.id) {
+            return index
+        }
+        alignmentPool.append(alignment)
         return alignmentPool.count - 1
     }
 
     func registerStyle(_ style: CellStyle?, cellType: Cell.CellType?) -> Int? {
         guard let style else { return nil }
 
-        // 1. 根据 CellType 自动生成 numberFormat
+        // 注册各个组件
         let numberFormat = generateNumberFormat(for: cellType)
         let numFmtId = registerNumberFormat(numberFormat)
-
-        // 2. 注册其他样式组件
         let fontID = registerFont(style.font)
-        let fillID = registerFill(style.fillColor)
+        let fillID = registerFill(style.fill)
         let alignmentID = registerAlignment(style.alignment)
 
-        // 3. 创建 ResolvedStyle
+        // 创建 ResolvedStyle
         let resolved = ResolvedStyle(
             fontID: fontID,
             fillID: fillID,
             alignmentID: alignmentID,
             numFmtId: numFmtId)
 
-        // 4. 注册并返回样式ID
-        if let index = resolvedStylePool[resolved] {
+        // O(1) 查找
+        if let index = resolvedStylePool.ids.firstIndex(of: resolved.id) {
             return index
         }
-        resolvedStylePool[resolved] = resolvedStylePool.count
+
+        // 插入新样式
+        resolvedStylePool.append(resolved)
         return resolvedStylePool.count - 1
     }
 
@@ -108,25 +94,51 @@ final class StyleRegistor {
             return builtinId
         }
 
-        // 检查是否已注册
-        if let index = numberFormatPool.firstIndex(of: numberFormat) {
-            return 164 + index // 自定义格式从164开始
+        // O(1) 查找和插入
+        if let index = numberFormatPool.ids.firstIndex(of: numberFormat.id) {
+            return 164 + index
         }
 
-        // 注册新格式
         numberFormatPool.append(numberFormat)
         return 164 + numberFormatPool.count - 1
     }
+
+    init() {
+        // 预注册默认样式（索引0，Excel要求）
+        let defaultStyle = ResolvedStyle(
+            fontID: 0,
+            fillID: 0,
+            alignmentID: nil,
+            numFmtId: nil)
+        resolvedStylePool.append(defaultStyle)
+
+        // 预注册默认填充
+        fillPool.append(.none)
+        fillPool.append(.none)
+
+        // 预注册默认字体
+        let defaultFont = Font(size: 12, name: "Calibri")
+        fontPool.append(defaultFont)
+    }
 }
 
-struct ResolvedStyle: Hashable {
+struct ResolvedStyle: Hashable, Sendable, Identifiable {
     let fontID: Int?
     let fillID: Int?
     let alignmentID: Int?
     let numFmtId: Int?
+
+    var id: String {
+        let numFmtStr = numFmtId.map(String.init) ?? "default"
+        let fontStr = fontID.map(String.init) ?? "default"
+        let fillStr = fillID.map(String.init) ?? "default"
+        let alignStr = alignmentID.map(String.init) ?? "default"
+
+        return "\(numFmtStr)_\(fontStr)_\(fillStr)_\(alignStr)"
+    }
 }
 
-public enum NumberFormat: Equatable, Sendable, Hashable {
+public enum NumberFormat: Equatable, Sendable, Hashable, Identifiable {
     case general // 默认格式
     case percentage(precision: Int) // 百分比格式
     case date // 日期格式
@@ -134,6 +146,25 @@ public enum NumberFormat: Equatable, Sendable, Hashable {
     case dateTime // 日期时间格式
     case currency // 货币格式（未来扩展）
     case scientific // 科学计数法（未来扩展）
+
+    public var id: String {
+        switch self {
+            case .general:
+                "General"
+            case let .percentage(precision):
+                "Percentage(\(precision))"
+            case .date:
+                "Date"
+            case .time:
+                "Time"
+            case .dateTime:
+                "DateTime"
+            case .currency:
+                "Currency"
+            case .scientific:
+                "Scientific"
+        }
+    }
 
     // 获取对应的格式代码
     var formatCode: String? {

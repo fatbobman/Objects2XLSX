@@ -5,6 +5,13 @@ import PackageDescription
 
 let package = Package(
     name: "Objects2XLSX",
+    platforms: [
+        // The platforms that this package supports.
+        .macOS(.v13), // Minimum macOS version
+        .iOS(.v16), // Minimum iOS version
+        .tvOS(.v16), // Minimum tvOS version
+        .watchOS(.v9), // Minimum watchOS version
+    ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to
         // other packages.
@@ -14,6 +21,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/tadija/AEXML.git", from: "4.7.0"),
+        .package(url: "https://github.com/pointfreeco/swift-identified-collections.git", from: "1.0.0"),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -22,6 +30,7 @@ let package = Package(
             name: "Objects2XLSX",
             dependencies: [
                 .product(name: "AEXML", package: "AEXML"),
+                .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
             ]),
         .testTarget(
             name: "Objects2XLSXTests",

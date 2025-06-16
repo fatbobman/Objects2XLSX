@@ -13,7 +13,7 @@ public struct CellStyle: Equatable, Sendable, Hashable {
     /// The font of the cell style.
     public let font: Font?
     /// The fill color of the cell style.
-    public let fillColor: Fill?
+    public let fill: Fill?
     /// The alignment of the cell style.
     public let alignment: Alignment?
 
@@ -22,9 +22,9 @@ public struct CellStyle: Equatable, Sendable, Hashable {
     /// - Parameter font: The font of the cell style.
     /// - Parameter fillColor: The fill color of the cell style.
     /// - Parameter alignment: The alignment of the cell style.
-    public init(font: Font? = nil, fillColor: Fill? = nil, alignment: Alignment? = nil) {
+    public init(font: Font? = nil, fill: Fill? = nil, alignment: Alignment? = nil) {
         self.font = font
-        self.fillColor = fillColor
+        self.fill = fill
         self.alignment = alignment
     }
 }

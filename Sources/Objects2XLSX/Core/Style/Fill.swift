@@ -23,6 +23,21 @@ public enum Fill: Equatable, Sendable, Hashable {
     case gradient(GradientType, colors: [Color])
 }
 
+extension Fill: Identifiable {
+    public var id: String {
+        switch self {
+            case .none:
+                "none"
+            case let .solid(color):
+                "solid_\(color.hexString)"
+            case let .pattern(type, fg, bg):
+                "pattern_\(type.rawValue)_\(fg.hexString)_\(bg?.hexString ?? "none")"
+            case .gradient:
+                "gradient_\(UUID().uuidString)" // 复杂情况可以用更详细的ID
+        }
+    }
+}
+
 /// Pattern types for fill
 public enum PatternType: String, CaseIterable, Sendable, Hashable {
     case none

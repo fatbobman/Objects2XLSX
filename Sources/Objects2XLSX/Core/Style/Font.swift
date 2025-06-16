@@ -56,6 +56,14 @@ public struct Font: Equatable, Sendable, Hashable {
     public static let header = Font(size: 11, name: "Calibri", bold: true)
 }
 
+extension Font: Identifiable {
+    public var id: String {
+        let boldStr = bold == true ? "_bold" : ""
+        let colorStr = color?.hexString ?? "default"
+        return "\(name ?? "default")_\(size ?? 12)\(boldStr)_\(colorStr)"
+    }
+}
+
 // MARK: - Font Extensions
 
 extension Font {
