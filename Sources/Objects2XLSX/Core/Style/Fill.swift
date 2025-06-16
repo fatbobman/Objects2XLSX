@@ -52,7 +52,7 @@ extension Fill {
     ///   - blue: The blue component (0-255).
     /// - Returns: A `Fill` instance with the specified solid color.
     public static func solid(red: UInt8, green: UInt8, blue: UInt8) -> Fill {
-        .solid(Color.custom(String(format: "#%02X%02X%02X", red, green, blue)))
+        .solid(Color.rgb(red, green, blue))
     }
 
     /// Create a solid color fill with hex, prfixed with `#`
@@ -61,7 +61,7 @@ extension Fill {
     /// - Returns: A `Fill` instance with the specified solid color.
     /// - Note: The hex code should start with `#` and be 7 characters long (including `#`).
     public static func solid(hex: String) -> Fill {
-        .solid(Color.custom(hex))
+        .solid(Color(hex: hex))
     }
 }
 
@@ -75,15 +75,15 @@ extension Fill {
             case let .solid(color):
                 return """
                     <patternFill patternType="solid">
-                        <fgColor rgb="\(color.hex)"/>
+                        <fgColor rgb="\(color.argbHexString)"/>
                     </patternFill>
                     """
 
             case let .pattern(type, fg, bg):
                 var xml = "<patternFill patternType=\"\(type.rawValue)\">"
-                xml += "<fgColor rgb=\"\(fg.hex)\"/>"
+                xml += "<fgColor rgb=\"\(fg.argbHexString)\"/>"
                 if let bgColor = bg {
-                    xml += "<bgColor rgb=\"\(bgColor.hex)\"/>"
+                    xml += "<bgColor rgb=\"\(bgColor.argbHexString)\"/>"
                 }
                 xml += "</patternFill>"
                 return xml
