@@ -16,13 +16,12 @@ final class StyleRegistor {
     private(set) var numberFormatPool = IdentifiedArrayOf<NumberFormat>()
     private(set) var resolvedStylePool = IdentifiedArrayOf<ResolvedStyle>()
 
-    private func registerFont(_ font: Font?) -> Int? { // TODO: 考虑是返回 nil 还是 0
-        guard let font else { return nil }
+    private func registerFont(_ font: Font?) -> Int? {
+        guard let font else { return 0 }
         if let index = fontPool.ids.firstIndex(of: font.id) {
             return index
         }
-        fontPool.append(font)
-        return fontPool.count - 1
+        return fontPool.append(font).index
     }
 
     private func registerFill(_ fill: Fill?) -> Int? {
@@ -32,8 +31,7 @@ final class StyleRegistor {
         if let index = fillPool.ids.firstIndex(of: fill.id) {
             return index
         }
-        fillPool.append(fill)
-        return fillPool.count - 1
+        return fillPool.append(fill).index
     }
 
     private func registerAlignment(_ alignment: Alignment?) -> Int? {
@@ -41,8 +39,7 @@ final class StyleRegistor {
         if let index = alignmentPool.ids.firstIndex(of: alignment.id) {
             return index
         }
-        alignmentPool.append(alignment)
-        return alignmentPool.count - 1
+        return alignmentPool.append(alignment).index
     }
 
     func registerStyle(_ style: CellStyle?, cellType: Cell.CellType?) -> Int? {
@@ -68,8 +65,7 @@ final class StyleRegistor {
         }
 
         // 插入新样式
-        resolvedStylePool.append(resolved)
-        return resolvedStylePool.count - 1
+        return resolvedStylePool.append(resolved).index
     }
 
     // 根据 CellType 生成对应的数字格式代码
