@@ -1,6 +1,6 @@
 //
-// StyleBase.swift
-// Created by Xu Yang on 2025-06-05.
+// Font.swift
+// Created by Xu Yang on 2025-06-16.
 // Blog: https://fatbobman.com
 // GitHub: https://github.com/fatbobman
 //
@@ -116,55 +116,5 @@ extension Font {
         var newSelf = self
         newSelf.name = name
         return newSelf
-    }
-}
-
-/// A structure that represents the alignment of a cell in an Excel Cell.
-///
-/// `Alignment` is a structure that represents the alignment of a cell in an Excel Cell.
-/// It provides a way to create an alignment with a leading, center, or trailing property.
-public enum Alignment: Equatable, Sendable, Hashable {
-    /// Aligns the text to the left.
-    case leading
-    /// Aligns the text to the center.
-    case center
-    /// Aligns the text to the right.
-    case trailing
-}
-
-/// A structure that represents a color in an Excel Cell.
-///
-/// `Color` is a structure that represents a color in an Excel Cell.
-/// It provides a way to create a color with a hex code.
-public enum Color: Equatable, Sendable, Hashable {
-    case red
-    case blue
-    case green
-    case yellow
-    case purple
-    case orange
-    case brown
-    case gray
-    case black
-    case white
-    case custom(String)
-
-    /// The hex code of the color.
-    ///
-    /// - Returns: The hex code of the color.
-    var hex: String { // TODO: 考虑添加透明度的支持
-        switch self {
-            case .red: "#FF0000"
-            case .blue: "#0000FF"
-            case .green: "#00FF00"
-            case .yellow: "#FFFF00"
-            case .purple: "#800080"
-            case .orange: "#FFA500"
-            case .brown: "#A52A2A"
-            case .gray: "#808080"
-            case .black: "#000000"
-            case .white: "#FFFFFF"
-            case let .custom(hex): hex
-        }
     }
 }
