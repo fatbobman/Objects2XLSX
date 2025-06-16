@@ -13,8 +13,8 @@ final class StyleRegistor {
     private(set) var fontPool: [Font: Int] = [:]
     private(set) var fillPool: [Color: Int] = [:]
     private(set) var alignmentPool: [Alignment: Int] = [:]
+    private(set) var numberFormatPool: [NumberFormat] = []
     private(set) var resolvedStylePool: [ResolvedStyle: Int] = [:]
-    private(set) var numberFormatPool: [String: Int] = [:]
 
     var allResolvedStyles: [ResolvedStyle] {
         resolvedStylePool
@@ -32,6 +32,10 @@ final class StyleRegistor {
 
     var alignments: [Alignment] {
         alignmentPool.sorted { $0.value < $1.value }.map(\.key)
+    }
+
+    var numberFormats: [NumberFormat] {
+        numberFormatPool
     }
 
     private func registerFont(_ font: Font?) -> Int? {
@@ -104,16 +108,14 @@ final class StyleRegistor {
             return builtinId
         }
 
-        // 使用自定义格式
-        guard let formatCode = numberFormat.formatCode else { return nil }
-
-        if let existingId = numberFormatPool[formatCode] {
-            return existingId
+        // 检查是否已注册
+        if let index = numberFormatPool.firstIndex(of: numberFormat) {
+            return 164 + index // 自定义格式从164开始
         }
 
-        let newId = 164 + numberFormatPool.count
-        numberFormatPool[formatCode] = newId
-        return newId
+        // 注册新格式
+        numberFormatPool.append(numberFormat)
+        return 164 + numberFormatPool.count - 1
     }
 }
 
