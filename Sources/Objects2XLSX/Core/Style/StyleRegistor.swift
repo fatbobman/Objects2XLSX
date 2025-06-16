@@ -11,7 +11,7 @@ import Synchronization
 
 final class StyleRegistor {
     private(set) var fontPool: [Font: Int] = [:]
-    private(set) var fillPool: [Color: Int] = [:]
+    private(set) var fillPool: [Fill: Int] = [:]
     private(set) var alignmentPool: [Alignment: Int] = [:]
     private(set) var numberFormatPool: [NumberFormat] = []
     private(set) var resolvedStylePool: [ResolvedStyle: Int] = [:]
@@ -26,7 +26,7 @@ final class StyleRegistor {
         fontPool.sorted { $0.value < $1.value }.map(\.key)
     }
 
-    var fills: [Color] {
+    var fills: [Fill] {
         fillPool.sorted { $0.value < $1.value }.map(\.key)
     }
 
@@ -45,7 +45,7 @@ final class StyleRegistor {
         return fontPool.count - 1
     }
 
-    private func registerFill(_ fill: Color?) -> Int? {
+    private func registerFill(_ fill: Fill?) -> Int? {
         guard let fill else { return nil }
         if let index = fillPool[fill] { return index }
         fillPool[fill] = fillPool.count
