@@ -8,18 +8,23 @@
 
 import Foundation
 
+/// Cell of Sheet.
 public struct Cell: Equatable, Sendable {
+    /// Row of cell.
     public let row: Int
+    /// Column of cell.
     public let column: Int
+    /// Value of cell.
     public let value: CellType
+    /// Style ID of cell.
     public let styleID: Int?
 
-    /// Excel 格式的单元格地址，如 "A1"
+    /// Address of cell in Excel format, such as "A1".
     public var excelAddress: String {
         "\(columnIndexToExcelColumn(column))\(row + 1)"
     }
 
-    /// xml 中 cell 的 value 字段，对应 <v>valueString</v> 标签中的 valueString
+    /// Value string of cell in xml, corresponding to the valueString in the <v>valueString</v> tag.
     var valueString: String {
         switch value {
             case let .string(string):
@@ -41,6 +46,12 @@ public struct Cell: Equatable, Sendable {
         }
     }
 
+    /// Initialize a cell.
+    /// - Parameters:
+    ///   - row: Row of cell.
+    ///   - column: Column of cell.
+    ///   - value: Value of cell.
+    ///   - styleID: Style ID of cell.
     public init(row: Int, column: Int, value: CellType, styleID: Int? = nil) {
         self.row = row
         self.column = column
@@ -50,26 +61,54 @@ public struct Cell: Equatable, Sendable {
 }
 
 extension Cell {
+    /// Type of cell value.
     public enum CellType: Equatable, Sendable {
+        /// String value.
+        /// - Parameter string: String value.
         case string(String?)
+        /// Double value.
+        /// - Parameter double: Double value.
         case double(Double?)
+        /// Int value.
+        /// - Parameter int: Int value.
         case int(Int?)
+        /// Date value.
+        /// - Parameter date: Date value.
+        /// - Parameter timeZone: Time zone.
         case date(Date?, timeZone: TimeZone = TimeZone.current)
+        /// Boolean value.
+        /// - Parameter boolean: Boolean value.
+        /// - Parameter booleanExpressions: Boolean expressions.
+        /// - Parameter caseStrategy: Case strategy.
         case boolean(
             Bool?,
             booleanExpressions: BooleanExpressions = .oneAndZero,
             caseStrategy: CaseStrategy = .upper)
+        /// URL value.
+        /// - Parameter url: URL value.
         case url(URL?)
+        /// Percentage value.
+        /// - Parameter percentage: Percentage value.
+        /// - Parameter precision: Precision.
         case percentage(Double?, precision: Int = 2)
     }
 
+    /// Boolean expressions.
     public enum BooleanExpressions: Equatable, Sendable {
+        /// True and False.
         case trueAndFalse
+        /// T and F.
         case tAndF
+        /// One and Zero.
         case oneAndZero
+        /// Yes and No.
         case yesAndNo
+        /// Custom.
+        /// - Parameter true: True string.
+        /// - Parameter false: False string.
         case custom(true: String, false: String)
 
+        /// True string.
         public var trueString: String {
             switch self {
                 case .trueAndFalse:
@@ -85,6 +124,7 @@ extension Cell {
             }
         }
 
+        /// False string.
         public var falseString: String {
             switch self {
                 case .trueAndFalse:
@@ -101,11 +141,16 @@ extension Cell {
         }
     }
 
+    /// Case strategy.
     public enum CaseStrategy: Equatable, Sendable {
+        /// Uppercase.
         case upper
+        /// Lowercase.
         case lower
+        /// First letter uppercase.
         case firstLetterUpper
 
+        /// Apply case strategy to string.
         func apply(to string: String) -> String {
             switch self {
                 case .upper:

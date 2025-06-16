@@ -1,5 +1,5 @@
 //
-// SheetBuilder.swift
+// ColumnBuilder.swift
 // Created by Xu Yang on 2025-06-06.
 // Blog: https://fatbobman.com
 // GitHub: https://github.com/fatbobman
@@ -29,7 +29,7 @@ public enum ColumnBuilder<ObjectType> {
     public static func buildExpression(_ column: Column<
         ObjectType,
         some Any,
-        some ColumnTypeProtocol
+        some ColumnOutputTypeProtocol
     >)
     -> [AnyColumn<ObjectType>] {
         [AnyColumn(column)]
@@ -49,7 +49,7 @@ public enum ColumnBuilder<ObjectType> {
     public static func buildExpression(_ column: Column<
         ObjectType,
         some Any,
-        some ColumnTypeProtocol
+        some ColumnOutputTypeProtocol
     >?) -> [AnyColumn<ObjectType>] {
         column.map { [AnyColumn($0)] } ?? []
     }

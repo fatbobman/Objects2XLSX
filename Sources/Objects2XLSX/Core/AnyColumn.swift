@@ -18,7 +18,7 @@ public struct AnyColumn<ObjectType> {
     private let _when: (ObjectType) -> Bool
     private let _generateCell: (ObjectType, Int, Int, Int?, Int?, Bool) -> Cell
 
-    public init<InputType>(_ column: Column<ObjectType, InputType, some ColumnTypeProtocol>) {
+    public init<InputType>(_ column: Column<ObjectType, InputType, some ColumnOutputTypeProtocol>) {
         name = column.name
         width = column.width
         bodyStyle = column.bodyStyle
