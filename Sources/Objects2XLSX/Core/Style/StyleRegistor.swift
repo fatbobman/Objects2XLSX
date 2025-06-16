@@ -90,13 +90,24 @@ final class StyleRegistor {
             return builtinId
         }
 
-        // O(1) 查找和插入
+        // Excel 内置的数字格式 ID
+        // 0   -> General（默认）
+        // 1   -> 0
+        // 2   -> 0.00
+        // 9   -> 0%
+        // 10  -> 0.00%
+        // 14  -> m/d/yy
+        // 15  -> d-mmm-yy
+        // 22  -> m/d/yy h:mm
+        // ... 更多内置格式到 163
+        // Excel 要求自定义格式从164开始
+
         if let index = numberFormatPool.ids.firstIndex(of: numberFormat.id) {
             return 164 + index
         }
 
-        numberFormatPool.append(numberFormat)
-        return 164 + numberFormatPool.count - 1
+        let customIndex = numberFormatPool.append(numberFormat).index
+        return 164 + customIndex
     }
 
     init() {
