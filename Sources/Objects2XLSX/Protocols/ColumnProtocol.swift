@@ -9,7 +9,9 @@
 import Foundation
 
 /// Protocol for column.
-/// Define the common operations of column.
+///
+/// `ColumnProtocol` is a protocol that defines the column of a Excel sheet.
+/// It provides a way to create a column with a name, width, body style, header style, and when condition.
 protocol ColumnProtocol<ObjectType> {
     /// Object type.
     associatedtype ObjectType

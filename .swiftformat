@@ -92,8 +92,8 @@
 # 始终标记扩展
 --marktypes always 
 # 始终标记类型
---maxwidth 100 
-# 设置最大宽度为 100 字符
+--maxwidth 200 
+# 设置最大宽度为 200 字符
 --modifierorder 
 # 设置修饰符顺序
 #--nevertrailing 

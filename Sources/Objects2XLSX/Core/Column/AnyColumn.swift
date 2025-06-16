@@ -14,6 +14,20 @@ import Foundation
 /// without knowing their specific type at compile time.
 /// It provides a way to store and manipulate columns of different types in a uniform way.
 ///
+/// You can create an `AnyColumn` from a `Column` instance using the `init` method.
+///
+/// ```swift
+/// let column = Column<MyObject, Double, DoubleColumnType>(name: "My Column", keyPath: \.myDoubleProperty)
+/// let anyColumn = AnyColumn(column)
+/// ```
+///
+/// You can also create an `AnyColumn` from a `Column` instance using the `eraseToAnyColumn` method.
+///
+/// ```swift
+/// let column = Column<MyObject, Double, DoubleColumnType>(name: "My Column", keyPath: \.myDoubleProperty)
+/// let anyColumn = column.eraseToAnyColumn()
+/// ```
+///
 /// - Parameters:
 ///   - ObjectType: The type of object that contains the data to be displayed
 public struct AnyColumn<ObjectType> {
