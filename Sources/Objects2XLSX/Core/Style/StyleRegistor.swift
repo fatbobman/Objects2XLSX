@@ -196,8 +196,10 @@ public enum NumberFormat: Equatable, Sendable, Hashable, Identifiable {
     // 获取内置格式ID（如果有的话）
     var builtinId: Int? {
         switch self {
-            case .percentage:
-                10 // Excel 内置百分比格式
+            case .date:
+                14 // Excel 内置日期格式
+            case .dateTime:
+                22 // Excel 内置日期时间格式
             default:
                 nil
         }
