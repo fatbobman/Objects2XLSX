@@ -9,7 +9,7 @@
 import Foundation
 import IdentifiedCollections
 
-final class StyleRegistor {
+final class StyleRegister {
     private(set) var fontPool = IdentifiedArrayOf<Font>()
     private(set) var fillPool = IdentifiedArrayOf<Fill>()
     private(set) var alignmentPool = IdentifiedArrayOf<Alignment>()

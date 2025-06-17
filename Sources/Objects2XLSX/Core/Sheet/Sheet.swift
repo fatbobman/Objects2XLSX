@@ -48,8 +48,8 @@ public struct Sheet<ObjectType> {
     func makeSheetData(
         with objects: [ObjectType],
         hasHeader: Bool = true,
-        styleRegistor: StyleRegistor,
-        shareStringRegistor: ShareStringRegistor) -> SheetData? // TODO: 返回 SheetData,临时
+        styleRegistor: StyleRegister,
+        shareStringRegistor: ShareStringRegister) -> SheetData? // TODO: 返回 SheetData,临时
     {
         /*
             // 1. 筛选有效列（基于 when 条件和第一个对象）
