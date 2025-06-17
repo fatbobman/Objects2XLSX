@@ -8,7 +8,7 @@
 
 import Foundation
 
-final class ShareStringRegistor {
+final class ShareStringRegister {
     private var stringPool: [String: Int] = [:]
 
     var allStrings: [String] {
