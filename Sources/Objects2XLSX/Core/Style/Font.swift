@@ -51,9 +51,9 @@ public struct Font: Equatable, Sendable, Hashable {
     }
 
     /// The default font.
-    public static let `default` = Font(size: 11, name: "Calibri")
+    public static let `default` = Font(size: 12, name: "Calibri")
     /// The header font.
-    public static let header = Font(size: 11, name: "Calibri", bold: true)
+    public static let header = Font(size: 12, name: "Calibri", bold: true)
 }
 
 extension Font: Identifiable {
@@ -124,5 +124,61 @@ extension Font {
         var newSelf = self
         newSelf.name = name
         return newSelf
+    }
+}
+
+// MARK: - Font XML Generation
+
+extension Font {
+    var xmlContent: String {
+        var xml = "<font>"
+
+        // 字体大小
+        xml += "<sz val=\"\(size ?? 12)\"/>"
+
+        // 颜色处理
+        if let color = color {
+            xml += "<color rgb=\"\(color.argbHexString)\"/>"
+        } else {
+            // 没有指定颜色时，使用主题色（写死）
+            xml += "<color theme=\"1\"/>"
+        }
+
+        // 字体名称
+        xml += "<name val=\"\(name ?? "Calibri")\"/>"
+
+        // 字体族（写死，基于常见字体）
+        let fontFamily = getFontFamily(for: name ?? "Calibri")
+        xml += "<family val=\"\(fontFamily)\"/>"
+
+        // 粗体、斜体等...
+        if let bold = bold, bold {
+            xml += "<b/>"
+        }
+
+        if let italic = italic, italic {
+            xml += "<i/>"
+        }
+
+        if let underline = underline, underline {
+            xml += "<u val=\"single\"/>"
+        }
+
+        xml += "</font>"
+        return xml
+    }
+
+    // 根据字体名称推断字体族
+    private func getFontFamily(for fontName: String) -> Int {
+        switch fontName.lowercased() {
+        case "times", "times new roman", "georgia":
+            return 1  // Roman (衬线)
+        case "calibri", "arial", "helvetica", "tahoma":
+            return 2  // Swiss (无衬线)
+        case "courier", "courier new", "consolas":
+            return 3  // Modern (等宽)
+        default:
+            return 2  // 默认无衬线
+        }
     }
 }

@@ -16,15 +16,19 @@ public struct CellStyle: Equatable, Sendable, Hashable {
     public let fill: Fill?
     /// The alignment of the cell style.
     public let alignment: Alignment?
+    /// The border of the cell style.
+    public let border: Border?
 
     /// Creates a cell style with the given font, fill color, and alignment.
     ///
     /// - Parameter font: The font of the cell style.
     /// - Parameter fillColor: The fill color of the cell style.
     /// - Parameter alignment: The alignment of the cell style.
-    public init(font: Font? = nil, fill: Fill? = nil, alignment: Alignment? = nil) {
+    ///
+    public init(font: Font? = nil, fill: Fill? = nil, alignment: Alignment? = nil, border: Border? = nil) {
         self.font = font
         self.fill = fill
         self.alignment = alignment
+        self.border = border
     }
 }

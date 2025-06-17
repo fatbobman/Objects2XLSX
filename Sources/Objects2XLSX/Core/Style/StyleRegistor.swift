@@ -13,14 +13,12 @@ final class StyleRegistor {
     private(set) var fontPool = IdentifiedArrayOf<Font>()
     private(set) var fillPool = IdentifiedArrayOf<Fill>()
     private(set) var alignmentPool = IdentifiedArrayOf<Alignment>()
+    private(set) var borderPool = IdentifiedArrayOf<Border>()
     private(set) var numberFormatPool = IdentifiedArrayOf<NumberFormat>()
     private(set) var resolvedStylePool = IdentifiedArrayOf<ResolvedStyle>()
 
     private func registerFont(_ font: Font?) -> Int? {
         guard let font else { return 0 }
-        if let index = fontPool.ids.firstIndex(of: font.id) {
-            return index
-        }
         return fontPool.append(font).index
     }
 
@@ -28,18 +26,17 @@ final class StyleRegistor {
         guard let fill else {
             return 0
         }
-        if let index = fillPool.ids.firstIndex(of: fill.id) {
-            return index
-        }
         return fillPool.append(fill).index
     }
 
     private func registerAlignment(_ alignment: Alignment?) -> Int? {
-        guard let alignment else { return 0 }
-        if let index = alignmentPool.ids.firstIndex(of: alignment.id) {
-            return index
-        }
+        guard let alignment else { return nil }
         return alignmentPool.append(alignment).index
+    }
+
+    private func registerBorder(_ border: Border?) -> Int? {
+        guard let border else { return 0 }
+        return borderPool.append(border).index
     }
 
     func registerStyle(_ style: CellStyle?, cellType: Cell.CellType?) -> Int? {
@@ -51,18 +48,15 @@ final class StyleRegistor {
         let fontID = registerFont(style.font)
         let fillID = registerFill(style.fill)
         let alignmentID = registerAlignment(style.alignment)
+        let borderID = registerBorder(style.border)
 
         // 创建 ResolvedStyle
         let resolved = ResolvedStyle(
             fontID: fontID,
             fillID: fillID,
             alignmentID: alignmentID,
-            numFmtId: numFmtId)
-
-        // O(1) 查找
-        if let index = resolvedStylePool.ids.firstIndex(of: resolved.id) {
-            return index
-        }
+            numFmtId: numFmtId,
+            borderID: borderID)
 
         // 插入新样式
         return resolvedStylePool.append(resolved).index
@@ -111,21 +105,23 @@ final class StyleRegistor {
     }
 
     init() {
+        // 预注册默认填充
+        fillPool.append(.none)
+
+        // 预注册默认字体
+        fontPool.append(Font.default)
+
+        // 预注册默认边框
+        borderPool.append(.none)
+
         // 预注册默认样式（索引0，Excel要求）
         let defaultStyle = ResolvedStyle(
             fontID: 0,
             fillID: 0,
             alignmentID: nil,
-            numFmtId: nil)
+            numFmtId: nil,
+            borderID: 0)
         resolvedStylePool.append(defaultStyle)
-
-        // 预注册默认填充
-        fillPool.append(.none)
-        fillPool.append(.none)
-
-        // 预注册默认字体
-        let defaultFont = Font(size: 12, name: "Calibri")
-        fontPool.append(defaultFont)
     }
 }
 
@@ -134,14 +130,16 @@ struct ResolvedStyle: Hashable, Sendable, Identifiable {
     let fillID: Int?
     let alignmentID: Int?
     let numFmtId: Int?
+    let borderID: Int?
 
     var id: String {
         let numFmtStr = numFmtId.map(String.init) ?? "default"
         let fontStr = fontID.map(String.init) ?? "default"
         let fillStr = fillID.map(String.init) ?? "default"
         let alignStr = alignmentID.map(String.init) ?? "default"
+        let borderStr = borderID.map(String.init) ?? "default"
 
-        return "\(numFmtStr)_\(fontStr)_\(fillStr)_\(alignStr)"
+        return "\(numFmtStr)_\(fontStr)_\(fillStr)_\(alignStr)_\(borderStr)"
     }
 }
 

@@ -27,7 +27,7 @@ public struct Color: Equatable, Sendable, Hashable {
         guard hexString.count == 6,
               let red = UInt8(hexString.prefix(2), radix: 16),
               let green = UInt8(hexString.dropFirst(2).prefix(2), radix: 16),
-              let blue = UInt8(hexString.dropLast(2), radix: 16)
+              let blue = UInt8(hexString.suffix(2), radix: 16)
         else {
             fatalError("Invalid hex color string")
         }
@@ -61,4 +61,19 @@ public enum ColorAlpha: UInt8, CaseIterable, Sendable, Hashable, Equatable {
     case opaque = 255 // 不透明
     case transparent = 0 // 透明
     case semiTransparent = 128 // 半透明
+}
+
+// 预设颜色
+
+extension Color {
+    public static let black = Color(red: 0, green: 0, blue: 0)
+    public static let white = Color(red: 255, green: 255, blue: 255)
+    public static let red = Color(red: 255, green: 0, blue: 0)
+    public static let green = Color(red: 0, green: 255, blue: 0)
+    public static let blue = Color(red: 0, green: 0, blue: 255)
+    public static let yellow = Color(red: 255, green: 255, blue: 0)
+    public static let cyan = Color(red: 0, green: 255, blue: 255)
+    public static let magenta = Color(red: 255, green: 0, blue: 255)
+    public static let gray = Color(red: 128, green: 128, blue: 128)
+    public static let lightGray = Color(red: 211, green: 211, blue: 211)
 }
