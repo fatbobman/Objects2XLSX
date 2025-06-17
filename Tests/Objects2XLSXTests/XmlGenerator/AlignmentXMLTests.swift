@@ -10,7 +10,7 @@ import Foundation
 @testable import Objects2XLSX
 import Testing
 
-@Suite("AlignmentXMLTests")
+@Suite("AlignmentXMLTests",.tags(.xml))
 struct AlignmentXMLTests {
     @Test("Empty Alignment XML Generation")
     func emptyAlignmentXMLGeneration() async throws {
@@ -326,3 +326,4 @@ struct AlignmentXMLTests {
         #expect(!mixedXML.contains("textRotation="), "Expected invalid rotation to be ignored")
     }
 }
+

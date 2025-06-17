@@ -10,7 +10,7 @@ import Foundation
 @testable import Objects2XLSX
 import Testing
 
-@Suite("Font XML Generator Tests")
+@Suite("Font XML Generator Tests",.tags(.xml))
 struct FontXMLTests {
     @Test("Complete Font XML Generation")
     func completeFontXMLGeneration() async throws {

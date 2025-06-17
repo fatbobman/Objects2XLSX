@@ -10,7 +10,7 @@ import Foundation
 @testable import Objects2XLSX
 import Testing
 
-@Suite("Fill XML Generator Tests")
+@Suite("Fill XML Generator Tests",.tags(.xml))
 struct FillXMLTests {
     @Test("None Fill XML Generation")
     func noneFillXMLGeneration() async throws {
