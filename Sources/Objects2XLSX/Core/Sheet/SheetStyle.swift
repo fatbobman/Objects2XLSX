@@ -136,6 +136,12 @@ public struct SheetStyle: Equatable, Hashable, Sendable {
     /// 数据区域边框设置
     public var dataAreaBorder: DataAreaBorder?
 
+    /// 表头样式
+    public var columnHeaderStyle: CellStyle?
+
+    /// 表体样式
+    public var columnBodyStyle: CellStyle?
+
     public init() {}
 }
 

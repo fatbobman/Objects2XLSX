@@ -12,12 +12,13 @@ import IdentifiedCollections
 
 /// A centralized registry that manages Excel style components and generates the styles.xml for XLSX files.
 ///
-/// `StyleRegistor` acts as the style management hub for Excel document generation, handling the collection,
+/// `StyleRegister` acts as the style management hub for Excel document generation, handling the collection,
 /// deduplication, and XML serialization of all style elements including fonts, fills, borders, alignments,
 /// and number formats.
+/// 当创建 Cell 后，会将每个 Cell 的 Style 注册在此，以实现去重，并统一生成 styles.xml
 ///
 /// ## Architecture
-/// The registor maintains separate pools for each style component:
+/// The register maintains separate pools for each style component:
 /// - **Font Pool**: Typography settings (size, family, weight, color)
 /// - **Fill Pool**: Background colors, patterns, and gradients
 /// - **Border Pool**: Cell border styles and colors for all sides
