@@ -110,7 +110,7 @@ final class StyleRegister {
     ///   - cellType: The optional `Cell.CellType` used to generate number formats.
     /// - Returns: The index of the resolved style in the pool, or nil if `style` is nil.
     /// - Note: Resolved styles reference component styles by their assigned IDs.
-    func registerStyle(_ style: CellStyle?, cellType: Cell.CellType?) -> Int? {
+    func registerCellStyle(_ style: CellStyle?, cellType: Cell.CellType?) -> Int? {
         guard let style else { return nil }
 
         // Register individual style components

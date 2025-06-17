@@ -16,7 +16,7 @@ struct StyleRegistorTests {
     func styleRegister() async throws {
         let styleRegister = StyleRegister()
         let cellStyle = CellStyle(font: .header, fill: .solid(.blue), alignment: .center, border: nil)
-        let cellStyleID = styleRegister.registerStyle(cellStyle, cellType: .int(10))
+        let cellStyleID = styleRegister.registerCellStyle(cellStyle, cellType: .int(10))
         print(cellStyleID ?? "No style ID")
         print(styleRegister.fontPool)
     }
