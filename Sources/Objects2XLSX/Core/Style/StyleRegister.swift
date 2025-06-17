@@ -56,7 +56,7 @@ import IdentifiedCollections
 /// ## Excel Compatibility
 /// The generated XML follows the Office Open XML specification and includes all required
 /// default elements that Excel expects, ensuring maximum compatibility across Excel versions.
-final class StyleRegistor {
+final class StyleRegister {
     /// Pool storing all registered fonts used in styles.
     private(set) var fontPool = IdentifiedArrayOf<Font>()
     /// Pool storing all registered fill patterns used in styles.

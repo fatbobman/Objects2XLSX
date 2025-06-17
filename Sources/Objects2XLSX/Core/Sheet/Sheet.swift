@@ -48,7 +48,7 @@ public struct Sheet<ObjectType> {
     func makeSheetData(
         with objects: [ObjectType],
         hasHeader: Bool = true,
-        styleRegistor: StyleRegister,
+        styleRegister: StyleRegister,
         shareStringRegistor: ShareStringRegister) -> SheetData? // TODO: 返回 SheetData,临时
     {
         /*
