@@ -34,10 +34,10 @@ public struct SheetData {
     public let sheetDefaults: SheetDefaults
 
     /// 引用的样式注册器（用于生成 styles.xml）
-    private let styleRegistor: StyleRegister
+    private let styleRegister: StyleRegister
 
     /// 引用的共享字符串注册器（用于生成 sharedStrings.xml）
-    private let shareStringRegistor: ShareStringRegister
+    private let shareStringRegister: ShareStringRegister
 }
 
 public struct ResolvedColumn {
