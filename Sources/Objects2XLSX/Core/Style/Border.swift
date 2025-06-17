@@ -118,7 +118,6 @@ extension Border.Side: Identifiable {
 // MARK: - XML Generation
 
 extension Border {
-    /// Generate XML for this border
     var xmlContent: String {
         var xml = "<border>"
 
@@ -158,7 +157,7 @@ extension Border {
             xml += "<bottom/>"
         }
 
-        // Diagonal border (optional)
+        // Diagonal border
         if let diagonal {
             xml += "<diagonal style=\"\(diagonal.style.rawValue)\">"
             xml += "<color rgb=\"\(diagonal.color.argbHexString)\"/>"
