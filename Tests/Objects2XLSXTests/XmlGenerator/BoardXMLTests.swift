@@ -25,8 +25,6 @@ struct BorderXMLTests {
         #expect(xml.contains("<bottom/>"), "Expected empty bottom border")
         #expect(xml.contains("<diagonal/>"), "Expected empty diagonal border")
         #expect(!xml.contains("style="), "Expected no style attributes for none border")
-
-        print("None border XML:", xml)
     }
 
     @Test("All Sides Border XML Generation")
@@ -49,8 +47,6 @@ struct BorderXMLTests {
 
         // 对角线应该为空
         #expect(xml.contains("<diagonal/>"), "Expected empty diagonal border")
-
-        print("All sides border XML:", xml)
     }
 
     @Test("Custom Single Side Border")
@@ -72,9 +68,6 @@ struct BorderXMLTests {
         #expect(topXML.contains("<top style=\"double\">"), "Expected double top border")
         #expect(topXML.contains("FF0000FF"), "Expected blue color")
         #expect(topXML.contains("<left/>"), "Expected empty left border")
-
-        print("Left border XML:", leftXML)
-        print("Top border XML:", topXML)
     }
 
     @Test("Different Border Styles")
@@ -94,8 +87,6 @@ struct BorderXMLTests {
             #expect(
                 xml.contains("<color rgb=\"FF000000\"/>"),
                 "Expected black color for \(style.rawValue)")
-
-            print("\(style.rawValue) border XML:", xml)
         }
     }
 
@@ -114,7 +105,6 @@ struct BorderXMLTests {
             let xml = border.xmlContent
 
             #expect(xml.contains(expectedHex), "Expected \(name) color as \(expectedHex)")
-            print("\(name) border XML:", xml)
         }
     }
 
@@ -132,8 +122,6 @@ struct BorderXMLTests {
         // 检查灰色（假设是 #808080）
         let grayCount = xml.components(separatedBy: "color rgb=").count - 1
         #expect(grayCount == 4, "Expected 4 gray colors for outline")
-
-        print("Outline border XML:", xml)
     }
 
     @Test("Horizontal and Vertical Borders")
@@ -155,9 +143,6 @@ struct BorderXMLTests {
         #expect(vXML.contains("<right style=\"dotted\">"), "Expected dotted right border")
         #expect(vXML.contains("<top/>"), "Expected empty top border")
         #expect(vXML.contains("<bottom/>"), "Expected empty bottom border")
-
-        print("Horizontal border XML:", hXML)
-        print("Vertical border XML:", vXML)
     }
 
     @Test("Diagonal Border")
@@ -171,8 +156,6 @@ struct BorderXMLTests {
         #expect(xml.contains("<right/>"), "Expected empty right border")
         #expect(xml.contains("<top/>"), "Expected empty top border")
         #expect(xml.contains("<bottom/>"), "Expected empty bottom border")
-
-        print("Diagonal border XML:", xml)
     }
 
     @Test("Mixed Border Styles")
@@ -195,8 +178,6 @@ struct BorderXMLTests {
         #expect(xml.contains("FF0000FF"), "Expected blue color")
         #expect(xml.contains("FF00FF00"), "Expected green color")
         #expect(xml.contains("FF000000"), "Expected black color")
-
-        print("Mixed border XML:", xml)
     }
 
     @Test("Border Identifiable")
@@ -209,10 +190,6 @@ struct BorderXMLTests {
         #expect(border1.id == border2.id, "Expected identical borders to have same ID")
         #expect(border1.id != border3.id, "Expected different style borders to have different IDs")
         #expect(border1.id != border4.id, "Expected different color borders to have different IDs")
-
-        print("Border1 ID:", border1.id)
-        print("Border3 ID:", border3.id)
-        print("Border4 ID:", border4.id)
     }
 
     @Test("Border XML Structure Validation")
@@ -239,8 +216,6 @@ struct BorderXMLTests {
             #expect(xml.contains("<top"), "Expected top element")
             #expect(xml.contains("<bottom"), "Expected bottom element")
             #expect(xml.contains("<diagonal"), "Expected diagonal element")
-
-            print("Border XML structure valid:", xml)
         }
     }
 
@@ -262,9 +237,6 @@ struct BorderXMLTests {
 
         #expect(side1.id == side2.id, "Expected identical sides to have same ID")
         #expect(side1.id != side3.id, "Expected different sides to have different IDs")
-
-        print("Side1 ID:", side1.id)
-        print("Side3 ID:", side3.id)
     }
 
     @Test("Border Convenience Methods Coverage")
@@ -300,6 +272,11 @@ struct BorderXMLTests {
         #expect(vertical.top == nil, "Expected vertical top to be nil")
         #expect(vertical.bottom == nil, "Expected vertical bottom to be nil")
 
-        print("All convenience methods work correctly")
+        // 验证 outline
+        #expect(outline.left?.style == .medium, "Expected outline left to be medium")
+        #expect(outline.right?.style == .medium, "Expected outline right to be medium")
+        #expect(outline.top?.style == .medium, "Expected outline top to be medium")
+        #expect(outline.bottom?.style == .medium, "Expected outline bottom to be medium")
+        #expect(outline.diagonal == nil, "Expected outline diagonal to be nil")
     }
 }

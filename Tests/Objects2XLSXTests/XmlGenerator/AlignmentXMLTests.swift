@@ -290,9 +290,7 @@ struct AlignmentXMLTests {
         for alignment in alignments {
             let xml = alignment.xmlContent
 
-            if xml.isEmpty {
-                print("Empty alignment (uses Excel defaults)")
-            } else {
+            if !xml.isEmpty {
                 // 检查XML结构
                 #expect(xml.hasPrefix("<alignment "), "Expected XML to start with <alignment ")
                 #expect(xml.hasSuffix("/>"), "Expected XML to be self-closing")
