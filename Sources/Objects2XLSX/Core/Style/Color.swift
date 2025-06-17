@@ -58,9 +58,11 @@ extension Color {
 
 /// 透明度
 public enum ColorAlpha: UInt8, CaseIterable, Sendable, Hashable, Equatable {
-    case opaque = 255 // 不透明
-    case transparent = 0 // 透明
-    case semiTransparent = 128 // 半透明
+    case transparent = 0 // 完全透明
+    case light = 64 // 很淡 (25%)
+    case medium = 128 // 半透明 (50%)
+    case strong = 192 // 略透明 (75%)
+    case opaque = 255 // 不透明 (100%)
 }
 
 // 预设颜色

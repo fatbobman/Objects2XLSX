@@ -39,7 +39,7 @@ extension Fill: Identifiable {
 }
 
 /// Pattern types for fill
-public enum PatternType: String, CaseIterable, Sendable, Hashable {
+public enum PatternType: String, CaseIterable, Sendable, Hashable, Equatable {
     case none
     case solid
     case gray125
@@ -50,7 +50,12 @@ public enum PatternType: String, CaseIterable, Sendable, Hashable {
     case darkUp
     case darkGrid
     case darkTrellis
-    // 可以根据需要添加更多
+    case lightHorizontal
+    case lightVertical
+    case lightDown
+    case lightUp
+    case lightGrid
+    case lightTrellis
 }
 
 /// Gradient types (future use)
@@ -60,6 +65,12 @@ public enum GradientType: Sendable, Hashable {
 }
 
 extension Fill {
+    /// Create default fills required by Excel
+    static let defaultFills: [Fill] = [
+        .none, // index 0: Excel requires at least one fill
+        .none, // index 1: transparent fill
+    ]
+
     /// Create a solid color fill with RGB values
     /// - Parameters:
     ///   - red: The red component (0-255).
@@ -85,27 +96,45 @@ extension Fill {
     var xmlContent: String {
         switch self {
             case .none:
-                return "<patternFill patternType=\"none\"/>"
+                return "<fill><patternFill patternType=\"none\"/></fill>"
 
             case let .solid(color):
                 return """
-                    <patternFill patternType="solid">
-                        <fgColor rgb="\(color.argbHexString)"/>
-                    </patternFill>
+                    <fill>
+                        <patternFill patternType="solid">
+                            <fgColor rgb="\(color.argbHexString)"/>
+                        </patternFill>
+                    </fill>
                     """
 
-            case let .pattern(type, fg, bg):
-                var xml = "<patternFill patternType=\"\(type.rawValue)\">"
-                xml += "<fgColor rgb=\"\(fg.argbHexString)\"/>"
-                if let bgColor = bg {
+            case let .pattern(type, foreground, background):
+                var xml = "<fill><patternFill patternType=\"\(type.rawValue)\">"
+                xml += "<fgColor rgb=\"\(foreground.argbHexString)\"/>"
+                if let bgColor = background {
                     xml += "<bgColor rgb=\"\(bgColor.argbHexString)\"/>"
                 }
-                xml += "</patternFill>"
+                xml += "</patternFill></fill>"
                 return xml
 
-            case .gradient:
-                // 未来实现渐变填充
-                return "<patternFill patternType=\"none\"/>"
+            case let .gradient(type, colors):
+                // 渐变填充的实现（未来功能）
+                var xml = "<fill><gradientFill"
+                switch type {
+                    case let .linear(angle):
+                        xml += " degree=\"\(angle)\""
+                    case .radial:
+                        xml += " type=\"path\""
+                }
+                xml += ">"
+
+                // 添加渐变色点
+                for (index, color) in colors.enumerated() {
+                    let position = colors.count > 1 ? Double(index) / Double(colors.count - 1) : 0.0
+                    xml += "<stop position=\"\(position)\"><color rgb=\"\(color.argbHexString)\"/></stop>"
+                }
+
+                xml += "</gradientFill></fill>"
+                return xml
         }
     }
 }
