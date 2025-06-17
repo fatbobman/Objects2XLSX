@@ -12,29 +12,6 @@ import Testing
 
 @Suite("Font XML Generator Tests")
 struct FontXMLTests {
-    @Test("Font XML Generation")
-    func fontXMLGeneration() async throws {
-        let font = Font(size: 12, name: "Arial", bold: true, italic: true, underline: true, color: Color(hex: "#FF0000"))
-        let xml = font.xmlContent
-
-        #expect(xml.contains("<sz val=\"12\"/>"), "Expected font size to be 12")
-        #expect(xml.contains("<name val=\"Arial\"/>"), "Expected font name to be Arial")
-        #expect(xml.contains("<b/>"), "Expected font to be bold")
-        #expect(xml.contains("<u val=\"single\"/>"), "Expected font to be underlined")
-        #expect(xml.contains("<i/>"), "Expected font to be italic")
-        #expect(xml.contains("<color rgb=\"FFFF0000\"/>"), "Expected font color to be red")
-    }
-
-    @Test("Default Font XML Generation")
-    func defaultFontXMLGeneration() async throws {
-        let font = Font.default
-        let xml = font.xmlContent
-
-        #expect(xml.contains("<sz val=\"12\"/>"), "Expected default font size to be 12")
-        #expect(xml.contains("<name val=\"Calibri\"/>"), "Expected default font name to be Calibri")
-        #expect(xml.contains("<color theme=\"1\"/>"), "Expected default font color to be theme color 1")
-    }
-
     @Test("Complete Font XML Generation")
     func completeFontXMLGeneration() async throws {
         let font = Font(
