@@ -23,12 +23,24 @@ public final class Book {
         shareStringRegister = ShareStringRegister()
     }
 
+    public convenience init(styles: BookStyle, @SheetBuilder sheets: () -> [AnySheet]) {
+        self.init(styles: styles, sheets: sheets())
+    }
+
     public func append(sheet: AnySheet) {
         sheets.append(sheet)
     }
 
     public func append(sheets: [AnySheet]) {
         self.sheets.append(contentsOf: sheets)
+    }
+
+    public func append<ObjectType>(sheet: Sheet<ObjectType>) {
+        sheets.append(sheet.eraseToAnySheet())
+    }
+
+    public func append(@SheetBuilder sheets: () -> [AnySheet]) {
+        self.sheets.append(contentsOf: sheets())
     }
 
     public func write(to url: URL) throws {

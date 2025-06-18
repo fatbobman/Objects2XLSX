@@ -86,6 +86,11 @@ public final class Sheet<ObjectType>: SheetProtocol {
           */
         nil
     }
+
+    /// Converts the sheet to a type-erased AnySheet
+    public func eraseToAnySheet() -> AnySheet {
+        AnySheet(self)
+    }
 }
 
 // MARK: Modifiers
