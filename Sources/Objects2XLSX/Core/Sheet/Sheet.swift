@@ -13,7 +13,7 @@ import Foundation
 /// 注意事项：Sheet 并非线程安全的，Book、Sheet 应该执行在 ObjectType 的同一个线程上。
 /// 比如，如果你通过 Core Data 获取的数据，它应该在数据所在上下文环境中执行
 /// SwiftData 的话，应该在获取数据的 ModelActor 中执行
-public final class Sheet<ObjectType> {
+public final class Sheet<ObjectType>: SheetProtocol {
     public let name: String
     public let columns: [AnyColumn<ObjectType>]
     public var hasHeader: Bool
