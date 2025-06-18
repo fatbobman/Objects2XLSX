@@ -19,3 +19,22 @@ public struct Row {
         self.height = height
     }
 }
+
+extension Row {
+    public func generateXML() -> String {
+        var xml = "<row r=\"\(index)\""
+
+        if let height {
+            xml += " ht=\"\(height)\" customHeight=\"1\""
+        }
+
+        xml += ">"
+
+        for cell in cells {
+            xml += cell.generateXML()
+        }
+
+        xml += "</row>"
+        return xml
+    }
+}

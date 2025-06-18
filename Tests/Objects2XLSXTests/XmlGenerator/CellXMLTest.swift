@@ -168,6 +168,100 @@ struct CellXMLTest {
         #expect(xml == expected)
     }
 
+    @Test("All cell types with nil values")
+    func allCellTypesWithNilValues() throws {
+        // 字符串类型 - nil
+        let stringCell = Cell(row: 10, column: 1, value: .string(nil))
+        let stringXML = stringCell.generateXML()
+        let expectedString = "<c r=\"A10\"><is><t></t></is></c>"
+        #expect(stringXML == expectedString)
+
+        // 整数类型 - nil
+        let intCell = Cell(row: 10, column: 2, value: .int(nil))
+        let intXML = intCell.generateXML()
+        let expectedInt = "<c r=\"B10\"><v></v></c>"
+        #expect(intXML == expectedInt)
+
+        // 浮点数类型 - nil
+        let doubleCell = Cell(row: 10, column: 3, value: .double(nil))
+        let doubleXML = doubleCell.generateXML()
+        let expectedDouble = "<c r=\"C10\"><v></v></c>"
+        #expect(doubleXML == expectedDouble)
+
+        // 日期类型 - nil
+        let dateCell = Cell(row: 10, column: 4, value: .date(nil))
+        let dateXML = dateCell.generateXML()
+        let expectedDate = "<c r=\"D10\"><v></v></c>"
+        #expect(dateXML == expectedDate)
+
+        // 布尔类型 - nil
+        let boolCell = Cell(row: 10, column: 5, value: .boolean(nil))
+        let boolXML = boolCell.generateXML()
+        let expectedBool = "<c r=\"E10\"><is><t></t></is></c>"
+        #expect(boolXML == expectedBool)
+
+        // URL类型 - nil
+        let urlCell = Cell(row: 10, column: 6, value: .url(nil))
+        let urlXML = urlCell.generateXML()
+        let expectedURL = "<c r=\"F10\"><is><t></t></is></c>"
+        #expect(urlXML == expectedURL)
+
+        // 百分比类型 - nil
+        let percentageCell = Cell(row: 10, column: 7, value: .percentage(nil))
+        let percentageXML = percentageCell.generateXML()
+        let expectedPercentage = "<c r=\"G10\"><v></v></c>"
+        #expect(percentageXML == expectedPercentage)
+    }
+
+    @Test("Nil values with styles")
+    func nilValuesWithStyles() throws {
+        let cell = Cell(
+            row: 11,
+            column: 1,
+            value: .int(nil),
+            styleID: 5)
+
+        let xml = cell.generateXML()
+        let expected = "<c r=\"A11\" s=\"5\"><v></v></c>"
+
+        #expect(xml == expected)
+    }
+
+    @Test("Nil values with shared strings")
+    func nilValuesWithSharedStrings() throws {
+        let cell = Cell(
+            row: 12,
+            column: 1,
+            value: .string(nil),
+            styleID: 3,
+            sharedStringID: 0)
+
+        let xml = cell.generateXML()
+        let expected = "<c r=\"A12\" s=\"3\"><v>0</v></c>"
+
+        #expect(xml == expected)
+    }
+
+    @Test("Mixed nil and non-nil values in row")
+    func mixedNilAndNonNilValues() throws {
+        let cells = [
+            Cell(row: 13, column: 1, value: .string("Name")),
+            Cell(row: 13, column: 2, value: .string(nil)),
+            Cell(row: 13, column: 3, value: .int(25)),
+            Cell(row: 13, column: 4, value: .int(nil)),
+            Cell(row: 13, column: 5, value: .double(3.14)),
+            Cell(row: 13, column: 6, value: .double(nil)),
+        ]
+
+        let row = Row(index: 13, cells: cells)
+        let xml = row.generateXML()
+
+        let expected =
+            "<row r=\"13\"><c r=\"A13\"><is><t>Name</t></is></c><c r=\"B13\"><is><t></t></is></c><c r=\"C13\"><v>25</v></c><c r=\"D13\"><v></v></c><c r=\"E13\"><v>3.14</v></c><c r=\"F13\"><v></v></c></row>"
+
+        #expect(xml == expected)
+    }
+
     @Test("Boolean expressions")
     func testBooleanExpressions() throws {
         let trueCell = Cell(
