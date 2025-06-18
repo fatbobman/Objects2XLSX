@@ -9,6 +9,7 @@
 import Foundation
 
 /// Cell of Sheet.
+/// 在 Excel 中，行和列都是从 1 开始计数的，因此 row 和 column 都是从 1 开始。
 public struct Cell: Equatable, Sendable {
     /// Row of cell.
     public let row: Int
@@ -18,10 +19,12 @@ public struct Cell: Equatable, Sendable {
     public let value: CellType
     /// Style ID of cell.
     public let styleID: Int?
+    /// Shared string ID of cell.
+    public let sharedStringID: Int?
 
     /// Address of cell in Excel format, such as "A1".
     public var excelAddress: String {
-        "\(columnIndexToExcelColumn(column))\(row + 1)"
+        "\(columnIndexToExcelColumn(column))\(row)"
     }
 
     /// Initialize a cell.
@@ -34,12 +37,55 @@ public struct Cell: Equatable, Sendable {
         row: Int,
         column: Int,
         value: CellType,
-        styleID: Int? = nil)
+        styleID: Int? = nil,
+        sharedStringID: Int? = nil)
     {
         self.row = row
         self.column = column
         self.value = value
         self.styleID = styleID
+        self.sharedStringID = sharedStringID
+    }
+}
+
+extension Cell {
+    func generateXML() -> String {
+        var xml = "<c r=\"\(excelAddress)\""
+
+        if let styleID {
+            xml += " s=\"\(styleID)\""
+        }
+
+        xml += ">"
+
+        // 根据 CellType 生成正确的值格式
+        switch value {
+            case let .string(stringValue):
+                if let sharedStringID {
+                    // 使用共享字符串
+                    xml += "<v>\(sharedStringID)</v>"
+                } else {
+                    // 直接使用字符串值
+                    xml += "<is><t>\(stringValue ?? "")</t></is>"
+                }
+            case let .url(url):
+                if let sharedStringID {
+                    // 使用共享字符串
+                    xml += "<v>\(sharedStringID)</v>"
+                } else {
+                    // 直接使用 URL 字符串值
+                    xml += "<is><t>\(url?.absoluteString ?? "")</t></is>"
+                }
+            case .boolean:
+                // 布尔值直接使用 valueString，总是内联
+                xml += "<is><t>\(value.valueString)</t></is>"
+            default:
+                // 其他类型都使用 valueString
+                xml += "<v>\(value.valueString)</v>"
+        }
+
+        xml += "</c>"
+        return xml
     }
 }
 
