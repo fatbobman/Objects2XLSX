@@ -116,6 +116,21 @@ struct SheetXMLTest {
         #expect(xml.contains("<sheetViews><sheetView workbookViewId=\"0\" showGridLines=\"0\"/></sheetViews>"))
     }
 
+    @Test("Sheet XML with hidden gridlines and freeze panes")
+    func sheetXMLWithHiddenGridAndFreeze() throws {
+        // 设置隐藏网格线和冻结前两列、前三行
+        let style = SheetStyle()
+            .showGridlines(false)
+            .freezePanes(.freeze(rows: 3, columns: 2))
+        let sheetXML = SheetXML(name: "TestSheet", rows: [], style: style)
+        let xml = sheetXML.generateXML()
+
+        // 检查 sheetView 属性和 pane 子元素
+        #expect(xml.contains("<sheetViews><sheetView workbookViewId=\"0\" showGridLines=\"0\">"))
+        #expect(xml.contains("<pane xSplit=\"2\" ySplit=\"3\" topLeftCell=\"C4\" activePane=\"topLeft\" state=\"frozen\"/>"))
+        #expect(xml.contains("</sheetView></sheetViews>"))
+    }
+
     @Test("Sheet XML with all properties combined")
     func sheetXMLWithAllProperties() throws {
         var style = SheetStyle()

@@ -54,14 +54,14 @@ struct SheetXML {
             xml += generateSheetFormatXML(style)
         }
 
+        // 合并 sheetViews 相关设置
+        if let style {
+            xml += generateSheetViewsXML(style)
+        }
+
         // 添加列设置（可选）
         if let style, !style.columnWidths.isEmpty {
             xml += generateColumnsXML(style)
-        }
-
-        // 添加冻结窗格设置（可选）
-        if let style, let freezePanes = style.freezePanes {
-            xml += generateFreezePanesXML(freezePanes)
         }
 
         // 添加工作表数据
@@ -72,6 +72,35 @@ struct SheetXML {
         xml += "</sheetData>"
 
         return xml
+    }
+
+    /// 生成 sheetViews（合并冻结、缩放、网格线等设置）
+    private func generateSheetViewsXML(_ style: SheetStyle) -> String {
+        var attributes = "workbookViewId=\"0\""
+        if !style.showGridlines {
+            attributes += " showGridLines=\"0\""
+        }
+        if let zoom = style.zoom {
+            attributes += " zoomScale=\"\(zoom.scale)\""
+        }
+
+        var innerXML = ""
+        if let freezePanes = style.freezePanes {
+            if freezePanes.freezeTopRow {
+                innerXML += "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>"
+            } else if freezePanes.freezeFirstColumn {
+                innerXML += "<pane xSplit=\"1\" topLeftCell=\"B1\" activePane=\"topRight\" state=\"frozen\"/>"
+            } else if freezePanes.frozenRows > 0 || freezePanes.frozenColumns > 0 {
+                let topLeftCell = "\(columnIndexToExcelColumn(freezePanes.frozenColumns + 1))\(freezePanes.frozenRows + 1)"
+                innerXML += "<pane xSplit=\"\(freezePanes.frozenColumns)\" ySplit=\"\(freezePanes.frozenRows)\" topLeftCell=\"\(topLeftCell)\" activePane=\"topLeft\" state=\"frozen\"/>"
+            }
+        }
+
+        if innerXML.isEmpty {
+            return "<sheetViews><sheetView \(attributes)/></sheetViews>"
+        } else {
+            return "<sheetViews><sheetView \(attributes)>\(innerXML)</sheetView></sheetViews>"
+        }
     }
 
     /// 生成工作表格式 XML
@@ -88,11 +117,6 @@ struct SheetXML {
 
         xml += "/>"
 
-        // 添加网格线设置
-        if !style.showGridlines {
-            xml += "<sheetViews><sheetView workbookViewId=\"0\" showGridLines=\"0\"/></sheetViews>"
-        }
-
         return xml
     }
 
@@ -105,33 +129,6 @@ struct SheetXML {
         }
 
         xml += "</cols>"
-        return xml
-    }
-
-    /// 生成冻结窗格 XML
-    private func generateFreezePanesXML(_ freezePanes: SheetStyle.FreezePanes) -> String {
-        var xml = "<sheetViews><sheetView workbookViewId=\"0\""
-
-        // 添加缩放设置
-        if let zoom = style?.zoom {
-            xml += " zoomScale=\"\(zoom.scale)\""
-        }
-
-        xml += ">"
-
-        if freezePanes.freezeTopRow {
-            xml += "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>"
-        } else if freezePanes.freezeFirstColumn {
-            xml += "<pane xSplit=\"1\" topLeftCell=\"B1\" activePane=\"topRight\" state=\"frozen\"/>"
-        } else if freezePanes.frozenRows > 0 || freezePanes.frozenColumns > 0 {
-            // topLeftCell 的列索引要加 1，因为 Excel 的 topLeftCell 表示"未被冻结的第一列"，
-            // 比如冻结了前2列（A、B），未冻结的第一列是第3列（C），所以要用 frozenColumns + 1。
-            // 行同理，未冻结的第一行是 frozenRows + 1。
-            let topLeftCell = "\(columnIndexToExcelColumn(freezePanes.frozenColumns + 1))\(freezePanes.frozenRows + 1)"
-            xml += "<pane xSplit=\"\(freezePanes.frozenColumns)\" ySplit=\"\(freezePanes.frozenRows)\" topLeftCell=\"\(topLeftCell)\" activePane=\"topLeft\" state=\"frozen\"/>"
-        }
-
-        xml += "</sheetView></sheetViews>"
         return xml
     }
 }
