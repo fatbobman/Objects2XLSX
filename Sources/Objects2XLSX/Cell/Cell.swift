@@ -24,35 +24,18 @@ public struct Cell: Equatable, Sendable {
         "\(columnIndexToExcelColumn(column))\(row + 1)"
     }
 
-    /// Value string of cell in xml, corresponding to the valueString in the <v>valueString</v> tag.
-    var valueString: String {
-        switch value {
-            case let .string(string):
-                string.cellValueString
-            case let .double(double):
-                double.cellValueString
-            case let .int(int):
-                int.cellValueString
-            case let .date(date, timeZone):
-                date.cellValueString(timeZone: timeZone)
-            case let .boolean(boolean, booleanExpressions, caseStrategy):
-                boolean.cellValueString(
-                    booleanExpressions: booleanExpressions,
-                    caseStrategy: caseStrategy)
-            case let .url(url):
-                url.cellValueString
-            case let .percentage(percentage, precision):
-                percentage.cellValueString(precision: precision)
-        }
-    }
-
     /// Initialize a cell.
     /// - Parameters:
     ///   - row: Row of cell.
     ///   - column: Column of cell.
     ///   - value: Value of cell.
     ///   - styleID: Style ID of cell.
-    public init(row: Int, column: Int, value: CellType, styleID: Int? = nil) {
+    public init(
+        row: Int,
+        column: Int,
+        value: CellType,
+        styleID: Int? = nil)
+    {
         self.row = row
         self.column = column
         self.value = value
@@ -91,6 +74,27 @@ extension Cell {
         /// - Parameter percentage: Percentage value.
         /// - Parameter precision: Precision.
         case percentage(Double?, precision: Int = 2)
+
+        public var valueString: String {
+            switch self {
+                case let .string(string):
+                    string.cellValueString
+                case let .double(double):
+                    double.cellValueString
+                case let .int(int):
+                    int.cellValueString
+                case let .date(date, timeZone):
+                    date.cellValueString(timeZone: timeZone)
+                case let .boolean(boolean, booleanExpressions, caseStrategy):
+                    boolean.cellValueString(
+                        booleanExpressions: booleanExpressions,
+                        caseStrategy: caseStrategy)
+                case let .url(url):
+                    url.cellValueString
+                case let .percentage(percentage, precision):
+                    percentage.cellValueString(precision: precision)
+            }
+        }
     }
 
     /// Boolean expressions.

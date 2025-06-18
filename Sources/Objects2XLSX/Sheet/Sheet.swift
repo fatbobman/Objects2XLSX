@@ -97,15 +97,13 @@ public final class Sheet<ObjectType>: SheetProtocol {
 
 extension Sheet {
     /// 设置整张表的 body 行高
-    public func rowBodyHeight(_ height: Int) {
-        style.defaultRowHeight = Double(height)
+    public func rowBodyHeight(_ height: Double?) {
+        style.defaultRowHeight = height
     }
 
     /// 设置整张表的 header 行高
-    public func columnHeaderHeight(_ height: Int) {
-        style.rowHeights[0] = SheetStyle.RowHeight(
-            height: Double(height),
-            isCustomHeight: true)
+    public func columnHeaderHeight(_ height: Double?) {
+        style.rowHeights[0] = height
     }
 
     /// 设置整张表的列宽
