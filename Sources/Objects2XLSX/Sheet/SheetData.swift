@@ -8,91 +8,127 @@
 
 import Foundation
 
-public struct SheetData {
-    /// 工作表名称
+public struct SheetXML {
+    /// 工作表名称（移除非法字符，并不超过 31 个字符）
     public let name: String
 
-    /// 所有单元格（含表头 + 内容）
-    public let cells: [Cell]
+    /// 所有行
+    public let rows: [Row]
 
-    /// 所有列的信息（顺序对应列索引）
-    public let columns: [ResolvedColumn]
+    /// 工作表样式设置
+    public let style: SheetStyle?
 
-    /// 所有行的信息（用于自定义行高等）
-    public let rows: [ResolvedRow]
+    public init(name: String, rows: [Row], style: SheetStyle? = nil) {
+        self.name = name
+        self.rows = rows
+        self.style = style
+    }
 
-    /// 表头是否存在
-    public let hasHeader: Bool
+    /// 生成完整的 sheet XML
+    public func generateXML() -> String {
+        var xml = """
+            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+            <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+            """
 
-    /// 单元格范围（用于写入 `<dimension>`）
-    public let dimension: SheetDimension
+        // 添加 tabColor 属性（如果有）
+        if let style, let tabColor = style.tabColor {
+            xml += " tabColor=\"\(tabColor.hexString)\""
+        }
 
-    /// 列宽定义（对应 <cols>）
-    public let columnWidths: [ColumnWidth]
+        xml += ">"
 
-    /// Sheet 层面的默认样式信息（行高、列宽等）
-    public let sheetDefaults: SheetDefaults
+        // 生成其他 XML 内容
+        xml += generateWorksheetContent()
 
-    /// 引用的样式注册器（用于生成 styles.xml）
-    private let styleRegister: StyleRegister
+        xml += "</worksheet>"
+        return xml
+    }
 
-    /// 引用的共享字符串注册器（用于生成 sharedStrings.xml）
-    private let shareStringRegister: ShareStringRegister
-}
+    /// 生成工作表内容（不包括根元素属性）
+    private func generateWorksheetContent() -> String {
+        var xml = ""
 
-public struct ResolvedColumn {
-    public let index: Int // 从 0 开始
-    public let name: String // 表头文字
-    public let width: Int? // 字符宽度（用于列宽）
-    public let headerStyleID: Int? // 表头样式
-    public let bodyStyleID: Int? // 内容样式
-}
+        // 添加工作表格式设置（可选）
+        if let style {
+            xml += generateSheetFormatXML(style)
+        }
 
-public struct ResolvedRow {
-    public let index: Int // 从 0 开始
-    public let height: Double? // 自定义行高
-}
+        // 添加列设置（可选）
+        if let style, !style.columnWidths.isEmpty {
+            xml += generateColumnsXML(style)
+        }
 
-public struct SheetDimension {
-    public let startRow: Int // Excel 行号，从 1 开始
-    public let endRow: Int
-    public let startColumn: Int // Excel 列号，从 1 开始
-    public let endColumn: Int
-}
+        // 添加冻结窗格设置（可选）
+        if let style, let freezePanes = style.freezePanes {
+            xml += generateFreezePanesXML(freezePanes)
+        }
 
-public struct ColumnWidth {
-    public let index: Int
-    public let width: Int
-}
+        // 添加工作表数据
+        xml += "<sheetData>"
+        for row in rows {
+            xml += row.generateXML()
+        }
+        xml += "</sheetData>"
 
-public struct SheetDefaults {
-    public let defaultRowHeight: Double?
-    public let defaultColumnWidth: Int?
-}
+        return xml
+    }
 
-// extension SheetData {
-//     /// 获取某一行的所有 cell
-//     func cellsInRow(_ rowIndex: Int) -> [Cell]
+    /// 生成工作表格式 XML
+    private func generateSheetFormatXML(_ style: SheetStyle) -> String {
+        var xml = "<sheetFormatPr"
 
-//     /// 获取某一列的所有 cell
-//     func cellsInColumn(_ columnIndex: Int) -> [Cell]
+        if let defaultRowHeight = style.defaultRowHeight {
+            xml += " defaultRowHeight=\"\(defaultRowHeight)\""
+        }
 
-//     /// 查找某个 Cell（按 row + column）
-//     func cellAt(row: Int, column: Int) -> Cell?
+        if let defaultColumnWidth = style.defaultColumnWidth {
+            xml += " defaultColWidth=\"\(defaultColumnWidth)\""
+        }
 
-//     /// 返回 sheet 所有 cell 的 Excel 坐标
-//     func allCellAddresses() -> [String]
-// }
+        xml += "/>"
 
-/// 将列索引转换为 Excel 列名（如 1->A, 27->AA）
-func columnIndexToExcelColumn(_ index: Int) -> String {
-    var result = ""
-    var num = index - 1
+        // 添加网格线设置
+        if !style.showGridlines {
+            xml += "<sheetViews><sheetView workbookViewId=\"0\" showGridLines=\"0\"/></sheetViews>"
+        }
 
-    repeat {
-        result = String(Character(UnicodeScalar(65 + num % 26)!)) + result
-        num = num / 26 - 1
-    } while num >= 0
+        return xml
+    }
 
-    return result
+    /// 生成列设置 XML
+    private func generateColumnsXML(_ style: SheetStyle) -> String {
+        var xml = "<cols>"
+
+        for (index, columnWidth) in style.columnWidths.sorted(by: { $0.key < $1.key }) {
+            xml += "<col min=\"\(index + 1)\" max=\"\(index + 1)\" width=\"\(columnWidth.width)\" customWidth=\"1\"/>"
+        }
+
+        xml += "</cols>"
+        return xml
+    }
+
+    /// 生成冻结窗格 XML
+    private func generateFreezePanesXML(_ freezePanes: SheetStyle.FreezePanes) -> String {
+        var xml = "<sheetViews><sheetView workbookViewId=\"0\""
+
+        // 添加缩放设置
+        if let zoom = style?.zoom {
+            xml += " zoomScale=\"\(zoom.scale)\""
+        }
+
+        xml += ">"
+
+        if freezePanes.freezeTopRow {
+            xml += "<pane ySplit=\"1\" topLeftCell=\"A2\" activePane=\"bottomLeft\" state=\"frozen\"/>"
+        } else if freezePanes.freezeFirstColumn {
+            xml += "<pane xSplit=\"1\" topLeftCell=\"B1\" activePane=\"topRight\" state=\"frozen\"/>"
+        } else if freezePanes.frozenRows > 0 || freezePanes.frozenColumns > 0 {
+            let topLeftCell = "\(columnIndexToExcelColumn(freezePanes.frozenColumns))\(freezePanes.frozenRows + 1)"
+            xml += "<pane xSplit=\"\(freezePanes.frozenColumns)\" ySplit=\"\(freezePanes.frozenRows)\" topLeftCell=\"\(topLeftCell)\" activePane=\"topLeft\" state=\"frozen\"/>"
+        }
+
+        xml += "</sheetView></sheetViews>"
+        return xml
+    }
 }

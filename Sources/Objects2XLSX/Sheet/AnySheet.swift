@@ -11,7 +11,7 @@ import Foundation
 /// A type-erased sheet that can hold any object type.
 public final class AnySheet {
     private let _name: String
-    private let _makeSheetData: (StyleRegister, ShareStringRegister) -> SheetData?
+    private let _makeSheetData: (StyleRegister, ShareStringRegister) -> SheetXML?
 
     public var name: String { _name }
 
@@ -32,7 +32,7 @@ public final class AnySheet {
     /// 生成工作表数据
     func makeSheetData(
         styleRegister: StyleRegister,
-        shareStringRegister: ShareStringRegister) -> SheetData?
+        shareStringRegister: ShareStringRegister) -> SheetXML?
     {
         _makeSheetData(styleRegister, shareStringRegister)
     }

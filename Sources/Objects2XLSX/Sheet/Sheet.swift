@@ -49,7 +49,7 @@ public final class Sheet<ObjectType>: SheetProtocol {
         with objects: [ObjectType],
         hasHeader: Bool = true,
         styleRegister: StyleRegister,
-        shareStringRegistor: ShareStringRegister) -> SheetData? // TODO: 返回 SheetData,临时
+        shareStringRegistor: ShareStringRegister) -> SheetXML? // TODO: 返回 SheetData,临时
     {
         /*
             // 1. 筛选有效列（基于 when 条件和第一个对象）
@@ -139,4 +139,17 @@ extension Sheet {
             border: Border.all(style: borderStyle))
         style.dataAreaBorder = dataAreaBorder
     }
+}
+
+/// 将列索引转换为 Excel 列名（如 1->A, 27->AA）
+func columnIndexToExcelColumn(_ index: Int) -> String {
+    var result = ""
+    var num = index - 1
+
+    repeat {
+        result = String(Character(UnicodeScalar(65 + num % 26)!)) + result
+        num = num / 26 - 1
+    } while num >= 0
+
+    return result
 }

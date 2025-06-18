@@ -18,5 +18,5 @@ protocol SheetProtocol<ObjectType> {
         with objects: [ObjectType],
         hasHeader: Bool,
         styleRegister: StyleRegister,
-        shareStringRegistor: ShareStringRegister) -> SheetData?
+        shareStringRegistor: ShareStringRegister) -> SheetXML?
 }
