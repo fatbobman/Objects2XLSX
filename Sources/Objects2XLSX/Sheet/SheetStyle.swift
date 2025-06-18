@@ -270,9 +270,13 @@ extension SheetStyle {
         newSelf.zoom = zoom
         return newSelf
     }
+}
 
+// MARK: Internal Methods
+
+extension SheetStyle {
     /// 设置数据区域边框
-    public func dataAreaBorder(
+    func dataAreaBorder(
         startRow: Int,
         startColumn: Int,
         endRow: Int,
@@ -290,7 +294,7 @@ extension SheetStyle {
     }
 
     /// 设置数据区域边框（使用范围）
-    public func dataAreaBorder(_ range: CellRange, border: Border) -> Self {
+    func dataAreaBorder(_ range: CellRange, border: Border) -> Self {
         dataAreaBorder(
             startRow: range.startRow,
             startColumn: range.startColumn,
