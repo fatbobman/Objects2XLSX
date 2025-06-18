@@ -97,9 +97,6 @@ public struct SheetStyle: Equatable, Hashable, Sendable {
     /// 页面设置
     public var pageSetup: PageSetup?
 
-    /// 合并单元格列表
-    public var mergedCells: [MergedCell] = []
-
     /// 默认列宽
     public var defaultColumnWidth: Double = 8.43
 
@@ -200,52 +197,6 @@ extension SheetStyle {
 
     public mutating func setPageSetup(_ pageSetup: PageSetup) {
         self.pageSetup = pageSetup
-    }
-
-    /// 合并单元格
-    /// - Parameters:
-    ///   - startRow: 起始行索引
-    ///   - startColumn: 起始列索引
-    ///   - endRow: 结束行索引
-    ///   - endColumn: 结束列索引
-    public mutating func mergeCells(
-        startRow: Int,
-        startColumn: Int,
-        endRow: Int,
-        endColumn: Int)
-    {
-        let mergedCell = MergedCell(
-            startRow: startRow,
-            startColumn: startColumn,
-            endRow: endRow,
-            endColumn: endColumn)
-        mergedCells.append(mergedCell)
-    }
-
-    /// 合并单元格（使用范围）
-    /// - Parameter range: 单元格范围
-    public mutating func mergeCells(_ range: CellRange) {
-        mergeCells(
-            startRow: range.startRow,
-            startColumn: range.startColumn,
-            endRow: range.endRow,
-            endColumn: range.endColumn)
-    }
-
-    /// 清除所有合并单元格
-    public mutating func clearMergedCells() {
-        mergedCells.removeAll()
-    }
-
-    /// 移除指定范围的合并单元格
-    /// - Parameter range: 要移除的单元格范围
-    public mutating func removeMergedCells(in range: CellRange) {
-        mergedCells.removeAll { cell in
-            cell.startRow >= range.startRow &&
-                cell.startColumn >= range.startColumn &&
-                cell.endRow <= range.endRow &&
-                cell.endColumn <= range.endColumn
-        }
     }
 }
 
