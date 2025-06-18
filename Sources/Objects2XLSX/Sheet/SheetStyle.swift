@@ -143,6 +143,44 @@ public struct SheetStyle: Equatable, Hashable, Sendable {
     public var columnBodyStyle: CellStyle?
 
     public init() {}
+
+    /// 默认的工作表样式
+    public static let `default` = SheetStyle(
+        defaultColumnWidth: 8.43,
+        defaultRowHeight: 15.0,
+        showGridlines: true,
+        showRowAndColumnHeadings: true,
+        showZeros: true,
+        showFormulas: false,
+        showOutlineSymbols: true,
+        showPageBreaks: false,
+        columnHeaderStyle: CellStyle.default,
+        columnBodyStyle: CellStyle.default)
+
+    /// 创建一个基础的 SheetStyle 实例
+    public init(
+        defaultColumnWidth: Double = 8.43,
+        defaultRowHeight: Double = 15.0,
+        showGridlines: Bool = true,
+        showRowAndColumnHeadings: Bool = true,
+        showZeros: Bool = true,
+        showFormulas: Bool = false,
+        showOutlineSymbols: Bool = true,
+        showPageBreaks: Bool = false,
+        columnHeaderStyle: CellStyle? = CellStyle.default,
+        columnBodyStyle: CellStyle? = CellStyle.default)
+    {
+        self.defaultColumnWidth = defaultColumnWidth
+        self.defaultRowHeight = defaultRowHeight
+        self.showGridlines = showGridlines
+        self.showRowAndColumnHeadings = showRowAndColumnHeadings
+        self.showZeros = showZeros
+        self.showFormulas = showFormulas
+        self.showOutlineSymbols = showOutlineSymbols
+        self.showPageBreaks = showPageBreaks
+        self.columnHeaderStyle = columnHeaderStyle
+        self.columnBodyStyle = columnBodyStyle
+    }
 }
 
 // MARK: 实现方法

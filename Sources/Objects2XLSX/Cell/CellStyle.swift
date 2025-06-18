@@ -32,3 +32,11 @@ public struct CellStyle: Equatable, Sendable, Hashable {
         self.border = border
     }
 }
+
+extension CellStyle {
+    public static let `default` = CellStyle(
+        font: .default,
+        fill: Fill.none,
+        alignment: .default,
+        border: Border.none)
+}
