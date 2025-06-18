@@ -1,5 +1,5 @@
 //
-// SheetData.swift
+// SheetXML.swift
 // Created by Xu Yang on 2025-06-07.
 // Blog: https://fatbobman.com
 // GitHub: https://github.com/fatbobman
@@ -8,17 +8,17 @@
 
 import Foundation
 
-public struct SheetXML {
+struct SheetXML {
     /// 工作表名称（移除非法字符，并不超过 31 个字符）
-    public let name: String
+    let name: String
 
     /// 所有行
-    public let rows: [Row]
+    let rows: [Row]
 
     /// 工作表样式设置
-    public let style: SheetStyle?
+    let style: SheetStyle?
 
-    public init(name: String, rows: [Row], style: SheetStyle? = nil) {
+    init(name: String, rows: [Row], style: SheetStyle? = nil) {
         self.name = name
         self.rows = rows
         self.style = style
@@ -33,7 +33,7 @@ public struct SheetXML {
 
         // 添加 tabColor 属性（如果有）
         if let style, let tabColor = style.tabColor {
-            xml += " tabColor=\"\(tabColor.hexString)\""
+            xml += " tabColor=\"\(tabColor.argbHexString)\""
         }
 
         xml += ">"
@@ -124,7 +124,10 @@ public struct SheetXML {
         } else if freezePanes.freezeFirstColumn {
             xml += "<pane xSplit=\"1\" topLeftCell=\"B1\" activePane=\"topRight\" state=\"frozen\"/>"
         } else if freezePanes.frozenRows > 0 || freezePanes.frozenColumns > 0 {
-            let topLeftCell = "\(columnIndexToExcelColumn(freezePanes.frozenColumns))\(freezePanes.frozenRows + 1)"
+            // topLeftCell 的列索引要加 1，因为 Excel 的 topLeftCell 表示"未被冻结的第一列"，
+            // 比如冻结了前2列（A、B），未冻结的第一列是第3列（C），所以要用 frozenColumns + 1。
+            // 行同理，未冻结的第一行是 frozenRows + 1。
+            let topLeftCell = "\(columnIndexToExcelColumn(freezePanes.frozenColumns + 1))\(freezePanes.frozenRows + 1)"
             xml += "<pane xSplit=\"\(freezePanes.frozenColumns)\" ySplit=\"\(freezePanes.frozenRows)\" topLeftCell=\"\(topLeftCell)\" activePane=\"topLeft\" state=\"frozen\"/>"
         }
 
