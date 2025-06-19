@@ -127,23 +127,25 @@ struct SheetStyleMergeTests {
         #expect(merged?.dataRange?.startRow == 1) // base 保留
     }
 
-    @Test("Borders merge")
-    func bordersMerge() {
+    @Test("Data border merge")
+    func dataBorderMerge() {
         var baseStyle = SheetStyle()
-        baseStyle.borders = [
-            SheetStyle.BorderRegion(startRow: 1, startColumn: 1, endRow: 5, endColumn: 5, borderStyle: .thin),
-        ]
+        baseStyle.dataBorder = .withHeader(style: .thin)
 
         var additionalStyle = SheetStyle()
-        additionalStyle.borders = [
-            SheetStyle.BorderRegion(startRow: 6, startColumn: 6, endRow: 10, endColumn: 10, borderStyle: .thick),
-        ]
+        additionalStyle.dataBorder = .withoutHeader(style: .thick)
 
         let merged = SheetStyle.merge(base: baseStyle, additional: additionalStyle)
 
-        #expect(merged?.borders.count == 2) // 累加
-        #expect(merged?.borders[0].borderStyle == .thin)
-        #expect(merged?.borders[1].borderStyle == .thick)
+        #expect(merged?.dataBorder.enabled == true)
+        #expect(merged?.dataBorder.includeHeader == false) // additional 优先
+        #expect(merged?.dataBorder.borderStyle == .thick) // additional 优先
+
+        // 测试默认值不覆盖
+        let defaultAdditional = SheetStyle.default
+        let merged2 = SheetStyle.merge(base: baseStyle, additional: defaultAdditional)
+        #expect(merged2?.dataBorder.enabled == true) // base 保留
+        #expect(merged2?.dataBorder.borderStyle == .thin) // base 保留
     }
 
     @Test("CellStyle properties merge")

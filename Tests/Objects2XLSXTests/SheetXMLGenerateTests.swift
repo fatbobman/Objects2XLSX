@@ -81,7 +81,7 @@ struct SheetXMLGenerateTests {
         print(sheetXML?.generateXML() ?? "nil")
         print(shareStringRegister.allStrings)
     }
-    
+
     @Test("test SheetHeader with Custom Style")
     func sheetHeaderWithCustomStyle() {
         // 创建自定义的 header 样式
@@ -91,11 +91,11 @@ struct SheetXMLGenerateTests {
             alignment: Alignment(horizontal: .center, vertical: .center),
             border: Border.all(style: .thin, color: Color.black)
         )
-        
+
         // 创建自定义的 sheet 样式
         var sheetStyle = SheetStyle()
         sheetStyle.columnHeaderStyle = headerStyle
-        
+
         let sheet = Sheet(name: "People", dataProvider: { People.people }) {
             Column(name: "Name", keyPath: \People.name, nilHandling: .keepEmpty)
             Column(name: "Age", keyPath: \People.age, nilHandling: .keepEmpty)
@@ -108,55 +108,104 @@ struct SheetXMLGenerateTests {
 
         // 测试带自定义样式的 header 行生成
         let sheetXML = sheet.makeSheetXML(
-            bookStyle: bookStyle, 
-            sheetStyle: sheetStyle, 
-            styleRegister: styleRegister, 
+            bookStyle: bookStyle,
+            sheetStyle: sheetStyle,
+            styleRegister: styleRegister,
             shareStringRegistor: shareStringRegister
         )
 
         // 验证基本结构
         #expect(sheetXML != nil)
         #expect(sheetXML?.rows.count == 1) // 只有 header 行
-        
+
         // 验证 header 行
         let headerRow = sheetXML?.rows.first
         #expect(headerRow != nil)
         #expect(headerRow?.cells.count == 3) // 3个列
-        
+
         // 验证每个 header 单元格都有样式ID
         let expectedColumnNames = ["Name", "Age", "Gender"]
         if let cells = headerRow?.cells {
             for (index, expectedName) in expectedColumnNames.enumerated() {
                 let cell = cells[index]
-                
+
                 // 验证单元格值
                 if case .string(let cellName) = cell.value {
                     #expect(cellName == expectedName)
                 }
-                
+
                 // 验证样式ID存在且不为空（说明应用了自定义样式）
                 #expect(cell.styleID != nil)
                 #expect(cell.styleID != 0) // 不应该是默认样式
             }
         }
-        
+
         // 验证样式注册器包含了自定义样式
         #expect(styleRegister.resolvedStylePool.count > 1) // 除了默认样式，还有自定义样式
         #expect(styleRegister.fontPool.count > 1) // 注册了自定义字体
         #expect(styleRegister.fillPool.count > 1) // 注册了自定义填充
         #expect(styleRegister.borderPool.count > 1) // 注册了自定义边框
         #expect(styleRegister.alignmentPool.count > 0) // 注册了对齐方式
-        
+
         print("Header with custom style test completed successfully")
         print("Registered styles: \(styleRegister.resolvedStylePool.count)")
         print("Registered fonts: \(styleRegister.fontPool.count)")
         print("Registered fills: \(styleRegister.fillPool.count)")
         print("Registered borders: \(styleRegister.borderPool.count)")
         print("Registered alignments: \(styleRegister.alignmentPool.count)")
-        
+
         // 验证第一个单元格使用了自定义样式
         if let firstCell = headerRow?.cells.first {
             print("First cell styleID: \(firstCell.styleID ?? -1)")
+        }
+    }
+
+    @Test("test Data Border Settings")
+    func testDataBorderSettings() {
+        // 创建带边框的 sheet
+        let sheet = Sheet(name: "People", dataProvider: { People.people }) {
+            Column(name: "Name", keyPath: \People.name, nilHandling: .keepEmpty)
+            Column(name: "Age", keyPath: \People.age, nilHandling: .keepEmpty)
+        }
+
+        let styleRegister = StyleRegister()
+        let shareStringRegister = ShareStringRegister()
+        let bookStyle = BookStyle()
+
+        // 创建带边框的 sheetStyle
+        var customSheetStyle = SheetStyle()
+        customSheetStyle.dataBorder = .withHeader(style: .thick)
+
+        // 生成 SheetXML
+        let sheetXML = sheet.makeSheetXML(
+            bookStyle: bookStyle,
+            sheetStyle: customSheetStyle,
+            styleRegister: styleRegister,
+            shareStringRegistor: shareStringRegister
+        )
+
+        // 验证边框设置生效
+        #expect(sheetXML != nil)
+
+        if let style = sheetXML?.style {
+            #expect(style.dataBorder.enabled == true)
+            #expect(style.dataBorder.includeHeader == true)
+            #expect(style.dataBorder.borderStyle == .thick)
+
+            // 验证数据区域设置
+            #expect(style.dataRange != nil)
+            #expect(style.dataRange?.startRow == 1) // 包含表头
+            #expect(style.dataRange?.startColumn == 1)
+            #expect(style.dataRange?.endRow == 5) // 1个表头 + 4行数据
+            #expect(style.dataRange?.endColumn == 2) // 2列
+
+            print("Data border test completed successfully")
+            print("Border enabled: \(style.dataBorder.enabled)")
+            print("Include header: \(style.dataBorder.includeHeader)")
+            print("Border style: \(style.dataBorder.borderStyle.rawValue)")
+            print("Data range: \(style.dataRange?.startRow ?? 0)-\(style.dataRange?.endRow ?? 0), \(style.dataRange?.startColumn ?? 0)-\(style.dataRange?.endColumn ?? 0)")
+            print(styleRegister.borderPool)
+            print(sheetXML?.generateXML() ?? "nil")
         }
     }
 }

@@ -84,38 +84,25 @@ public final class Sheet<ObjectType>: SheetProtocol {
             endColumn: columnsCount)
     }
 
-    /// 添加数据区域边框
-    public func addDataBorder(
-        borderStyle: BorderStyle = .thin,
-        includeHeader: Bool = true) -> Self
-    {
-        let dataRowCount = data?.count ?? 0
-        guard dataRowCount > 0 || (hasHeader && includeHeader) else { return self }
-
-        let borderRegion = SheetStyle.BorderRegion(
-            startRow: includeHeader && hasHeader ? 1 : (hasHeader ? 2 : 1),
-            startColumn: 1,
-            endRow: rowsCount,
-            endColumn: columnsCount,
-            borderStyle: borderStyle)
-
-        style.borders.append(borderRegion)
+    /// 设置数据区域边框
+    public func dataBorder(enabled: Bool = true, includeHeader: Bool = true, borderStyle: BorderStyle = .thin) -> Self {
+        style.dataBorder = SheetStyle.DataBorderSettings(
+            enabled: enabled,
+            includeHeader: includeHeader,
+            borderStyle: borderStyle
+        )
         return self
     }
-
-    /// 添加仅数据行的边框（不包含标题）
-    public func addDataOnlyBorder(borderStyle: BorderStyle = .thin) -> Self {
-        let dataRowCount = data?.count ?? 0
-        guard dataRowCount > 0 else { return self }
-
-        let borderRegion = SheetStyle.BorderRegion(
-            startRow: hasHeader ? 2 : 1,
-            startColumn: 1,
-            endRow: hasHeader ? dataRowCount + 1 : dataRowCount,
-            endColumn: columnsCount,
-            borderStyle: borderStyle)
-
-        style.borders.append(borderRegion)
+    
+    /// 启用包含表头的数据边框
+    public func dataBorderWithHeader(borderStyle: BorderStyle = .thin) -> Self {
+        style.dataBorder = .withHeader(style: borderStyle)
+        return self
+    }
+    
+    /// 启用不包含表头的数据边框
+    public func dataBorderWithoutHeader(borderStyle: BorderStyle = .thin) -> Self {
+        style.dataBorder = .withoutHeader(style: borderStyle)
         return self
     }
 }

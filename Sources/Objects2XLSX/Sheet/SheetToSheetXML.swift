@@ -32,8 +32,20 @@ extension Sheet {
         overrideSheetStyle: SheetStyle?) -> SheetXML?
     {
         let sheetStyleToUse = overrideSheetStyle ?? style
-        let mergedSheetStyle = mergedSheetStyle(bookStyle: bookStyle, sheetStyle: sheetStyleToUse)
+        var mergedSheetStyle = mergedSheetStyle(bookStyle: bookStyle, sheetStyle: sheetStyleToUse)
         let columns = activeColumns(objects: objects)
+        
+        // 计算数据区域并设置边框区域（如果启用）
+        let dataRowCount = objects.count
+        let dataColumnCount = columns.count
+        if dataRowCount > 0 && dataColumnCount > 0 && mergedSheetStyle.dataBorder.enabled {
+            mergedSheetStyle = setupDataBorderRegion(
+                sheetStyle: mergedSheetStyle,
+                dataRowCount: dataRowCount,
+                dataColumnCount: dataColumnCount
+            )
+        }
+        
         var rows: [Row] = []
         var currentRow = 1 // 当前行号
         // 生成表头行
@@ -139,8 +151,8 @@ extension Sheet {
         // 合并样式
         var cellStyle = mergedHeaderCellStyle(bookStyle: bookStyle, sheetStyle: sheetStyle, column: column)
 
-        // 应用所有适用的边框区域
-        cellStyle = applyBordersToCell(cellStyle: cellStyle, row: rowIndex, column: columnIndex, borders: sheetStyle.borders)
+        // 应用数据边框
+        cellStyle = applyBordersToCell(cellStyle: cellStyle, row: rowIndex, column: columnIndex, borders: sheetStyle.dataBorder, sheetStyle: sheetStyle)
 
         // 准备单元格值
         let cellValue = Cell.CellType.string(column.name)
@@ -158,19 +170,59 @@ extension Sheet {
         )
     }
 
-    /// 应用所有适用的边框区域到单元格样式
-    private func applyBordersToCell(cellStyle: CellStyle?, row: Int, column: Int, borders: [SheetStyle.BorderRegion]) -> CellStyle? {
-        var resultStyle = cellStyle
+    /// 设置数据边框区域
+    private func setupDataBorderRegion(
+        sheetStyle: SheetStyle,
+        dataRowCount: Int,
+        dataColumnCount: Int
+    ) -> SheetStyle {
+        var updatedStyle = sheetStyle
+        
+        // 根据是否包含表头计算起始行
+        let startRow = sheetStyle.dataBorder.includeHeader && hasHeader ? 1 : (hasHeader ? 2 : 1)
+        let endRow = hasHeader ? dataRowCount + 1 : dataRowCount
+        
+        // 设置数据区域
+        updatedStyle.dataRange = SheetStyle.DataRange(
+            startRow: startRow,
+            startColumn: 1,
+            endRow: endRow,
+            endColumn: dataColumnCount
+        )
+        
+        return updatedStyle
+    }
 
-        // 遍历所有边框区域，应用适用的边框
-        for borderRegion in borders {
-            if let border = Border.forCellAt(row: row, column: column, in: borderRegion) {
-                let borderStyle = CellStyle(font: nil, fill: nil, alignment: nil, border: border)
-                // 合并边框样式，后面的边框区域优先级更高
-                resultStyle = CellStyle.merge(resultStyle, borderStyle)
-            }
+    /// 应用数据边框到单元格样式
+    private func applyBordersToCell(cellStyle: CellStyle?, row: Int, column: Int, borders: SheetStyle.DataBorderSettings, sheetStyle: SheetStyle) -> CellStyle? {
+        guard borders.enabled else { return cellStyle }
+        
+        // 检查是否在数据区域内
+        guard let dataRange = sheetStyle.dataRange else { return cellStyle }
+        
+        guard row >= dataRange.startRow && row <= dataRange.endRow &&
+              column >= dataRange.startColumn && column <= dataRange.endColumn else {
+            return cellStyle
         }
-
-        return resultStyle
+        
+        // 判断位置类型
+        let isTopEdge = row == dataRange.startRow
+        let isBottomEdge = row == dataRange.endRow
+        let isLeftEdge = column == dataRange.startColumn
+        let isRightEdge = column == dataRange.endColumn
+        
+        // 创建边框侧面
+        let borderSide = Border.Side(style: borders.borderStyle, color: .black)
+        
+        // 根据位置创建边框
+        let border = Border(
+            left: isLeftEdge ? borderSide : nil,
+            right: isRightEdge ? borderSide : nil,
+            top: isTopEdge ? borderSide : nil,
+            bottom: isBottomEdge ? borderSide : nil
+        )
+        
+        let borderStyle = CellStyle(font: nil, fill: nil, alignment: nil, border: border)
+        return CellStyle.merge(cellStyle, borderStyle)
     }
 }

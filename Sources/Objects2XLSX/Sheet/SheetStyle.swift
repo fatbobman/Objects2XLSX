@@ -77,17 +77,33 @@ public struct SheetStyle: Equatable, Hashable, Sendable {
         public let endColumn: Int
     }
 
-    public struct BorderRegion: Equatable, Hashable, Sendable {
-        let startRow: Int
-        let startColumn: Int
-        let endRow: Int
-        let endColumn: Int
-        let borderStyle: BorderStyle
-
-        // public static func border(row: Int, column: Int) -> Border? {
-        //     guard row >= startRow, row <= endRow, column >= startColumn, column <= endColumn else { return nil }
-
-        // }
+    /// 数据区域边框设置
+    public struct DataBorderSettings: Equatable, Hashable, Sendable {
+        /// 是否启用数据区域边框
+        public let enabled: Bool
+        /// 边框是否包含表头
+        public let includeHeader: Bool
+        /// 边框样式
+        public let borderStyle: BorderStyle
+        
+        public init(enabled: Bool = false, includeHeader: Bool = true, borderStyle: BorderStyle = .thin) {
+            self.enabled = enabled
+            self.includeHeader = includeHeader
+            self.borderStyle = borderStyle
+        }
+        
+        /// 默认不启用边框
+        public static let `default` = DataBorderSettings()
+        
+        /// 启用包含表头的边框
+        public static func withHeader(style: BorderStyle = .thin) -> DataBorderSettings {
+            DataBorderSettings(enabled: true, includeHeader: true, borderStyle: style)
+        }
+        
+        /// 启用不包含表头的边框
+        public static func withoutHeader(style: BorderStyle = .thin) -> DataBorderSettings {
+            DataBorderSettings(enabled: true, includeHeader: false, borderStyle: style)
+        }
     }
 
     /// 列宽设置，key 为列索引
@@ -138,8 +154,8 @@ public struct SheetStyle: Equatable, Hashable, Sendable {
     /// 数据区域边框设置
     public var dataRange: DataRange?
 
-    // 边框样式定义（可以有多个）
-    public var borders: [BorderRegion] = []
+    /// 数据区域边框设置
+    public var dataBorder: DataBorderSettings = .default
 
     /// 表头样式
     public var columnHeaderStyle: CellStyle?
@@ -294,7 +310,9 @@ extension SheetStyle {
         // 合并字典类型的属性
         merged.columnWidths = base.columnWidths.merging(additional.columnWidths) { _, new in new }
         merged.rowHeights = base.rowHeights.merging(additional.rowHeights) { _, new in new }
-        merged.borders = base.borders + additional.borders // 边框累加
+        
+        // 数据边框设置：additional 优先
+        merged.dataBorder = additional.dataBorder.enabled ? additional.dataBorder : base.dataBorder
 
         // 合并可选属性
         merged.printSettings = additional.printSettings ?? base.printSettings

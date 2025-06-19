@@ -172,43 +172,6 @@ extension Border {
 }
 
 extension Border {
-    /// 判断单元格位置并生成相应的边框
-    /// - Parameters:
-    ///   - row: 单元格行号（从1开始）
-    ///   - column: 单元格列号（从1开始）
-    ///   - region: 边框区域定义
-    /// - Returns: 该位置应用的边框，如果不在区域内则返回nil
-    public static func forCellAt(
-        row: Int,
-        column: Int,
-        in region: SheetStyle.BorderRegion) -> Border?
-    {
-        // 检查是否在区域内
-        guard row >= region.startRow, row <= region.endRow,
-              column >= region.startColumn, column <= region.endColumn
-        else {
-            return nil
-        }
-
-        // 判断位置类型
-        let isTopEdge = row == region.startRow
-        let isBottomEdge = row == region.endRow
-        let isLeftEdge = column == region.startColumn
-        let isRightEdge = column == region.endColumn
-
-        // 获取基础边框样式
-        let borderStyle = region.borderStyle
-        
-        // 创建边框侧面（使用默认颜色 black）
-        let borderSide = Border.Side(style: borderStyle, color: .black)
-
-        // 根据位置创建边框
-        return Border(
-            left: isLeftEdge ? borderSide : nil,
-            right: isRightEdge ? borderSide : nil,
-            top: isTopEdge ? borderSide : nil,
-            bottom: isBottomEdge ? borderSide : nil)
-    }
 
     /// 合并两个边框（用于多个边框区域重叠时）
     /// - Parameters:
