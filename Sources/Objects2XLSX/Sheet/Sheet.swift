@@ -21,7 +21,7 @@ public final class Sheet<ObjectType>: SheetProtocol {
     /// 是否创建 header 行（标题行）
     public private(set) var hasHeader: Bool
     /// sheet 的样式
-    public private(set)  var style: SheetStyle
+    public private(set) var style: SheetStyle
     /// 数据提供者，用于获取数据
     public private(set) var dataProvider: (() -> [ObjectType])?
 
@@ -63,50 +63,15 @@ public final class Sheet<ObjectType>: SheetProtocol {
         guard let firstObject = objects.first else { return [] }
         return columns.filter { $0.shouldGenerate(for: firstObject) }
     }
-}
 
-// MARK: Modifiers
-
-extension Sheet {
-    /// 设置整张表的 body 行高
-    public func rowBodyHeight(_ height: Double) {
-        style.defaultRowHeight = height
-    }
-
-    /// 设置表的 header 行高
-    public func columnHeaderHeight(_ height: Double) {
-        style.rowHeights[0] = height
-    }
-
-    /// 设置整张表的列宽
-    public func columnWidth(_ width: Int) {
-        style.defaultColumnWidth = Double(width)
-    }
-
-    /// 设置整张表的 header 样式
-    public func columnHeaderStyle(_ style: CellStyle) {
-        self.style.columnHeaderStyle = style
-    }
-
-    /// 设置整张表的 body 样式
-    public func columnBodyStyle(_ style: CellStyle) {
-        self.style.columnBodyStyle = style
-    }
-
-    public func dataProvider(_ dataProvider: @escaping () -> [ObjectType]) {
-        self.dataProvider = dataProvider
-    }
-
-    public func showHeader(_ show: Bool) {
-        hasHeader = show
-    }
-
-    public func sheetStyle(_ style: SheetStyle) {
-        self.style = style
+    /// 加载数据
+    func loadData() {
+        data = dataProvider?()
+        updateDataRange()
     }
 
     /// 自动设置数据区域（用于 dimension）
-    public func updateDataRange() {
+    func updateDataRange() {
         guard rowsCount > 0, columnsCount > 0 else {
             style.dataRange = nil
             return
@@ -152,6 +117,47 @@ extension Sheet {
 
         style.borders.append(borderRegion)
         return self
+    }
+}
+
+// MARK: Modifiers
+
+extension Sheet {
+    /// 设置整张表的 body 行高
+    public func rowBodyHeight(_ height: Double) {
+        style.defaultRowHeight = height
+    }
+
+    /// 设置表的 header 行高
+    public func columnHeaderHeight(_ height: Double) {
+        style.rowHeights[0] = height
+    }
+
+    /// 设置整张表的列宽
+    public func columnWidth(_ width: Int) {
+        style.defaultColumnWidth = Double(width)
+    }
+
+    /// 设置整张表的 header 样式
+    public func columnHeaderStyle(_ style: CellStyle) {
+        self.style.columnHeaderStyle = style
+    }
+
+    /// 设置整张表的 body 样式
+    public func columnBodyStyle(_ style: CellStyle) {
+        self.style.columnBodyStyle = style
+    }
+
+    public func dataProvider(_ dataProvider: @escaping () -> [ObjectType]) {
+        self.dataProvider = dataProvider
+    }
+
+    public func showHeader(_ show: Bool) {
+        hasHeader = show
+    }
+
+    public func sheetStyle(_ style: SheetStyle) {
+        self.style = style
     }
 }
 

@@ -13,7 +13,7 @@ extension Sheet {
         with objects: [ObjectType],
         bookStyle: BookStyle,
         styleRegister: StyleRegister,
-        shareStringRegistor: ShareStringRegister) -> SheetXML? // TODO: 返回 SheetData,临时
+        shareStringRegistor: ShareStringRegister) -> SheetXML?
     {
         return makeSheetXML(
             with: objects,
@@ -23,13 +23,13 @@ extension Sheet {
             overrideSheetStyle: nil
         )
     }
-    
+
     private func makeSheetXML(
         with objects: [ObjectType],
         bookStyle: BookStyle,
         styleRegister: StyleRegister,
         shareStringRegistor: ShareStringRegister,
-        overrideSheetStyle: SheetStyle?) -> SheetXML? // TODO: 返回 SheetData,临时
+        overrideSheetStyle: SheetStyle?) -> SheetXML?
     {
         let sheetStyleToUse = overrideSheetStyle ?? style
         let mergedSheetStyle = mergedSheetStyle(bookStyle: bookStyle, sheetStyle: sheetStyleToUse)
@@ -52,7 +52,7 @@ extension Sheet {
 
         return SheetXML(name: name, rows: rows, style: mergedSheetStyle)
     }
-    
+
     /// 便捷方法：使用 dataProvider 提供的数据生成 SheetXML
     func makeSheetXML(
         bookStyle: BookStyle,
@@ -62,7 +62,7 @@ extension Sheet {
     {
         guard let dataProvider = dataProvider else { return nil }
         let objects = dataProvider()
-        
+
         return makeSheetXML(
             with: objects,
             bookStyle: bookStyle,
