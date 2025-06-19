@@ -40,7 +40,7 @@ struct SheetXMLGenerateTests {
         // 验证基本结构
         #expect(sheetXML != nil)
         #expect(sheetXML?.name == "People")
-        #expect(sheetXML?.rows.count == 1) // 只有 header 行
+        #expect(sheetXML?.rows.count == 5) // 1个表头 + 4个数据行
 
         // 验证 header 行
         let headerRow = sheetXML?.rows.first
@@ -116,7 +116,7 @@ struct SheetXMLGenerateTests {
 
         // 验证基本结构
         #expect(sheetXML != nil)
-        #expect(sheetXML?.rows.count == 1) // 只有 header 行
+        #expect(sheetXML?.rows.count == 5) // 1个表头 + 4个数据行
 
         // 验证 header 行
         let headerRow = sheetXML?.rows.first
@@ -207,5 +207,294 @@ struct SheetXMLGenerateTests {
             print(styleRegister.borderPool)
             print(sheetXML?.generateXML() ?? "nil")
         }
+    }
+
+    @Test("test Complete Data Generation")
+    func testCompleteDataGeneration() {
+        // 创建带完整数据的 sheet
+        let sheet = Sheet(name: "People", dataProvider: { People.people }) {
+            Column(name: "Name", keyPath: \People.name, nilHandling: .keepEmpty)
+            Column(name: "Age", keyPath: \People.age, nilHandling: .keepEmpty)
+            Column(name: "Gender", keyPath: \People.gender, nilHandling: .keepEmpty)
+            Column(name: "City", keyPath: \People.city, nilHandling: .keepEmpty)
+        }
+
+        let styleRegister = StyleRegister()
+        let shareStringRegister = ShareStringRegister()
+        let bookStyle = BookStyle()
+
+        // 创建自定义样式
+        var customSheetStyle = SheetStyle()
+        customSheetStyle.dataBorder = .withHeader(style: .thin)
+        customSheetStyle.columnHeaderStyle = CellStyle(
+            font: Font(size: 12, name: "Arial", bold: true),
+            fill: Fill.solid(Color.lightGray)
+        )
+        customSheetStyle.columnBodyStyle = CellStyle(
+            font: Font(size: 10, name: "Arial", bold: false)
+        )
+
+        // 生成完整的 SheetXML
+        let sheetXML = sheet.makeSheetXML(
+            bookStyle: bookStyle,
+            sheetStyle: customSheetStyle,
+            styleRegister: styleRegister,
+            shareStringRegistor: shareStringRegister
+        )
+
+        // 验证基本结构
+        #expect(sheetXML != nil)
+        #expect(sheetXML?.name == "People")
+        
+        // 验证行数：1个表头 + 4个数据行
+        #expect(sheetXML?.rows.count == 5)
+        
+        // 验证第一行是表头
+        let headerRow = sheetXML?.rows.first
+        #expect(headerRow?.index == 1)
+        #expect(headerRow?.cells.count == 4)
+        
+        // 验证数据行
+        let dataRows = Array(sheetXML?.rows.dropFirst() ?? [])
+        #expect(dataRows.count == 4)
+        
+        // 验证每个数据行
+        let expectedNames = ["John", "Jane", "Jim", "Jill"]
+        let expectedAges = [20, 21, 22, 23]
+        let expectedGenders = [true, false, true, false]
+        let expectedCities = ["Beijing", "Shanghai", "Guangzhou", "Shenzhen"]
+        
+        for (index, dataRow) in dataRows.enumerated() {
+            #expect(dataRow.index == index + 2) // 从第2行开始
+            #expect(dataRow.cells.count == 4) // 4列
+            
+            // 验证姓名列
+            let nameCell = dataRow.cells[0]
+            #expect(nameCell.row == index + 2)
+            #expect(nameCell.column == 1)
+            if case .string(let name) = nameCell.value {
+                #expect(name == expectedNames[index])
+            }
+            #expect(nameCell.sharedStringID != nil)
+            
+            // 验证年龄列
+            let ageCell = dataRow.cells[1]
+            #expect(ageCell.row == index + 2)
+            #expect(ageCell.column == 2)
+            if case .int(let age) = ageCell.value {
+                #expect(age == expectedAges[index])
+            }
+            #expect(ageCell.sharedStringID == nil) // 数字不使用共享字符串
+            
+            // 验证性别列
+            let genderCell = dataRow.cells[2]
+            if case .boolean(let gender, _, _) = genderCell.value {
+                #expect(gender == expectedGenders[index])
+            }
+            
+            // 验证城市列
+            let cityCell = dataRow.cells[3]
+            if case .string(let city) = cityCell.value {
+                #expect(city == expectedCities[index])
+            }
+            
+            // 验证样式应用
+            #expect(nameCell.styleID != nil)
+            #expect(ageCell.styleID != nil)
+            #expect(genderCell.styleID != nil)
+            #expect(cityCell.styleID != nil)
+        }
+        
+        // 验证共享字符串注册
+        let allExpectedStrings = ["Name", "Age", "Gender", "City"] + expectedNames + expectedCities
+        for expectedString in allExpectedStrings {
+            let stringID = shareStringRegister.register(expectedString)
+            #expect(stringID >= 0)
+        }
+        
+        // 验证样式注册
+        #expect(styleRegister.resolvedStylePool.count > 1) // 至少有默认样式和自定义样式
+        #expect(styleRegister.fontPool.count > 1) // 注册了自定义字体
+        #expect(styleRegister.fillPool.count > 1) // 注册了自定义填充
+        
+        // 验证边框设置
+        if let style = sheetXML?.style {
+            #expect(style.dataBorder.enabled == true)
+            #expect(style.dataBorder.includeHeader == true)
+            #expect(style.dataBorder.borderStyle == .thin)
+            #expect(style.dataRange != nil)
+            #expect(style.dataRange?.startRow == 1)
+            #expect(style.dataRange?.endRow == 5)
+            #expect(style.dataRange?.startColumn == 1)
+            #expect(style.dataRange?.endColumn == 4)
+        }
+
+        print("Complete data generation test completed successfully")
+        print("Generated \(sheetXML?.rows.count ?? 0) rows")
+        print("Header cells: \(headerRow?.cells.count ?? 0)")
+        print("Data rows: \(dataRows.count)")
+        print("Registered styles: \(styleRegister.resolvedStylePool.count)")
+        print("Shared strings: \(shareStringRegister.allStrings.count)")
+        print("Generated XML length: \(sheetXML?.generateXML().count ?? 0) characters")
+    }
+
+    @Test("test Data Row Borders and Styles")
+    func testDataRowBordersAndStyles() {
+        // 创建带边框和样式的 sheet
+        let sheet = Sheet(name: "People", dataProvider: { People.people }) {
+            Column(name: "Name", keyPath: \People.name, nilHandling: .keepEmpty)
+                .bodyStyle(CellStyle(fill: Fill.solid(Color.yellow)))
+            Column(name: "Age", keyPath: \People.age, nilHandling: .keepEmpty)
+                .bodyStyle(CellStyle(alignment: Alignment(horizontal: .center)))
+        }
+
+        let styleRegister = StyleRegister()
+        let shareStringRegister = ShareStringRegister()
+        let bookStyle = BookStyle()
+
+        // 创建带边框的 sheetStyle
+        var customSheetStyle = SheetStyle()
+        customSheetStyle.dataBorder = .withHeader(style: .medium)
+        customSheetStyle.columnBodyStyle = CellStyle(
+            font: Font(size: 9, name: "Calibri", bold: false)
+        )
+
+        // 生成 SheetXML
+        let sheetXML = sheet.makeSheetXML(
+            bookStyle: bookStyle,
+            sheetStyle: customSheetStyle,
+            styleRegister: styleRegister,
+            shareStringRegistor: shareStringRegister
+        )
+
+        // 验证基本结构
+        #expect(sheetXML != nil)
+        #expect(sheetXML?.rows.count == 5) // 1个表头 + 4个数据行
+
+        // 验证数据行边框应用
+        let dataRows = Array(sheetXML?.rows.dropFirst() ?? [])
+        for dataRow in dataRows {
+            for cell in dataRow.cells {
+                // 所有数据单元格都应该有样式ID（应用了边框和其他样式）
+                #expect(cell.styleID != nil)
+                #expect(cell.styleID != 0) // 不应该是默认样式
+            }
+        }
+
+        // 验证边框池包含medium边框
+        let hasMediumBorder = styleRegister.borderPool.contains { border in
+            border.left?.style == .medium || border.right?.style == .medium ||
+            border.top?.style == .medium || border.bottom?.style == .medium
+        }
+        #expect(hasMediumBorder)
+
+        // 验证样式注册
+        #expect(styleRegister.resolvedStylePool.count > 4) // 多种样式组合
+        #expect(styleRegister.fontPool.count > 1) // 注册了自定义字体
+        #expect(styleRegister.fillPool.count > 1) // 注册了黄色填充
+        #expect(styleRegister.borderPool.count > 1) // 注册了边框
+        #expect(styleRegister.alignmentPool.count > 0) // 注册了对齐方式
+
+        // 验证XML输出包含边框和样式信息
+        let generatedXML = sheetXML?.generateXML() ?? ""
+        #expect(generatedXML.contains("s=")) // 包含样式ID
+        #expect(generatedXML.count > 500) // 生成的XML应该有相当的长度
+
+        print("Data row borders and styles test completed successfully")
+        print("Border pool count: \(styleRegister.borderPool.count)")
+        print("Style pool count: \(styleRegister.resolvedStylePool.count)")
+        print("Fill pool count: \(styleRegister.fillPool.count)")
+        print("Alignment pool count: \(styleRegister.alignmentPool.count)")
+        print("Has medium border: \(hasMediumBorder)")
+        
+        // 打印前几个数据单元格的样式ID来验证
+        if let firstDataRow = dataRows.first {
+            print("First data row cell styles: \(firstDataRow.cells.map { $0.styleID ?? -1 })")
+        }
+    }
+
+    @Test("test URL and String Shared String Registration")
+    func testURLAndStringSharedStringRegistration() {
+        // 创建包含 URL 和字符串的 sheet
+        let sheet = Sheet(name: "People", dataProvider: { People.people }) {
+            Column(name: "Name", keyPath: \People.name, nilHandling: .keepEmpty)
+            Column(name: "Email", keyPath: \People.email, nilHandling: .keepEmpty)
+            Column(name: "City", keyPath: \People.city, nilHandling: .keepEmpty)
+        }
+
+        let styleRegister = StyleRegister()
+        let shareStringRegister = ShareStringRegister()
+        let bookStyle = BookStyle()
+
+        // 生成 SheetXML
+        let sheetXML = sheet.makeSheetXML(
+            bookStyle: bookStyle,
+            sheetStyle: SheetStyle(),
+            styleRegister: styleRegister,
+            shareStringRegistor: shareStringRegister
+        )
+
+        // 验证基本结构
+        #expect(sheetXML != nil)
+        #expect(sheetXML?.rows.count == 5) // 1个表头 + 4个数据行
+
+        // 验证数据行
+        let dataRows = Array(sheetXML?.rows.dropFirst() ?? [])
+        
+        for dataRow in dataRows {
+            // 验证姓名列（字符串）有共享字符串ID
+            let nameCell = dataRow.cells[0]
+            #expect(nameCell.sharedStringID != nil, "Name cell should have shared string ID")
+            
+            // 验证邮箱列（URL）有共享字符串ID
+            let emailCell = dataRow.cells[1]
+            #expect(emailCell.sharedStringID != nil, "Email (URL) cell should have shared string ID")
+            
+            // 验证城市列（字符串）有共享字符串ID
+            let cityCell = dataRow.cells[2]
+            #expect(cityCell.sharedStringID != nil, "City cell should have shared string ID")
+        }
+
+        // 验证共享字符串中包含期望的字符串
+        let allSharedStrings = shareStringRegister.allStrings
+        
+        // 表头
+        #expect(allSharedStrings.contains("Name"))
+        #expect(allSharedStrings.contains("Email"))
+        #expect(allSharedStrings.contains("City"))
+        
+        // 数据 - 姓名
+        #expect(allSharedStrings.contains("John"))
+        #expect(allSharedStrings.contains("Jane"))
+        #expect(allSharedStrings.contains("Jim"))
+        #expect(allSharedStrings.contains("Jill"))
+        
+        // 数据 - 城市
+        #expect(allSharedStrings.contains("Beijing"))
+        #expect(allSharedStrings.contains("Shanghai"))
+        #expect(allSharedStrings.contains("Guangzhou"))
+        #expect(allSharedStrings.contains("Shenzhen"))
+        
+        // 数据 - URL（应该注册为字符串）
+        #expect(allSharedStrings.contains("https://www.google.com"))
+
+        // 检查第一个数据行的邮箱单元格
+        if let firstDataRow = dataRows.first {
+            let emailCell = firstDataRow.cells[1]
+            if case .url = emailCell.value {
+                #expect(emailCell.sharedStringID != nil, "URL cell should use shared string")
+            }
+        }
+
+        print("URL and String shared string registration test completed successfully")
+        print("Total shared strings: \(allSharedStrings.count)")
+        print("Shared strings include URL: \(allSharedStrings.contains("https://www.google.com"))")
+        print("Sample shared strings: \(allSharedStrings.prefix(10))")
+        
+        // 验证所有预期的字符串都被注册了
+        let expectedStrings = ["Name", "Email", "City", "John", "Jane", "Jim", "Jill", 
+                              "Beijing", "Shanghai", "Guangzhou", "Shenzhen", "https://www.google.com"]
+        let missingStrings = expectedStrings.filter { !allSharedStrings.contains($0) }
+        #expect(missingStrings.isEmpty, "Missing shared strings: \(missingStrings)")
     }
 }
