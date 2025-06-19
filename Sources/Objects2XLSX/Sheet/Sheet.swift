@@ -35,7 +35,7 @@ public final class Sheet<ObjectType>: SheetProtocol {
 
     /// 列数
     private var columnsCount: Int {
-        activeColumns().count
+        activeColumns(objects: data ?? []).count
     }
 
     public init(
@@ -59,8 +59,8 @@ public final class Sheet<ObjectType>: SheetProtocol {
     }
 
     /// 根据第一个对象，筛选出有效的列
-    private func activeColumns() -> [AnyColumn<ObjectType>] {
-        guard let firstObject = data?.first else { return [] }
+    func activeColumns(objects: [ObjectType]) -> [AnyColumn<ObjectType>] {
+        guard let firstObject = objects.first else { return [] }
         return columns.filter { $0.shouldGenerate(for: firstObject) }
     }
 }
@@ -132,7 +132,7 @@ extension Sheet {
             startColumn: 1,
             endRow: rowsCount,
             endColumn: columnsCount,
-            border: Border.all(style: borderStyle))
+            borderStyle: borderStyle)
 
         style.borders.append(borderRegion)
         return self
@@ -148,7 +148,7 @@ extension Sheet {
             startColumn: 1,
             endRow: hasHeader ? dataRowCount + 1 : dataRowCount,
             endColumn: columnsCount,
-            border: Border.all(style: borderStyle))
+            borderStyle: borderStyle)
 
         style.borders.append(borderRegion)
         return self

@@ -82,7 +82,12 @@ public struct SheetStyle: Equatable, Hashable, Sendable {
         let startColumn: Int
         let endRow: Int
         let endColumn: Int
-        let border: Border
+        let borderStyle: BorderStyle
+
+        // public static func border(row: Int, column: Int) -> Border? {
+        //     guard row >= startRow, row <= endRow, column >= startColumn, column <= endColumn else { return nil }
+
+        // }
     }
 
     /// 列宽设置，key 为列索引
@@ -277,20 +282,20 @@ extension SheetStyle {
     public static func merge(base: SheetStyle?, additional: SheetStyle?, forceOverride: Bool = false) -> SheetStyle? {
         // 如果都是 nil，返回 nil
         guard base != nil || additional != nil else { return nil }
-        
+
         // 如果只有一个不是 nil，直接返回那个
         guard let base else { return additional }
         guard let additional else { return base }
-        
+
         // 两个都不是 nil，逐个属性合并
         // additional 的非默认值会覆盖 base 的值
         var merged = base
-        
+
         // 合并字典类型的属性
         merged.columnWidths = base.columnWidths.merging(additional.columnWidths) { _, new in new }
         merged.rowHeights = base.rowHeights.merging(additional.rowHeights) { _, new in new }
         merged.borders = base.borders + additional.borders // 边框累加
-        
+
         // 合并可选属性
         merged.printSettings = additional.printSettings ?? base.printSettings
         merged.pageSetup = additional.pageSetup ?? base.pageSetup
@@ -300,7 +305,7 @@ extension SheetStyle {
         merged.dataRange = additional.dataRange ?? base.dataRange
         merged.columnHeaderStyle = CellStyle.merge(base: base.columnHeaderStyle, additional: additional.columnHeaderStyle)
         merged.columnBodyStyle = CellStyle.merge(base: base.columnBodyStyle, additional: additional.columnBodyStyle)
-        
+
         // 对于基础属性的合并策略：
         if forceOverride {
             // 强制覆盖模式：additional 的所有值都覆盖 base
@@ -315,7 +320,7 @@ extension SheetStyle {
         } else {
             // 智能合并模式：只有与默认值不同的值才覆盖 base
             let defaultStyle = SheetStyle()
-            
+
             if additional.defaultColumnWidth != defaultStyle.defaultColumnWidth {
                 merged.defaultColumnWidth = additional.defaultColumnWidth
             }
@@ -341,10 +346,10 @@ extension SheetStyle {
                 merged.showPageBreaks = additional.showPageBreaks
             }
         }
-        
+
         return merged
     }
-    
+
     /// 合并多个样式，后面的样式优先级更高
     ///
     /// ```swift

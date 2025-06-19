@@ -131,19 +131,19 @@ struct SheetStyleMergeTests {
     func bordersMerge() {
         var baseStyle = SheetStyle()
         baseStyle.borders = [
-            SheetStyle.BorderRegion(startRow: 1, startColumn: 1, endRow: 5, endColumn: 5, border: Border.all(style: .thin)),
+            SheetStyle.BorderRegion(startRow: 1, startColumn: 1, endRow: 5, endColumn: 5, borderStyle: .thin),
         ]
 
         var additionalStyle = SheetStyle()
         additionalStyle.borders = [
-            SheetStyle.BorderRegion(startRow: 6, startColumn: 6, endRow: 10, endColumn: 10, border: Border.all(style: .thick)),
+            SheetStyle.BorderRegion(startRow: 6, startColumn: 6, endRow: 10, endColumn: 10, borderStyle: .thick),
         ]
 
         let merged = SheetStyle.merge(base: baseStyle, additional: additionalStyle)
 
         #expect(merged?.borders.count == 2) // 累加
-        #expect(merged?.borders[0].border == Border.all(style: .thin))
-        #expect(merged?.borders[1].border == Border.all(style: .thick))
+        #expect(merged?.borders[0].borderStyle == .thin)
+        #expect(merged?.borders[1].borderStyle == .thick)
     }
 
     @Test("CellStyle properties merge")

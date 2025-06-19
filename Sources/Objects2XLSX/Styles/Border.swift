@@ -197,14 +197,17 @@ extension Border {
         let isRightEdge = column == region.endColumn
 
         // 获取基础边框样式
-        let baseBorder = region.border
+        let borderStyle = region.borderStyle
+        
+        // 创建边框侧面（使用默认颜色 black）
+        let borderSide = Border.Side(style: borderStyle, color: .black)
 
         // 根据位置创建边框
         return Border(
-            left: isLeftEdge ? baseBorder.left : nil,
-            right: isRightEdge ? baseBorder.right : nil,
-            top: isTopEdge ? baseBorder.top : nil,
-            bottom: isBottomEdge ? baseBorder.bottom : nil)
+            left: isLeftEdge ? borderSide : nil,
+            right: isRightEdge ? borderSide : nil,
+            top: isTopEdge ? borderSide : nil,
+            bottom: isBottomEdge ? borderSide : nil)
     }
 
     /// 合并两个边框（用于多个边框区域重叠时）

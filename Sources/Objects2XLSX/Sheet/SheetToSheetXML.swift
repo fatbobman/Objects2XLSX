@@ -15,6 +15,15 @@ extension Sheet {
         styleRegister: StyleRegister,
         shareStringRegistor: ShareStringRegister) -> SheetXML? // TODO: 返回 SheetData,临时
     {
+        let mergedSheetStyle = mergedSheetStyle(bookStyle: bookStyle, sheetStyle: style)
+        let columns = activeColumns(objects: objects)
+        var rows: [Row] = []
+        var currentRow = 1 // 当前行号
+        if hasHeader {
+            // 生成表头行
+            currentRow += 1
+        }
+
         /*
             // 1. 筛选有效列（基于 when 条件和第一个对象）
             let activeColumns = filterActiveColumns(for: objects.first)
@@ -48,6 +57,43 @@ extension Sheet {
              metadata: sheetMetadata
          )
           */
-        nil
+        return nil
+    }
+
+    /// 合并 bookStyle 和 sheetStyle，如果 bookStyle 为 nil，则返回 sheetStyle
+    /// - Parameters:
+    ///   - bookStyle: 书本样式
+    ///   - sheetStyle: 工作表样式
+    /// - Returns: 合并后的样式
+    private func mergedSheetStyle(bookStyle: BookStyle, sheetStyle: SheetStyle) -> SheetStyle {
+        SheetStyle.merge(base: bookStyle.defaultSheetStyle, additional: sheetStyle) ?? sheetStyle
+    }
+
+    private func mergedHeaderStyle(bookStyle: BookStyle, sheetStyle: SheetStyle, column: AnyColumn<ObjectType>) -> CellStyle? {
+        let headerStyle = CellStyle.merge(
+            bookStyle.defaultHeaderCellStyle,
+            sheetStyle.columnHeaderStyle,
+            column.headerStyle)
+        return headerStyle
+    }
+
+    private func mergedBodyStyle(bookStyle: BookStyle, sheetStyle: SheetStyle, column: AnyColumn<ObjectType>) -> CellStyle? {
+        let bodyStyle = CellStyle.merge(
+            bookStyle.defaultBodyCellStyle,
+            sheetStyle.columnBodyStyle,
+            column.bodyStyle)
+        return bodyStyle
+    }
+
+    private func generateHeaderCell(column: AnyColumn<ObjectType>, columnIndex: Int, styleID: Int?) -> Cell {
+        //  let style = mergedHeaderStyle(bookStyle: bookStyle, sheetStyle: sheetStyle, column: column)
+        let cell = Cell(row: 1, column: columnIndex, value: .string(column.name), styleID: styleID)
+        return cell
+    }
+
+    private func addBorderIfNeeded(cell: Cell, row: Int, column: Int, borderRange: SheetStyle.BorderRegion?) -> Cell {
+        guard let borderRange else { return cell }
+
+        return cell
     }
 }
