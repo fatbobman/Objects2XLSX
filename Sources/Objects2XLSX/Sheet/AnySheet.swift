@@ -11,17 +11,17 @@ import Foundation
 /// A type-erased sheet that can hold any object type.
 public final class AnySheet {
     private let _name: String
-    private let _makeSheetData: (BookStyle, StyleRegister, ShareStringRegister) -> SheetXML?
+    private let _makeSheetXML: (BookStyle, StyleRegister, ShareStringRegister) -> SheetXML?
 
     public var name: String { _name }
 
     public init<ObjectType>(_ sheet: Sheet<ObjectType>) {
         _name = sheet.name
-        _makeSheetData = { bookStyle, styleRegister, shareStringRegister in
+        _makeSheetXML = { bookStyle, styleRegister, shareStringRegister in
             // 获取数据
             let objects = sheet.dataProvider?() ?? []
             // 生成 SheetData
-            return sheet.makeSheetData(
+            return sheet.makeSheetXML(
                 with: objects,
                 bookStyle: bookStyle,
                 styleRegister: styleRegister,
@@ -29,12 +29,12 @@ public final class AnySheet {
         }
     }
 
-    /// 生成工作表数据
-    func makeSheetData(
+    /// 生成 SheetXML
+    func makeSheetXML(
         bookStyle: BookStyle,
         styleRegister: StyleRegister,
         shareStringRegister: ShareStringRegister) -> SheetXML?
     {
-        _makeSheetData(bookStyle, styleRegister, shareStringRegister)
+        _makeSheetXML(bookStyle, styleRegister, shareStringRegister)
     }
 }

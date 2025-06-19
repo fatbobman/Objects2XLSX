@@ -14,7 +14,7 @@ protocol SheetProtocol<ObjectType> {
     var name: String { get }
 
     /// Generate sheet data based on the provided objects.
-    func makeSheetData(
+    func makeSheetXML(
         with objects: [ObjectType],
         bookStyle: BookStyle,
         styleRegister: StyleRegister,
