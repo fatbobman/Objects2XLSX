@@ -66,7 +66,7 @@ public struct SheetStyle: Equatable, Hashable, Sendable {
     }
 
     /// 数据区域边框设置
-    public struct DataAreaBorder: Equatable, Hashable, Sendable {
+    public struct DataRange: Equatable, Hashable, Sendable {
         /// 数据区域的起始行
         public let startRow: Int
         /// 数据区域的起始列
@@ -75,8 +75,14 @@ public struct SheetStyle: Equatable, Hashable, Sendable {
         public let endRow: Int
         /// 数据区域的结束列
         public let endColumn: Int
-        /// 边框样式
-        public let border: Border
+    }
+
+    public struct BorderRegion: Equatable, Hashable, Sendable {
+        let startRow: Int
+        let startColumn: Int
+        let endRow: Int
+        let endColumn: Int
+        let border: Border
     }
 
     /// 列宽设置，key 为列索引
@@ -125,7 +131,10 @@ public struct SheetStyle: Equatable, Hashable, Sendable {
     public var zoom: Zoom?
 
     /// 数据区域边框设置
-    public var dataAreaBorder: DataAreaBorder?
+    public var dataRange: DataRange?
+
+    // 边框样式定义（可以有多个）
+    public var borders: [BorderRegion] = []
 
     /// 表头样式
     public var columnHeaderStyle: CellStyle?
@@ -270,32 +279,29 @@ extension SheetStyle {
 
 extension SheetStyle {
     /// 设置数据区域边框
-    func dataAreaBorder(
+    func dataRange(
         startRow: Int,
         startColumn: Int,
-        endRow: Int,
-        endColumn: Int,
-        border: Border) -> Self
+        endRow: Int) -> Self
     {
         var newSelf = self
-        newSelf.dataAreaBorder = DataAreaBorder(
+        newSelf.dataRange = DataRange(
             startRow: startRow,
             startColumn: startColumn,
             endRow: endRow,
-            endColumn: endColumn,
-            border: border)
+            endColumn: startColumn)
         return newSelf
     }
 
-    /// 设置数据区域边框（使用范围）
-    func dataAreaBorder(_ range: CellRange, border: Border) -> Self {
-        dataAreaBorder(
-            startRow: range.startRow,
-            startColumn: range.startColumn,
-            endRow: range.endRow,
-            endColumn: range.endColumn,
-            border: border)
-    }
+    // /// 设置数据区域边框（使用范围）
+    // func dataAreaBorder(_ range: CellRange, border: Border) -> Self {
+    //     dataRange(
+    //         startRow: range.startRow,
+    //         startColumn: range.startColumn,
+    //         endRow: range.endRow,
+    //         endColumn: range.endColumn,
+    //         border: border)
+    // }
 }
 
 // 辅助枚举

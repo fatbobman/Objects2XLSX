@@ -115,7 +115,7 @@ extension Sheet {
         style.defaultRowHeight = height
     }
 
-    /// 设置整张表的 header 行高
+    /// 设置表的 header 行高
     public func columnHeaderHeight(_ height: Double?) {
         style.rowHeights[0] = height
     }
@@ -147,15 +147,53 @@ extension Sheet {
         self.style = style
     }
 
-    /// 根据 数据量，自动设置数据区域
-    public func setDataAreaBorder(borderStyle: BorderStyle = .thin) {
-        let dataAreaBorder = SheetStyle.DataAreaBorder(
-            startRow: hasHeader ? 1 : 0,
-            startColumn: 0,
-            endRow: rowsCount - 1,
-            endColumn: columnsCount - 1,
+    /// 自动设置数据区域（用于 dimension）
+    public func updateDataRange() {
+        guard rowsCount > 0, columnsCount > 0 else {
+            style.dataRange = nil
+            return
+        }
+
+        style.dataRange = SheetStyle.DataRange(
+            startRow: 1,
+            startColumn: 1,
+            endRow: rowsCount,
+            endColumn: columnsCount)
+    }
+
+    /// 添加数据区域边框
+    public func addDataBorder(
+        borderStyle: BorderStyle = .thin,
+        includeHeader: Bool = true) -> Self
+    {
+        let dataRowCount = data?.count ?? 0
+        guard dataRowCount > 0 || (hasHeader && includeHeader) else { return self }
+
+        let borderRegion = SheetStyle.BorderRegion(
+            startRow: includeHeader && hasHeader ? 1 : (hasHeader ? 2 : 1),
+            startColumn: 1,
+            endRow: rowsCount,
+            endColumn: columnsCount,
             border: Border.all(style: borderStyle))
-        style.dataAreaBorder = dataAreaBorder
+
+        style.borders.append(borderRegion)
+        return self
+    }
+
+    /// 添加仅数据行的边框（不包含标题）
+    public func addDataOnlyBorder(borderStyle: BorderStyle = .thin) -> Self {
+        let dataRowCount = data?.count ?? 0
+        guard dataRowCount > 0 else { return self }
+
+        let borderRegion = SheetStyle.BorderRegion(
+            startRow: hasHeader ? 2 : 1,
+            startColumn: 1,
+            endRow: hasHeader ? dataRowCount + 1 : dataRowCount,
+            endColumn: columnsCount,
+            border: Border.all(style: borderStyle))
+
+        style.borders.append(borderRegion)
+        return self
     }
 }
 
