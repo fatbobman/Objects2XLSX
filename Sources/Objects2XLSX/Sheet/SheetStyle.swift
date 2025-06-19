@@ -98,10 +98,10 @@ public struct SheetStyle: Equatable, Hashable, Sendable {
     public var pageSetup: PageSetup?
 
     /// 默认列宽
-    public var defaultColumnWidth: Double? = 8.43
+    public var defaultColumnWidth: Double = 8.43
 
     /// 默认行高
-    public var defaultRowHeight: Double? = 15.0
+    public var defaultRowHeight: Double = 15.0
 
     /// 是否显示网格线
     public var showGridlines: Bool = true
@@ -145,30 +145,20 @@ public struct SheetStyle: Equatable, Hashable, Sendable {
     public init() {}
 
     /// 默认的工作表样式
-    public static let `default` = SheetStyle(
-        defaultColumnWidth: 8.43,
-        defaultRowHeight: 15.0,
-        showGridlines: true,
-        showRowAndColumnHeadings: true,
-        showZeros: true,
-        showFormulas: false,
-        showOutlineSymbols: true,
-        showPageBreaks: false,
-        columnHeaderStyle: CellStyle.default,
-        columnBodyStyle: CellStyle.default)
+    public static let `default` = SheetStyle()
 
     /// 创建一个基础的 SheetStyle 实例
     public init(
-        defaultColumnWidth: Double? = nil,
-        defaultRowHeight: Double? = nil,
+        defaultColumnWidth: Double = 8.43,
+        defaultRowHeight: Double = 15.0,
         showGridlines: Bool = true,
         showRowAndColumnHeadings: Bool = true,
         showZeros: Bool = true,
         showFormulas: Bool = false,
         showOutlineSymbols: Bool = true,
         showPageBreaks: Bool = false,
-        columnHeaderStyle: CellStyle? = CellStyle.default,
-        columnBodyStyle: CellStyle? = CellStyle.default)
+        columnHeaderStyle: CellStyle? = nil,
+        columnBodyStyle: CellStyle? = nil)
     {
         self.defaultColumnWidth = defaultColumnWidth
         self.defaultRowHeight = defaultRowHeight
@@ -206,13 +196,13 @@ extension SheetStyle {
 // MARK: Modifiers
 
 extension SheetStyle {
-    public func defaultColumnWidth(_ width: Double?) -> Self {
+    public func defaultColumnWidth(_ width: Double) -> Self {
         var newSelf = self
         newSelf.defaultColumnWidth = width
         return newSelf
     }
 
-    public func defaultRowHeight(_ height: Double?) -> Self {
+    public func defaultRowHeight(_ height: Double) -> Self {
         var newSelf = self
         newSelf.defaultRowHeight = height
         return newSelf

@@ -107,13 +107,8 @@ struct SheetXML {
     private func generateSheetFormatXML(_ style: SheetStyle) -> String {
         var xml = "<sheetFormatPr"
 
-        if let defaultRowHeight = style.defaultRowHeight {
-            xml += " defaultRowHeight=\"\(defaultRowHeight)\""
-        }
-
-        if let defaultColumnWidth = style.defaultColumnWidth {
-            xml += " defaultColWidth=\"\(defaultColumnWidth)\""
-        }
+        xml += " defaultRowHeight=\"\(style.defaultRowHeight)\""
+        xml += " defaultColWidth=\"\(style.defaultColumnWidth)\""
 
         xml += "/>"
 

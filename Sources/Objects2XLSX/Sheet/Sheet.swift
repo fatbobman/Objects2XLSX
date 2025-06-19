@@ -42,7 +42,7 @@ public final class Sheet<ObjectType>: SheetProtocol {
         name: String,
         nameSanitizer: SheetNameSanitizer = .default,
         hasHeader: Bool = true,
-        style: SheetStyle = SheetStyle(),
+        style: SheetStyle = .default,
         dataProvider: (() -> [ObjectType])? = nil,
         @ColumnBuilder<ObjectType> columns: () -> [AnyColumn<ObjectType>])
     {
@@ -69,12 +69,12 @@ public final class Sheet<ObjectType>: SheetProtocol {
 
 extension Sheet {
     /// 设置整张表的 body 行高
-    public func rowBodyHeight(_ height: Double?) {
+    public func rowBodyHeight(_ height: Double) {
         style.defaultRowHeight = height
     }
 
     /// 设置表的 header 行高
-    public func columnHeaderHeight(_ height: Double?) {
+    public func columnHeaderHeight(_ height: Double) {
         style.rowHeights[0] = height
     }
 
