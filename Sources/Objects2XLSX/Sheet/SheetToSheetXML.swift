@@ -193,7 +193,7 @@ extension Sheet {
         shareStringRegistor: ShareStringRegister
     ) -> [Row] {
         var rows: [Row] = []
-        
+
         for (objectIndex, object) in objects.enumerated() {
             let rowIndex = startRowIndex + objectIndex
             let dataRow = generateDataRow(
@@ -207,10 +207,10 @@ extension Sheet {
             )
             rows.append(dataRow)
         }
-        
+
         return rows
     }
-    
+
     /// 生成单个数据行
     private func generateDataRow(
         object: ObjectType,
@@ -223,7 +223,7 @@ extension Sheet {
     ) -> Row {
         let rowHeight = sheetStyle.rowHeights[rowIndex] ?? sheetStyle.defaultRowHeight
         var dataRow = Row(index: rowIndex, cells: [], height: rowHeight)
-        
+
         for (columnIndex, column) in columns.enumerated() {
             let columnNumber = columnIndex + 1
             let dataCell = generateDataCell(
@@ -238,10 +238,10 @@ extension Sheet {
             )
             dataRow.cells.append(dataCell)
         }
-        
+
         return dataRow
     }
-    
+
     /// 生成单个数据单元格
     private func generateDataCell(
         object: ObjectType,
@@ -255,13 +255,13 @@ extension Sheet {
     ) -> Cell {
         // 合并样式
         var cellStyle = mergedBodyCellStyle(bookStyle: bookStyle, sheetStyle: sheetStyle, column: column)
-        
+
         // 应用数据边框
         cellStyle = applyBordersToCell(cellStyle: cellStyle, row: rowIndex, column: columnIndex, borders: sheetStyle.dataBorder, sheetStyle: sheetStyle)
-        
+
         // 生成单元格值
         let cellValue = column.generateCellValue(for: object)
-        
+
         // 处理共享字符串
         var sharedStringID: Int? = nil
         switch cellValue {
@@ -276,10 +276,10 @@ extension Sheet {
         default:
             break // 其他类型不使用共享字符串
         }
-        
+
         // 注册样式
         let styleID = styleRegister.registerCellStyle(cellStyle, cellType: cellValue)
-        
+
         return Cell(
             row: rowIndex,
             column: columnIndex,

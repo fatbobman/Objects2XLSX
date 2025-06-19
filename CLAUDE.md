@@ -34,11 +34,16 @@ Objects2XLSX 是一个 Swift 库，用于将对象数据导出为 Excel (.xlsx) 
 - ✅ 类型安全的列定义系统
 - ✅ Builder 模式（SheetBuilder、ColumnBuilder）
 - ✅ 数据类型支持（string、int、double、date、boolean、url、percentage）
+- ✅ 完整的 SheetXML 生成功能（表头 + 数据行）
+- ✅ 数据行生成逻辑（generateDataRows、generateDataRow、generateDataCell）
+- ✅ 样式合并和优先级处理（列样式 > 工作表样式 > 工作簿样式）
+- ✅ 共享字符串支持（String 和 URL 类型）
+- ✅ 自动边框区域计算和应用
+- ✅ 简化的边框系统（DataBorderSettings）
 
 ### 待实现功能
 
 - ❌ Book.write() 方法 - 生成实际的 XLSX 文件
-- ❌ Sheet.makeSheetData() 方法 - 将对象转换为 SheetXML
 - ❌ XLSX 文件打包逻辑
 - ❌ 必需的 Excel 文件组件（workbook.xml、styles.xml、sharedStrings.xml 等）
 
@@ -95,11 +100,54 @@ swift package generate-xcodeproj
 1. 行列索引从 1 开始（Excel 标准）
 2. Sheet 名称会自动清理非法字符并限制长度
 3. 大数据集需要考虑内存使用
-4. 共享字符串用于优化文件大小
+4. 共享字符串用于优化文件大小（String 和 URL 类型自动注册）
+5. 边框系统使用简化的 DataBorderSettings，支持自动区域计算
+
+## 核心功能实现详情
+
+### SheetXML 生成流程
+
+1. **makeSheetXML()** - 主入口方法
+   - 合并样式（Book + Sheet 样式）
+   - 筛选有效列（activeColumns）
+   - 自动计算数据区域和边框设置
+   - 生成表头行和数据行
+
+2. **表头生成** - generateHeaderRow()
+   - 使用列名创建表头单元格
+   - 应用表头样式（columnHeaderStyle）
+   - 自动注册共享字符串
+
+3. **数据行生成** - generateDataRows()
+   - 遍历对象数据创建数据行
+   - 应用列样式和工作表样式
+   - 处理不同数据类型的单元格值
+
+4. **单元格生成** - generateDataCell()
+   - 样式合并（列 > 工作表 > 工作簿）
+   - 自动应用数据边框
+   - 共享字符串注册（String、URL）
+   - 样式ID注册和分配
+
+### 边框系统
+
+- **DataBorderSettings**: 简化的边框配置
+  - `enabled`: 是否启用边框
+  - `includeHeader`: 是否包含表头
+  - `borderStyle`: 边框样式（thin、medium、thick等）
+- **自动区域计算**: 根据数据范围自动确定边框应用区域
+- **位置智能**: 根据单元格在数据区域中的位置自动应用对应边框
+
+### 共享字符串优化
+
+- **支持类型**: String、URL
+- **自动注册**: 生成单元格时自动检测并注册
+- **去重优化**: 相同字符串只注册一次
+- **XML引用**: 使用共享字符串ID替代直接字符串值
 
 ## 下一步工作重点
 
-1. 实现 Sheet.makeSheetData() 方法
-2. 完成 Book.write() 方法
-3. 添加 XLSX 打包功能
-4. 补充集成测试
+1. 完成 Book.write() 方法
+2. 添加 XLSX 文件打包功能
+3. 实现必需的 Excel 文件组件（workbook.xml、styles.xml、sharedStrings.xml）
+4. 补充集成测试和性能测试
