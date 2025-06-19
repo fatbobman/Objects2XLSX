@@ -29,20 +29,10 @@ protocol ColumnProtocol<ObjectType> {
     /// - Returns: When condition of column.
     var when: (ObjectType) -> Bool { get }
 
-    /// Generate cell closure, encapsulating type-related operations.
+    /// Generate cell value closure, encapsulating type-related operations.
     /// - Parameters:
     ///   - object: Object of column.
-    ///   - row: Row of cell.
-    ///   - column: Column of cell.
-    ///   - bodyStyleID: Style ID of cell.
-    ///   - headerStyleID: Style ID of header of cell.
-    ///   - isHeader: Whether the cell is header.
-    /// - Returns: Cell of column.
-    func generateCell(
-        for object: ObjectType,
-        row: Int,
-        column: Int,
-        bodyStyleID: Int?,
-        headerStyleID: Int?,
-        isHeader: Bool) -> Cell
+    /// - Returns: Cell value of column.
+    func generateCellValue(
+        for object: ObjectType) -> Cell.CellType
 }

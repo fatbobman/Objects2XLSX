@@ -47,7 +47,7 @@ public struct AnyColumn<ObjectType> {
     private let _when: (ObjectType) -> Bool
 
     /// A closure that generates a cell for a given object at a given row and column
-    private let _generateCell: (ObjectType, Int, Int, Int?, Int?, Bool) -> Cell
+    private let _generateCellValue: (ObjectType) -> Cell.CellType
 
     /// Creates an `AnyColumn` from a `Column` instance
     ///
@@ -58,28 +58,18 @@ public struct AnyColumn<ObjectType> {
         bodyStyle = column.bodyStyle
         headerStyle = column.headerStyle
         _when = column.when
-        _generateCell = column.generateCell
+        _generateCellValue = column.generateCellValue
     }
 
-    /// Generates a cell for the given object at the specified position.
+    /// Generates a cell value for the given object.
     ///
     /// - Parameters:
-    ///   - object: The object to generate the cell for
-    ///   - row: The row index
-    ///   - column: The column index
-    ///   - bodyStyleID: Optional style ID for the body cells
-    ///   - headerStyleID: Optional style ID for the header cells
-    ///   - isHeader: Whether the cell is a header cell
-    /// - Returns: The generated cell
-    public func generateCell(
-        for object: ObjectType,
-        row: Int,
-        column: Int,
-        bodyStyleID: Int? = nil,
-        headerStyleID: Int? = nil,
-        isHeader: Bool = false) -> Cell
+    ///   - object: The object to generate the cell value for
+    /// - Returns: The generated cell value
+    public func generateCellValue(
+        for object: ObjectType) -> Cell.CellType
     {
-        _generateCell(object, row, column, bodyStyleID, headerStyleID, isHeader)
+        _generateCellValue(object)
     }
 
     /// Checks if the column should be generated for a given object

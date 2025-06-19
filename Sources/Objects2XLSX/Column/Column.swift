@@ -128,23 +128,13 @@ where OutputType: ColumnOutputTypeProtocol {
         return col
     }
 
-    /// Generates a cell for the given object at the specified position.
+    /// Generates a cell value for the given object.
     ///
     /// - Parameters:
     ///   - object: The object to generate the cell for
-    ///   - row: The row index
-    ///   - column: The column index
-    ///   - bodyStyleID: Optional style ID for the cell body
-    ///   - headerStyleID: Optional style ID for the header
-    ///   - isHeader: Whether this is a header cell
-    /// - Returns: A Cell instance
-    func generateCell(
-        for object: ObjectType,
-        row: Int,
-        column: Int,
-        bodyStyleID: Int? = nil,
-        headerStyleID: Int? = nil,
-        isHeader: Bool = false) -> Cell
+    /// - Returns: A Cell.CellType instance
+    func generateCellValue(
+        for object: ObjectType) -> Cell.CellType
     {
         let rawValue = object[keyPath: keyPath]
         let outputValue: OutputType = if let conditionalMapping, let filter {
@@ -153,13 +143,7 @@ where OutputType: ColumnOutputTypeProtocol {
             mapping(rawValue)
         }
 
-        // 应用 nilHandling 处理并转换为 CellType
-        let cellValue = processValueForCell(outputValue)
-
-        // 根据是否为header选择合适的styleID
-        let finalStyleID = isHeader ? headerStyleID : bodyStyleID
-
-        return Cell(row: row, column: column, value: cellValue, styleID: finalStyleID)
+        return processValueForCell(outputValue)
     }
 
     /// Processes the output value according to nilHandling settings and converts it to a

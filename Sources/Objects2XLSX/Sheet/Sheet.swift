@@ -15,19 +15,27 @@ import Foundation
 /// SwiftData 的话，应该在获取数据的 ModelActor 中执行
 public final class Sheet<ObjectType>: SheetProtocol {
     public let name: String
+    /// sheet 中声明的所有列列（包含 when 为false 的列），并不一定会全部生成
+    /// 生成时，将根据第一个对象，筛选出有效的列（ activeColumns ）
     public let columns: [AnyColumn<ObjectType>]
+    /// 是否创建 header 行（标题行）
     public var hasHeader: Bool
+    /// sheet 的样式
     public var style: SheetStyle
+    /// 数据提供者，用于获取数据
     public var dataProvider: (() -> [ObjectType])?
 
+    /// 数据提供者，用于获取数据
     private var data: [ObjectType]?
 
+    /// 数据行数
     private var rowsCount: Int {
-        data?.count ?? 0
+        (data?.count ?? 0) + (hasHeader ? 1 : 0)
     }
 
+    /// 列数
     private var columnsCount: Int {
-        columns.count
+        activeColumns().count
     }
 
     public init(
@@ -91,6 +99,12 @@ public final class Sheet<ObjectType>: SheetProtocol {
     public func eraseToAnySheet() -> AnySheet {
         AnySheet(self)
     }
+
+    /// 根据第一个对象，筛选出有效的列
+    private func activeColumns() -> [AnyColumn<ObjectType>] {
+        guard let firstObject = data?.first else { return [] }
+        return columns.filter { $0.shouldGenerate(for: firstObject) }
+    }
 }
 
 // MARK: Modifiers
@@ -127,6 +141,10 @@ extension Sheet {
 
     public func showHeader(_ show: Bool) {
         hasHeader = show
+    }
+
+    public func sheetStyle(_ style: SheetStyle) {
+        self.style = style
     }
 
     /// 根据 数据量，自动设置数据区域
