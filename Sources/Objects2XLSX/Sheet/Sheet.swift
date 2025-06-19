@@ -55,7 +55,7 @@ public final class Sheet<ObjectType>: SheetProtocol {
 
     func makeSheetData(
         with objects: [ObjectType],
-        hasHeader: Bool = true,
+        bookStyle: BookStyle,
         styleRegister: StyleRegister,
         shareStringRegistor: ShareStringRegister) -> SheetXML? // TODO: 返回 SheetData,临时
     {

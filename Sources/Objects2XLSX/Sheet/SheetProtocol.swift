@@ -16,7 +16,7 @@ protocol SheetProtocol<ObjectType> {
     /// Generate sheet data based on the provided objects.
     func makeSheetData(
         with objects: [ObjectType],
-        hasHeader: Bool,
+        bookStyle: BookStyle,
         styleRegister: StyleRegister,
         shareStringRegistor: ShareStringRegister) -> SheetXML?
 }
