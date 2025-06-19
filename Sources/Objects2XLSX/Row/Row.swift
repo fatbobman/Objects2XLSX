@@ -10,7 +10,7 @@ import Foundation
 
 public struct Row {
     public let index: Int
-    public let cells: [Cell]
+    public var cells: [Cell]
     public let height: Double?
 
     public init(index: Int, cells: [Cell], height: Double? = nil) {

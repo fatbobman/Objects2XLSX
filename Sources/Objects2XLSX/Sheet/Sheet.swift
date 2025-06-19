@@ -19,14 +19,14 @@ public final class Sheet<ObjectType>: SheetProtocol {
     /// 生成时，将根据第一个对象，筛选出有效的列（ activeColumns ）
     public let columns: [AnyColumn<ObjectType>]
     /// 是否创建 header 行（标题行）
-    public var hasHeader: Bool
+    public private(set) var hasHeader: Bool
     /// sheet 的样式
-    public var style: SheetStyle
+    public private(set)  var style: SheetStyle
     /// 数据提供者，用于获取数据
-    public var dataProvider: (() -> [ObjectType])?
+    public private(set) var dataProvider: (() -> [ObjectType])?
 
     /// 数据提供者，用于获取数据
-    private var data: [ObjectType]?
+    private(set) var data: [ObjectType]?
 
     /// 数据行数
     private var rowsCount: Int {
@@ -167,3 +167,5 @@ func columnIndexToExcelColumn(_ index: Int) -> String {
 
     return result
 }
+
+extension Sheet: @unchecked Sendable where ObjectType: Sendable {}

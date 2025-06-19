@@ -20,9 +20,9 @@ import Foundation
 /// ```
 @resultBuilder
 public enum ColumnBuilder<ObjectType> {
-    /// 构建多个列的组合
-    public static func buildBlock(_ columns: AnyColumn<ObjectType>...) -> [AnyColumn<ObjectType>] {
-        columns
+    /// 构建多个列的组合 - 处理多个数组参数
+    public static func buildBlock(_ components: [AnyColumn<ObjectType>]...) -> [AnyColumn<ObjectType>] {
+        components.flatMap { $0 }
     }
 
     /// 构建单个列
@@ -76,5 +76,11 @@ public enum ColumnBuilder<ObjectType> {
     public static func buildArray(_ components: [[AnyColumn<ObjectType>]])
     -> [AnyColumn<ObjectType>] {
         components.flatMap(\.self)
+    }
+    
+    /// 构建最终结果 - 处理数组直接返回的情况
+    public static func buildFinalResult(_ component: [AnyColumn<ObjectType>]) 
+    -> [AnyColumn<ObjectType>] {
+        component
     }
 }
