@@ -265,6 +265,105 @@ extension SheetStyle {
     }
 }
 
+// MARK: Merge Methods
+
+extension SheetStyle {
+    /// 合并两个 SheetStyle，additional 的非 nil 属性会覆盖 base 的对应属性
+    /// - Parameters:
+    ///   - base: 基础样式
+    ///   - additional: 附加样式（优先级更高）
+    ///   - forceOverride: 是否强制使用 additional 的所有值覆盖 base（默认 false）
+    /// - Returns: 合并后的样式，如果两个都是 nil 则返回 nil
+    public static func merge(base: SheetStyle?, additional: SheetStyle?, forceOverride: Bool = false) -> SheetStyle? {
+        // 如果都是 nil，返回 nil
+        guard base != nil || additional != nil else { return nil }
+        
+        // 如果只有一个不是 nil，直接返回那个
+        guard let base else { return additional }
+        guard let additional else { return base }
+        
+        // 两个都不是 nil，逐个属性合并
+        // additional 的非默认值会覆盖 base 的值
+        var merged = base
+        
+        // 合并字典类型的属性
+        merged.columnWidths = base.columnWidths.merging(additional.columnWidths) { _, new in new }
+        merged.rowHeights = base.rowHeights.merging(additional.rowHeights) { _, new in new }
+        merged.borders = base.borders + additional.borders // 边框累加
+        
+        // 合并可选属性
+        merged.printSettings = additional.printSettings ?? base.printSettings
+        merged.pageSetup = additional.pageSetup ?? base.pageSetup
+        merged.tabColor = additional.tabColor ?? base.tabColor
+        merged.freezePanes = additional.freezePanes ?? base.freezePanes
+        merged.zoom = additional.zoom ?? base.zoom
+        merged.dataRange = additional.dataRange ?? base.dataRange
+        merged.columnHeaderStyle = CellStyle.merge(base: base.columnHeaderStyle, additional: additional.columnHeaderStyle)
+        merged.columnBodyStyle = CellStyle.merge(base: base.columnBodyStyle, additional: additional.columnBodyStyle)
+        
+        // 对于基础属性的合并策略：
+        if forceOverride {
+            // 强制覆盖模式：additional 的所有值都覆盖 base
+            merged.defaultColumnWidth = additional.defaultColumnWidth
+            merged.defaultRowHeight = additional.defaultRowHeight
+            merged.showGridlines = additional.showGridlines
+            merged.showRowAndColumnHeadings = additional.showRowAndColumnHeadings
+            merged.showZeros = additional.showZeros
+            merged.showFormulas = additional.showFormulas
+            merged.showOutlineSymbols = additional.showOutlineSymbols
+            merged.showPageBreaks = additional.showPageBreaks
+        } else {
+            // 智能合并模式：只有与默认值不同的值才覆盖 base
+            let defaultStyle = SheetStyle()
+            
+            if additional.defaultColumnWidth != defaultStyle.defaultColumnWidth {
+                merged.defaultColumnWidth = additional.defaultColumnWidth
+            }
+            if additional.defaultRowHeight != defaultStyle.defaultRowHeight {
+                merged.defaultRowHeight = additional.defaultRowHeight
+            }
+            if additional.showGridlines != defaultStyle.showGridlines {
+                merged.showGridlines = additional.showGridlines
+            }
+            if additional.showRowAndColumnHeadings != defaultStyle.showRowAndColumnHeadings {
+                merged.showRowAndColumnHeadings = additional.showRowAndColumnHeadings
+            }
+            if additional.showZeros != defaultStyle.showZeros {
+                merged.showZeros = additional.showZeros
+            }
+            if additional.showFormulas != defaultStyle.showFormulas {
+                merged.showFormulas = additional.showFormulas
+            }
+            if additional.showOutlineSymbols != defaultStyle.showOutlineSymbols {
+                merged.showOutlineSymbols = additional.showOutlineSymbols
+            }
+            if additional.showPageBreaks != defaultStyle.showPageBreaks {
+                merged.showPageBreaks = additional.showPageBreaks
+            }
+        }
+        
+        return merged
+    }
+    
+    /// 合并多个样式，后面的样式优先级更高
+    ///
+    /// ```swift
+    /// // 使用示例：
+    /// let finalStyle = SheetStyle.merge(
+    ///     book.defaultSheetStyle,      // 最低优先级
+    ///     template.sheetStyle,         // 中等优先级
+    ///     customSheetStyle            // 最高优先级
+    /// )
+    /// ```
+    /// - Parameter styles: 样式数组，按优先级从低到高排列
+    /// - Returns: 合并后的样式
+    public static func merge(_ styles: SheetStyle?...) -> SheetStyle? {
+        styles.reduce(nil) { result, style in
+            merge(base: result, additional: style, forceOverride: false)
+        }
+    }
+}
+
 // MARK: Internal Methods
 
 extension SheetStyle {
