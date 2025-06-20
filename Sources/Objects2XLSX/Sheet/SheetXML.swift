@@ -212,6 +212,11 @@ struct SheetXML {
     private func generateWorksheetContent() -> String {
         var xml = ""
 
+        // Add dimension to specify the used range of the worksheet
+        if let dataRange = calculateDataRange() {
+            xml += "<dimension ref=\"\(dataRange)\"/>"
+        }
+
         // Add worksheet format settings (optional)
         if let style {
             xml += generateSheetFormatXML(style)
@@ -368,5 +373,54 @@ struct SheetXML {
 
         xml += "</cols>"
         return xml
+    }
+
+    /**
+     Calculates the data range for the worksheet's dimension tag.
+
+     This method analyzes all rows and their cells to determine the actual
+     used range of the worksheet. The dimension tag tells Excel the area
+     that contains data, which improves performance and navigation.
+
+     ## Range Calculation
+
+     - Finds the minimum and maximum row numbers from non-empty rows
+     - Finds the minimum and maximum column numbers from all cells
+     - Returns the range in Excel A1 notation (e.g., "A1:H46")
+
+     - Returns: The data range in Excel A1 notation, or nil if no data exists
+
+     ## Example
+     For a worksheet with data from row 1 to row 46 and columns A to H:
+     ```
+     <dimension ref="A1:H46"/>
+     ```
+     */
+    private func calculateDataRange() -> String? {
+        guard !rows.isEmpty else { return nil }
+
+        var minRow = Int.max
+        var maxRow = Int.min
+        var minColumn = Int.max
+        var maxColumn = Int.min
+
+        for row in rows {
+            guard !row.cells.isEmpty else { continue }
+
+            minRow = min(minRow, row.index)
+            maxRow = max(maxRow, row.index)
+
+            for cell in row.cells {
+                minColumn = min(minColumn, cell.column)
+                maxColumn = max(maxColumn, cell.column)
+            }
+        }
+
+        guard minRow <= maxRow && minColumn <= maxColumn else { return nil }
+
+        let startCell = "\(columnIndexToExcelColumn(minColumn))\(minRow)"
+        let endCell = "\(columnIndexToExcelColumn(maxColumn))\(maxRow)"
+
+        return "\(startCell):\(endCell)"
     }
 }

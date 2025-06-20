@@ -22,7 +22,7 @@ struct CellXMLTest {
             sharedStringID: 0)
         print(cell.excelAddress) // @1
         let xml = cell.generateXML()
-        let expected = "<c r=\"A1\" s=\"1\"><v>0</v></c>"
+        let expected = "<c r=\"A1\" s=\"1\" t=\"s\"><v>0</v></c>"
 
         #expect(xml == expected)
     }
@@ -52,7 +52,7 @@ struct CellXMLTest {
             sharedStringID: 1)
 
         let xml = cell.generateXML()
-        let expected = "<c r=\"A2\" s=\"2\"><v>1</v></c>"
+        let expected = "<c r=\"A2\" s=\"2\" t=\"s\"><v>1</v></c>"
 
         #expect(xml == expected)
     }
@@ -81,7 +81,7 @@ struct CellXMLTest {
             styleID: 3)
 
         let xml = cell.generateXML()
-        let expected = "<c r=\"A3\" s=\"3\"><is><t>TRUE</t></is></c>"
+        let expected = "<c r=\"A3\" s=\"3\"><inlineStr><t>TRUE</t></inlineStr></c>"
 
         #expect(xml == expected)
     }
@@ -197,7 +197,7 @@ struct CellXMLTest {
         // 布尔类型 - nil
         let boolCell = Cell(row: 10, column: 5, value: .boolean(nil))
         let boolXML = boolCell.generateXML()
-        let expectedBool = "<c r=\"E10\"><is><t></t></is></c>"
+        let expectedBool = "<c r=\"E10\"><inlineStr><t></t></inlineStr></c>"
         #expect(boolXML == expectedBool)
 
         // URL类型 - nil
@@ -237,7 +237,7 @@ struct CellXMLTest {
             sharedStringID: 0)
 
         let xml = cell.generateXML()
-        let expected = "<c r=\"A12\" s=\"3\"><v>0</v></c>"
+        let expected = "<c r=\"A12\" s=\"3\" t=\"s\"><v>0</v></c>"
 
         #expect(xml == expected)
     }
@@ -279,8 +279,8 @@ struct CellXMLTest {
         let trueXML = trueCell.generateXML()
         let falseXML = falseCell.generateXML()
 
-        let expectedTrue = "<c r=\"A10\" s=\"9\"><is><t>1</t></is></c>"
-        let expectedFalse = "<c r=\"B10\" s=\"9\"><is><t>NO</t></is></c>"
+        let expectedTrue = "<c r=\"A10\" s=\"9\"><inlineStr><t>1</t></inlineStr></c>"
+        let expectedFalse = "<c r=\"B10\" s=\"9\"><inlineStr><t>NO</t></inlineStr></c>"
 
         #expect(trueXML == expectedTrue)
         #expect(falseXML == expectedFalse)

@@ -120,6 +120,16 @@ extension Cell {
             xml += " s=\"\(styleID)\""
         }
 
+        // Add cell type attribute for shared strings
+        if sharedStringID != nil {
+            switch value {
+            case .string, .url:
+                xml += " t=\"s\""
+            default:
+                break
+            }
+        }
+
         xml += ">"
 
         // Generate appropriate value format based on CellType
@@ -142,7 +152,7 @@ extension Cell {
                 }
             case .boolean:
                 // Boolean values always use inline text (not numeric 0/1)
-                xml += "<is><t>\(value.valueString)</t></is>"
+                xml += "<inlineStr><t>\(value.valueString)</t></inlineStr>"
             default:
                 // All other types use numeric value format
                 xml += "<v>\(value.valueString)</v>"
