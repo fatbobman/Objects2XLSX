@@ -8,21 +8,61 @@
 
 import Foundation
 
-/// Protocol for column output type.
+/// Defines the contract for column output types that convert data to Excel-compatible cell values.
 ///
-/// `ColumnOutputTypeProtocol` is a protocol that defines the output type of a column.
-/// It provides a way to create a column output type with a default value and a config.
+/// `ColumnOutputTypeProtocol` establishes the interface between typed column data and Excel's
+/// cell value system. Each conforming type represents a specific way of formatting and presenting
+/// data in Excel cells, from simple text and numbers to complex date and percentage formats.
+///
+/// ## Core Responsibilities
+/// - **Type Safety**: Associates each output type with a specific configuration type
+/// - **Cell Conversion**: Provides transformation to `Cell.CellType` for Excel serialization
+/// - **Default Handling**: Supports default value substitution for nil handling strategies
+/// - **Configuration Management**: Encapsulates formatting and display options
+///
+/// ## Implementation Pattern
+/// Conforming types typically follow this pattern:
+/// ```swift
+/// public struct MyColumnType: ColumnOutputTypeProtocol {
+///     public let config: MyColumnConfig
+///     
+///     public var cellType: Cell.CellType {
+///         // Convert config to appropriate Cell.CellType
+///     }
+///     
+///     public static func withDefaultValue(_ value: ValueType, config: MyColumnConfig) -> Self {
+///         // Create instance with substituted value
+///     }
+/// }
+/// ```
+///
+/// ## Provided Implementations
+/// The framework includes implementations for common data types:
+/// - `TextColumnType` for strings
+/// - `DoubleColumnType` and `IntColumnType` for numbers
+/// - `DateColumnType` for dates with timezone support
+/// - `BoolColumnType` for booleans with configurable representations
+/// - `URLColumnType` for web addresses
+/// - `PercentageColumnType` for percentage values with precision control
 public protocol ColumnOutputTypeProtocol: Sendable, Equatable {
-    /// Config of column output type.
+    /// The configuration type that defines formatting and display options for this output type
     associatedtype Config: ColumnTypeConfig
-    /// Config of column output type.
+    
+    /// The configuration instance containing formatting parameters and the source value
     var config: Config { get }
-    /// Cell type of column output type.
+    
+    /// Converts this output type to an Excel-compatible cell value for serialization
     var cellType: Cell.CellType { get }
 
-    /// Create a column output type with default value of nil.
-    /// - Parameter value: Value of column output type.
-    /// - Parameter config: Config of column output type.
-    /// - Returns: Column output type with default value of nil.
+    /// Creates a new instance with a default value, used by nil handling strategies.
+    ///
+    /// This method enables the substitution of default values when the original data is nil.
+    /// It creates a new instance using the provided default value while preserving the
+    /// original configuration's formatting and display options.
+    ///
+    /// - Parameters:
+    ///   - value: The default value to substitute for nil
+    ///   - config: The original configuration to preserve formatting options
+    /// - Returns: New instance with the default value and preserved configuration
     static func withDefaultValue(_ value: Config.ValueType, config: Config) -> Self
 }

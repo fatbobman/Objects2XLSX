@@ -8,62 +8,96 @@
 
 import Foundation
 
-/// A structure that represents a column in an Excel sheet.
+/// A strongly-typed column definition that maps object properties to Excel cell values.
 ///
-/// `Column` is a generic structure that defines how data from an object should be displayed in an
-/// Excel column.
-/// It provides type-safe mapping from your object's properties to Excel cell values, along with
-/// styling and formatting options.
+/// `Column` provides the core abstraction for extracting data from Swift objects and
+/// converting it to Excel-compatible cell content. It combines type safety, data transformation,
+/// styling, and conditional logic into a comprehensive column specification.
 ///
-/// - Parameters:
-///   - ObjectType: The type of object that contains the data to be displayed
-///   - InputType: The type of data that will be extracted from the object
-///   - OutputType: The type that will be used to represent the data in Excel（ColumnTypeProtocol）
+/// ## Generic Type Parameters
+/// - **ObjectType**: The Swift type containing source data (e.g., `Person`, `Product`)
+/// - **InputType**: The property type extracted via KeyPath (e.g., `String`, `Double?`, `Date`)
+/// - **OutputType**: The Excel-compatible output type (e.g., `TextColumnType`, `DoubleColumnType`)
+///
+/// ## Core Functionality
+/// - **Type-Safe Extraction**: Uses KeyPath for compile-time verified property access
+/// - **Data Transformation**: Maps input types to Excel-compatible output formats
+/// - **Conditional Logic**: Supports conditional display and conditional mapping
+/// - **Styling Integration**: Applies fonts, colors, alignment, and borders
+/// - **Nil Handling**: Configurable behavior for nil/missing values
+///
+/// ## Usage Examples
+/// ```swift
+/// // Simple text column
+/// Column<Person, String, TextColumnType>(name: "Full Name", keyPath: \.fullName)
+///
+/// // Numeric column with styling
+/// Column<Product, Double, DoubleColumnType>(name: "Price", keyPath: \.price)
+///     .width(12)
+///     .bodyStyle(CellStyle(font: Font(size: 12, bold: true)))
+///
+/// // Conditional column with custom mapping
+/// Column<Order, OrderStatus, TextColumnType>.conditional(
+///     name: "Status",
+///     keyPath: \.status,
+///     filter: { $0.isPriority },
+///     then: { "PRIORITY: \($0.description)" },
+///     else: { $0.description }
+/// )
+/// ```
+///
+/// ## Integration with Sheets
+/// Columns are collected into arrays and processed by `Sheet` instances to generate
+/// Excel worksheets. The type system ensures that all columns in a sheet work with
+/// the same `ObjectType` while allowing different data types and formatting.
 public struct Column<ObjectType, InputType, OutputType>: ColumnProtocol
 where OutputType: ColumnOutputTypeProtocol {
-    /// The name of the column as it will appear in the Excel sheet
+    /// The display name for this column in the Excel header row
     public var name: String
 
-    /// The width of the column in characters
+    /// Optional column width in Excel character units (nil = auto-width based on content)
     public var width: Int?
 
-    /// Defines how nil values should be handled in the column
-    /// - keepEmpty: Keep empty value as empty
-    /// - defaultValue: Use default value as empty
+    /// Strategy for handling nil values in the extracted data
+    /// - `.keepEmpty`: Renders as empty Excel cells
+    /// - `.defaultValue(T)`: Substitutes a specified default value
     public let nilHandling: TypedNilHandling<OutputType>
 
-    /// The style to be applied to the column's cells (excluding header)
+    /// Optional styling for data cells in this column (body rows)
     public var bodyStyle: CellStyle?
 
-    /// The style to be applied to the column's header cell
+    /// Optional styling for the header cell of this column
     public var headerStyle: CellStyle?
 
-    /// The key path used to extract data from the object
+    /// Compile-time verified path to extract data from the source object
     public let keyPath: KeyPath<ObjectType, InputType>
 
-    /// A function that maps the input data to the output type
+    /// Primary transformation function from input type to Excel-compatible output
     public let mapping: (InputType) -> OutputType
 
-    /// Optional conditional mapping function for different output based on a condition
+    /// Optional conditional mapping that chooses between two transformations based on a condition
     public var conditionalMapping: ((Bool, InputType) -> OutputType)?
 
-    /// Optional filter function to determine if the column should be included
+    /// Optional predicate function used by conditional mapping to determine transformation choice
     public var filter: ((ObjectType) -> Bool)?
 
-    /// A function that determines whether the column should be displayed for a given object
+    /// Visibility predicate that determines if this column should appear for a given object
     public var when: (ObjectType) -> Bool
 
-    /// Creates a new column with the specified parameters.
+    /// Creates a new column with comprehensive configuration options.
+    ///
+    /// This initializer provides full control over column behavior including data extraction,
+    /// transformation, styling, and visibility. It's the foundation for all column types.
     ///
     /// - Parameters:
-    ///   - name: The name of the column
-    ///   - keyPath: The key path to extract data from the object
-    ///   - width: Optional width of the column in characters
-    ///   - bodyStyle: Optional style for the column's cells
-    ///   - headerStyle: Optional style for the column's header
-    ///   - mapping: Function to map input data to output type
-    ///   - nilHandling: How to handle nil values
-    ///   - when: Function to determine if the column should be displayed
+    ///   - name: Display name in the Excel header row
+    ///   - keyPath: Compile-time verified path to extract data from objects
+    ///   - width: Optional column width in character units (nil = auto-width)
+    ///   - bodyStyle: Optional styling for data cells (nil = inherit from sheet/book)
+    ///   - headerStyle: Optional styling for header cell (nil = inherit from sheet/book)
+    ///   - mapping: Transformation function from input to Excel-compatible output
+    ///   - nilHandling: Strategy for nil values (default: keep empty)
+    ///   - when: Visibility predicate (default: always visible)
     public init(
         name: String,
         keyPath: KeyPath<ObjectType, InputType>,
@@ -86,20 +120,29 @@ where OutputType: ColumnOutputTypeProtocol {
         self.when = when
     }
 
-    /// Creates a conditional column that can display different values based on a condition.
+    /// Creates a conditional column that applies different data transformations based on object state.
+    ///
+    /// Conditional columns enable dynamic data presentation where the same source property
+    /// can be displayed differently based on object conditions. For example, showing priority
+    /// indicators for urgent items or formatting values differently based on status.
+    ///
+    /// ## Use Cases
+    /// - Status-dependent formatting ("URGENT: Task" vs "Task")
+    /// - Conditional value transformation (percentages vs raw numbers)
+    /// - Context-aware display logic (user role-based content)
     ///
     /// - Parameters:
-    ///   - name: The name of the column
-    ///   - keyPath: The key path to extract data from the object
-    ///   - width: Optional width of the column in characters
-    ///   - bodyStyle: Optional style for the column's cells
-    ///   - headerStyle: Optional style for the column's header
-    ///   - filter: Function to determine which mapping to use
-    ///   - thenMapping: Mapping function to use when filter returns true
-    ///   - elseMapping: Mapping function to use when filter returns false
-    ///   - nilHandling: How to handle nil values
-    ///   - when: Function to determine if the column should be displayed
-    /// - Returns: A new conditional column
+    ///   - name: Display name in the Excel header row
+    ///   - keyPath: Compile-time verified path to extract source data
+    ///   - width: Optional column width in character units
+    ///   - bodyStyle: Optional styling for data cells
+    ///   - headerStyle: Optional styling for header cell
+    ///   - filter: Predicate function that determines which mapping to apply
+    ///   - thenMapping: Transformation used when filter returns true
+    ///   - elseMapping: Transformation used when filter returns false
+    ///   - nilHandling: Strategy for handling nil values
+    ///   - when: Overall visibility predicate for the column
+    /// - Returns: A configured conditional column instance
     public static func conditional(
         name: String,
         keyPath: KeyPath<ObjectType, InputType>,
@@ -128,11 +171,16 @@ where OutputType: ColumnOutputTypeProtocol {
         return col
     }
 
-    /// Generates a cell value for the given object.
+    /// Extracts data from an object and converts it to an Excel-compatible cell value.
     ///
-    /// - Parameters:
-    ///   - object: The object to generate the cell for
-    /// - Returns: A Cell.CellType instance
+    /// This method orchestrates the complete data transformation pipeline:
+    /// 1. Extracts raw data using the key path
+    /// 2. Applies conditional or standard mapping
+    /// 3. Processes the result through nil handling logic
+    /// 4. Returns a typed cell value ready for Excel serialization
+    ///
+    /// - Parameter object: The source object to extract data from
+    /// - Returns: Excel-compatible cell value with appropriate type and formatting
     func generateCellValue(
         for object: ObjectType) -> Cell.CellType
     {
@@ -146,11 +194,14 @@ where OutputType: ColumnOutputTypeProtocol {
         return processValueForCell(outputValue)
     }
 
-    /// Processes the output value according to nilHandling settings and converts it to a
-    /// Cell.CellType.
+    /// Applies nil handling logic and converts the output value to a cell type.
     ///
-    /// - Parameter outputValue: The value to process
-    /// - Returns: A Cell.CellType instance
+    /// This method implements the column's nil handling strategy, either preserving
+    /// empty values or substituting configured defaults. The result is converted to
+    /// the appropriate `Cell.CellType` for Excel serialization.
+    ///
+    /// - Parameter outputValue: The transformed output value from the mapping function
+    /// - Returns: Final cell type ready for Excel inclusion
     func processValueForCell(_ outputValue: OutputType) -> Cell.CellType {
         switch nilHandling {
             case .keepEmpty:
@@ -160,9 +211,13 @@ where OutputType: ColumnOutputTypeProtocol {
         }
     }
 
-    /// Converts the column to a type-erased AnyColumn.
+    /// Converts this strongly-typed column to a type-erased AnyColumn.
     ///
-    /// - Returns: An AnyColumn instance
+    /// Type erasure enables storing columns with different generic parameters in
+    /// homogeneous collections, essential for building dynamic column configurations
+    /// and supporting result builder patterns.
+    ///
+    /// - Returns: Type-erased column wrapper preserving all functionality
     public func eraseToAnyColumn() -> AnyColumn<ObjectType> {
         AnyColumn(self)
     }

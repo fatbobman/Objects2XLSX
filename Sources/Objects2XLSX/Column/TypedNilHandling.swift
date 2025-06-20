@@ -8,24 +8,61 @@
 
 import Foundation
 
-/// A structure that represents the handling of nil values for a column type.
+/// Defines strategies for handling nil values in column data extraction and processing.
 ///
-/// `TypedNilHandling` is a structure that represents the handling of nil values for a column type.
-/// It provides a way to handle nil values for a column type with a default value.
+/// `TypedNilHandling` provides type-safe approaches to deal with optional data when
+/// generating Excel cells. This is particularly important when working with optional
+/// properties or nullable database fields that need predictable Excel representation.
+///
+/// ## Nil Handling Strategies
+/// - **keepEmpty**: Preserves nil as empty Excel cells (most common approach)
+/// - **defaultValue**: Substitutes a specified default value when data is nil
+///
+/// ## Type Safety
+/// The generic parameter ensures that default values match the expected output type,
+/// preventing runtime type mismatches and providing compile-time validation.
+///
+/// ## Usage Examples
+/// ```swift
+/// // Keep nil values as empty cells
+/// Column<Person, String?, TextColumnType>(
+///     name: "Middle Name",
+///     keyPath: \.middleName,
+///     nilHandling: .keepEmpty
+/// )
+///
+/// // Substitute default value for nil
+/// Column<Product, Double?, DoubleColumnType>(
+///     name: "Price",
+///     keyPath: \.price,
+///     nilHandling: .defaultValue(0.0)
+/// )
+/// ```
 public enum TypedNilHandling<V: ColumnOutputTypeProtocol> {
-    /// Keep empty values, and Excel will display empty cells.
+    /// Preserve nil values as empty Excel cells.
+    ///
+    /// When the extracted data is nil, the resulting Excel cell will be empty.
+    /// This is the most natural approach for optional data and maintains the
+    /// distinction between "no data" and "zero/empty data".
+    ///
+    /// **Excel Behavior**: Empty cells in Excel are truly empty and don't affect
+    /// calculations, averages, or other functions unless explicitly included.
     case keepEmpty
-    /// Use the default value, and Excel will display the default value.
+    
+    /// Substitute a default value when the extracted data is nil.
     ///
-    /// For example:
-    /// - 'none' for String type if the default value is nil.
-    /// - true for Bool type if the default value is nil.
-    /// - 0 for Int type if the default value is nil.
-    /// - 0.0 for Double type if the default value is nil.
-    /// - 0.0 for Percentage type if the default value is nil.
-    /// - specific date for Date type if the default value is nil.
-    /// - specific URL for URL type if the default value is nil.
+    /// When the extracted data is nil, the specified default value will be used
+    /// instead, creating a non-empty Excel cell with predictable content.
     ///
-    /// - Parameter value: The default value of the column type.
+    /// ## Common Default Values by Type
+    /// - **String**: `""` (empty string) or `"N/A"`, `"Unknown"`
+    /// - **Int**: `0` or `-1` (depending on domain meaning)
+    /// - **Double**: `0.0` or `Double.nan` for calculations
+    /// - **Bool**: `false` or contextually appropriate default
+    /// - **Date**: Current date or epoch date
+    /// - **URL**: Placeholder URL or empty URL
+    /// - **Percentage**: `0.0` for 0% or `Double.nan`
+    ///
+    /// - Parameter value: The default value to substitute for nil (must match the column's value type)
     case defaultValue(V.Config.ValueType)
 }

@@ -8,142 +8,207 @@
 
 import Foundation
 
-/// A structure that represents a column output type for Double values.
+/// Concrete implementations of column output types for common data types.
 ///
-/// `DoubleColumnType` is a structure that represents a column output type for Double values.
-/// It provides a way to create a column output type for Double values with a default value and a config.
+/// This file provides ready-to-use column output types that handle the most common
+/// data conversion scenarios in Excel generation. Each type encapsulates the logic
+/// for converting Swift values to appropriate Excel cell representations.
+
+/// Column output type for floating-point numeric values.
+///
+/// `DoubleColumnType` handles the conversion of `Double` values to Excel's numeric
+/// cell format. It preserves the full precision of floating-point numbers and
+/// renders them using Excel's default numeric formatting.
+///
+/// ## Usage Example
+/// ```swift
+/// Column<Product, Double, DoubleColumnType>(name: "Price", keyPath: \.price)
+/// Column<Measurement, Double?, DoubleColumnType>(name: "Weight", keyPath: \.weight)
+/// ```
 public struct DoubleColumnType: ColumnOutputTypeProtocol {
-    /// The config of the column output type.
+    /// Configuration containing the Double value and formatting options
     public let config: DoubleColumnConfig
 
-    /// Creates a DoubleColumnType with the given config.
+    /// Creates a DoubleColumnType with the specified configuration.
     ///
-    /// - Parameter config: The config of the column output type.
+    /// - Parameter config: Configuration containing the Double value
     public init(_ config: DoubleColumnConfig) {
         self.config = config
     }
 
-    /// The cell type of the column output type.
+    /// Converts the Double value to Excel's numeric cell type.
+    ///
+    /// Returns a `.double()` cell type that Excel will render as a number
+    /// with appropriate precision and formatting.
     public var cellType: Cell.CellType {
         .double(config.value)
     }
 
-    /// Creates a DoubleColumnType with the given default value and config.
+    /// Creates a DoubleColumnType with a substituted default value for nil handling.
     ///
-    /// - Parameter value: The default value of the column output type.
-    /// - Parameter config: The config of the column output type.
-    /// - Returns: A DoubleColumnType with the given default value and config.
+    /// - Parameters:
+    ///   - value: The default Double value to use instead of nil
+    ///   - config: Original configuration (ignored, new config created with default value)
+    /// - Returns: New DoubleColumnType with the default value
     public static func withDefaultValue(_ value: Double, config: DoubleColumnConfig) -> Self {
         DoubleColumnType(DoubleColumnConfig(value: value))
     }
 }
 
-/// A structure that represents a column output type for Int values.
+/// Column output type for integer numeric values.
 ///
-/// `IntColumnType` is a structure that represents a column output type for Int values.
-/// It provides a way to create a column output type for Int values with a default value and a config.
+/// `IntColumnType` handles the conversion of `Int` values to Excel's numeric
+/// cell format. Integers are displayed without decimal places and support
+/// the full range of Swift's Int type.
+///
+/// ## Usage Example
+/// ```swift
+/// Column<Person, Int, IntColumnType>(name: "Age", keyPath: \.age)
+/// Column<Order, Int?, IntColumnType>(name: "Quantity", keyPath: \.quantity)
+/// ```
 public struct IntColumnType: ColumnOutputTypeProtocol {
-    /// The config of the column output type.
+    /// Configuration containing the Int value and formatting options
     public let config: IntColumnConfig
 
-    /// Creates an IntColumnType with the given config.
+    /// Creates an IntColumnType with the specified configuration.
     ///
-    /// - Parameter config: The config of the column output type.
+    /// - Parameter config: Configuration containing the Int value
     public init(_ config: IntColumnConfig) {
         self.config = config
     }
 
-    /// The cell type of the column output type.
+    /// Converts the Int value to Excel's numeric cell type.
+    ///
+    /// Returns an `.int()` cell type that Excel will render as a whole number.
     public var cellType: Cell.CellType {
         .int(config.value)
     }
 
-    /// Creates an IntColumnType with the given default value and config.
+    /// Creates an IntColumnType with a substituted default value for nil handling.
     ///
-    /// - Parameter value: The default value of the column output type.
-    /// - Parameter config: The config of the column output type.
-    /// - Returns: An IntColumnType with the given default value and config.
+    /// - Parameters:
+    ///   - value: The default Int value to use instead of nil
+    ///   - config: Original configuration (ignored, new config created with default value)
+    /// - Returns: New IntColumnType with the default value
     public static func withDefaultValue(_ value: Int, config: IntColumnConfig) -> Self {
         IntColumnType(IntColumnConfig(value: value))
     }
 }
 
-/// A structure that represents a column output type for Text values.
+/// Column output type for text string values.
 ///
-/// `TextColumnType` is a structure that represents a column output type for Text values.
-/// It provides a way to create a column output type for Text values with a default value and a config.
+/// `TextColumnType` handles the conversion of `String` values to Excel's text
+/// cell format. Text values support Unicode content and can be optimized
+/// through shared string storage for memory efficiency.
+///
+/// ## Usage Example
+/// ```swift
+/// Column<Person, String, TextColumnType>(name: "Full Name", keyPath: \.fullName)
+/// Column<Product, String?, TextColumnType>(name: "Description", keyPath: \.description)
+/// ```
 public struct TextColumnType: ColumnOutputTypeProtocol {
-    /// The config of the column output type.
+    /// Configuration containing the String value and formatting options
     public let config: TextColumnConfig
 
-    /// Creates a TextColumnType with the given config.
+    /// Creates a TextColumnType with the specified configuration.
     ///
-    /// - Parameter config: The config of the column output type.
+    /// - Parameter config: Configuration containing the String value
     public init(_ config: TextColumnConfig) {
         self.config = config
     }
 
-    /// The cell type of the column output type.
+    /// Converts the String value to Excel's text cell type.
+    ///
+    /// Returns a `.string()` cell type that Excel will render as text.
+    /// The framework automatically handles shared string optimization when beneficial.
     public var cellType: Cell.CellType {
         .string(config.value)
     }
 
-    /// Creates a TextColumnType with the given default value and config.
+    /// Creates a TextColumnType with a substituted default value for nil handling.
     ///
-    /// - Parameter value: The default value of the column output type.
-    /// - Parameter config: The config of the column output type.
-    /// - Returns: A TextColumnType with the given default value and config.
+    /// - Parameters:
+    ///   - value: The default String value to use instead of nil
+    ///   - config: Original configuration (ignored, new config created with default value)
+    /// - Returns: New TextColumnType with the default value
     public static func withDefaultValue(_ value: String, config: TextColumnConfig) -> Self {
         TextColumnType(TextColumnConfig(value: value))
     }
 }
 
-/// A structure that represents a column output type for Date values.
+/// Column output type for date and time values.
 ///
-/// `DateColumnType` is a structure that represents a column output type for Date values.
-/// It provides a way to create a column output type for Date values with a default value and a config.
+/// `DateColumnType` handles the conversion of `Date` values to Excel's numeric
+/// date format with proper timezone handling. Dates are converted to Excel's
+/// day-based numbering system for accurate date and time representation.
+///
+/// ## Usage Example
+/// ```swift
+/// Column<Event, Date, DateColumnType>(name: "Start Date", keyPath: \.startDate)
+/// Column<Task, Date?, DateColumnType>(name: "Due Date", keyPath: \.dueDate, timeZone: .utc)
+/// ```
 public struct DateColumnType: ColumnOutputTypeProtocol {
-    /// The config of the column output type.
+    /// Configuration containing the Date value and timezone settings
     public let config: DateColumnConfig
 
-    /// Creates a DateColumnType with the given config.
+    /// Creates a DateColumnType with the specified configuration.
     ///
-    /// - Parameter config: The config of the column output type.
+    /// - Parameter config: Configuration containing the Date value and timezone
     public init(_ config: DateColumnConfig) {
         self.config = config
     }
 
-    /// The cell type of the column output type.
+    /// Converts the Date value to Excel's date cell type.
+    ///
+    /// Returns a `.date()` cell type with timezone information that Excel
+    /// will convert to its internal numeric date representation.
     public var cellType: Cell.CellType {
         .date(config.value, timeZone: config.timeZone)
     }
 
-    /// Creates a DateColumnType with the given default value and config.
+    /// Creates a DateColumnType with a substituted default value for nil handling.
     ///
-    /// - Parameter value: The default value of the column output type.
-    /// - Parameter config: The config of the column output type.
-    /// - Returns: A DateColumnType with the given default value and config.
+    /// - Parameters:
+    ///   - value: The default Date value to use instead of nil
+    ///   - config: Original configuration providing timezone settings
+    /// - Returns: New DateColumnType with the default value and preserved timezone
     public static func withDefaultValue(_ value: Date, config: DateColumnConfig) -> Self {
         DateColumnType(DateColumnConfig(value: value, timeZone: config.timeZone))
     }
 }
 
-/// A structure that represents a column output type for Bool values.
+/// Column output type for boolean values with customizable text representation.
 ///
-/// `BoolColumnType` is a structure that represents a column output type for Bool values.
-/// It provides a way to create a column output type for Bool values with a default value and a config.
+/// `BoolColumnType` handles the conversion of `Bool` values to Excel's text
+/// cell format since Excel doesn't have a native boolean type. It supports
+/// various boolean representations (TRUE/FALSE, 1/0, Yes/No, etc.) with
+/// configurable case formatting.
+///
+/// ## Usage Example
+/// ```swift
+/// Column<Task, Bool, BoolColumnType>(name: "Complete", keyPath: \.isComplete)
+/// Column<User, Bool?, BoolColumnType>(
+///     name: "Active", 
+///     keyPath: \.isActive,
+///     booleanExpressions: .yesAndNo,
+///     caseStrategy: .firstLetterUpper
+/// )
+/// ```
 public struct BoolColumnType: ColumnOutputTypeProtocol {
-    /// The config of the column output type.
+    /// Configuration containing the Bool value and text formatting options
     public let config: BoolColumnConfig
 
-    /// Creates a BoolColumnType with the given config.
+    /// Creates a BoolColumnType with the specified configuration.
     ///
-    /// - Parameter config: The config of the column output type.
+    /// - Parameter config: Configuration containing the Bool value and formatting options
     public init(_ config: BoolColumnConfig) {
         self.config = config
     }
 
-    /// The cell type of the column output type.
+    /// Converts the Bool value to Excel's boolean cell type.
+    ///
+    /// Returns a `.boolean()` cell type with the configured text representation
+    /// and case formatting that Excel will render as text.
     public var cellType: Cell.CellType {
         .boolean(
             config.value,
@@ -151,11 +216,12 @@ public struct BoolColumnType: ColumnOutputTypeProtocol {
             caseStrategy: config.caseStrategy)
     }
 
-    /// Creates a BoolColumnType with the given default value and config.
+    /// Creates a BoolColumnType with a substituted default value for nil handling.
     ///
-    /// - Parameter value: The default value of the column output type.
-    /// - Parameter config: The config of the column output type.
-    /// - Returns: A BoolColumnType with the given default value and config.
+    /// - Parameters:
+    ///   - value: The default Bool value to use instead of nil
+    ///   - config: Original configuration providing formatting options
+    /// - Returns: New BoolColumnType with the default value and preserved formatting
     public static func withDefaultValue(_ value: Bool, config: BoolColumnConfig) -> Self {
         BoolColumnType(BoolColumnConfig(
             value: value,
@@ -164,61 +230,83 @@ public struct BoolColumnType: ColumnOutputTypeProtocol {
     }
 }
 
-/// A structure that represents a column output type for URL values.
+/// Column output type for URL values stored as text.
 ///
-/// `URLColumnType` is a structure that represents a column output type for URL values.
-/// It provides a way to create a column output type for URL values with a default value and a config.
+/// `URLColumnType` handles the conversion of `URL` values to Excel's text
+/// cell format using their absolute string representation. URLs are stored
+/// as text and can benefit from shared string optimization.
+///
+/// ## Usage Example
+/// ```swift
+/// Column<Website, URL, URLColumnType>(name: "Homepage", keyPath: \.url)
+/// Column<Article, URL?, URLColumnType>(name: "Source", keyPath: \.sourceURL)
+/// ```
 public struct URLColumnType: ColumnOutputTypeProtocol {
-    /// The config of the column output type.
+    /// Configuration containing the URL value and formatting options
     public let config: URLColumnConfig
 
-    /// Creates a URLColumnType with the given config.
+    /// Creates a URLColumnType with the specified configuration.
     ///
-    /// - Parameter config: The config of the column output type.
+    /// - Parameter config: Configuration containing the URL value
     public init(_ config: URLColumnConfig) {
         self.config = config
     }
 
-    /// The cell type of the column output type.
+    /// Converts the URL value to Excel's URL cell type.
+    ///
+    /// Returns a `.url()` cell type that Excel will render as text using
+    /// the URL's absolute string representation.
     public var cellType: Cell.CellType {
         .url(config.value)
     }
 
-    /// Creates a URLColumnType with the given default value and config.
+    /// Creates a URLColumnType with a substituted default value for nil handling.
     ///
-    /// - Parameter value: The default value of the column output type.
-    /// - Parameter config: The config of the column output type.
-    /// - Returns: A URLColumnType with the given default value and config.
+    /// - Parameters:
+    ///   - value: The default URL value to use instead of nil
+    ///   - config: Original configuration (ignored, new config created with default value)
+    /// - Returns: New URLColumnType with the default value
     public static func withDefaultValue(_ value: URL, config: URLColumnConfig) -> Self {
         URLColumnType(URLColumnConfig(value: value))
     }
 }
 
-/// A structure that represents a column output type for Percentage values.
+/// Column output type for percentage values with configurable precision.
 ///
-/// `PercentageColumnType` is a structure that represents a column output type for Percentage values.
-/// It provides a way to create a column output type for Percentage values with a default value and a config.
+/// `PercentageColumnType` handles the conversion of `Double` values to Excel's
+/// percentage format. Values should be provided as decimals (0.5 = 50%) and
+/// the precision parameter controls the number of decimal places displayed.
+///
+/// ## Usage Example
+/// ```swift
+/// Column<Score, Double, PercentageColumnType>(name: "Accuracy", keyPath: \.accuracy, precision: 1)
+/// Column<Report, Double?, PercentageColumnType>(name: "Growth", keyPath: \.growthRate, precision: 2)
+/// ```
 public struct PercentageColumnType: ColumnOutputTypeProtocol {
-    /// The config of the column output type.
+    /// Configuration containing the percentage value and precision settings
     public let config: PercentageColumnConfig
 
-    /// Creates a PercentageColumnType with the given config.
+    /// Creates a PercentageColumnType with the specified configuration.
     ///
-    /// - Parameter config: The config of the column output type.
+    /// - Parameter config: Configuration containing the percentage value and precision
     public init(_ config: PercentageColumnConfig) {
         self.config = config
     }
 
-    /// The cell type of the column output type.
+    /// Converts the percentage value to Excel's percentage cell type.
+    ///
+    /// Returns a `.percentage()` cell type with the configured precision
+    /// that Excel will render with percentage formatting.
     public var cellType: Cell.CellType {
         .percentage(config.value, precision: config.precision)
     }
 
-    /// Creates a PercentageColumnType with the given default value and config.
+    /// Creates a PercentageColumnType with a substituted default value for nil handling.
     ///
-    /// - Parameter value: The default value of the column output type.
-    /// - Parameter config: The config of the column output type.
-    /// - Returns: A PercentageColumnType with the given default value and config.
+    /// - Parameters:
+    ///   - value: The default percentage value to use instead of nil (as decimal)
+    ///   - config: Original configuration providing precision settings
+    /// - Returns: New PercentageColumnType with the default value and preserved precision
     public static func withDefaultValue(_ value: Double, config: PercentageColumnConfig) -> Self {
         PercentageColumnType(PercentageColumnConfig(value: value, precision: config.precision))
     }
