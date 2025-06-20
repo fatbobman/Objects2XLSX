@@ -20,7 +20,6 @@ let package = Package(
             targets: ["Objects2XLSX"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/pointfreeco/swift-identified-collections.git", from: "1.0.0"),
         .package(url: "https://github.com/fatbobman/SimpleLogger.git", from: "0.0.1"),
     ],
     targets: [
@@ -29,7 +28,6 @@ let package = Package(
         .target(
             name: "Objects2XLSX",
             dependencies: [
-                .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
                 .product(name: "SimpleLogger", package: "SimpleLogger"),
             ]),
         .testTarget(

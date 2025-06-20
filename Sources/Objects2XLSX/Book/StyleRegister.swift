@@ -8,7 +8,6 @@
 //
 
 import Foundation
-import IdentifiedCollections
 
 /// A centralized registry that manages Excel style components and generates the styles.xml for XLSX files.
 ///
@@ -59,17 +58,17 @@ import IdentifiedCollections
 /// default elements that Excel expects, ensuring maximum compatibility across Excel versions.
 final class StyleRegister {
     /// Pool storing all registered fonts used in styles.
-    private(set) var fontPool = IdentifiedArrayOf<Font>()
+    private(set) var fontPool = DeduplicatedArray<Font>()
     /// Pool storing all registered fill patterns used in styles.
-    private(set) var fillPool = IdentifiedArrayOf<Fill>()
+    private(set) var fillPool = DeduplicatedArray<Fill>()
     /// Pool storing all registered text alignments used in styles.
-    private(set) var alignmentPool = IdentifiedArrayOf<Alignment>()
+    private(set) var alignmentPool = DeduplicatedArray<Alignment>()
     /// Pool storing all registered border styles used in styles.
-    private(set) var borderPool = IdentifiedArrayOf<Border>()
+    private(set) var borderPool = DeduplicatedArray<Border>()
     /// Pool storing all registered number formats used in styles.
-    private(set) var numberFormatPool = IdentifiedArrayOf<NumberFormat>()
+    private(set) var numberFormatPool = DeduplicatedArray<NumberFormat>()
     /// Pool storing all resolved styles, each referencing components by their IDs.
-    private(set) var resolvedStylePool = IdentifiedArrayOf<ResolvedStyle>()
+    private(set) var resolvedStylePool = DeduplicatedArray<ResolvedStyle>()
 
     /// Registers a font if provided and returns its assigned ID.
     /// - Parameter font: The optional `Font` to register.
