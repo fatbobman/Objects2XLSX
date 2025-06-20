@@ -74,6 +74,7 @@ public final class Book {
         // 使用收集的元数据生成全局文件
         try writeContentTypesXML(to: tempDir, sheetCount: collectedMetas.count)
         try writeWorkbookXML(to: tempDir, metas: collectedMetas)
+        try writeWorkbookRelsXML(to: tempDir, metas: collectedMetas)
         try writeStylesXML(to: tempDir, styleRegister: styleRegister)
         try writeSharedStringsXML(to: tempDir, shareStringRegister: shareStringRegister)
         

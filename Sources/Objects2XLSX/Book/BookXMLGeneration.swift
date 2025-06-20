@@ -154,3 +154,53 @@ extension Book {
         }
     }
 }
+
+// MARK: - Workbook Relationships XML Generation
+extension Book {
+    /// 生成 xl/_rels/workbook.xml.rels 文件内容
+    func generateWorkbookRelsXML(metas: [SheetMeta]) -> String {
+        var xml = """
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+        """
+        
+        var relationshipId = 1
+        
+        // 添加工作表关系
+        for meta in metas {
+            xml += "<Relationship Id=\"rId\(relationshipId)\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet\(meta.sheetId).xml\"/>"
+            relationshipId += 1
+        }
+        
+        // 添加样式关系
+        xml += "<Relationship Id=\"rId\(relationshipId)\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>"
+        relationshipId += 1
+        
+        // 添加共享字符串关系
+        xml += "<Relationship Id=\"rId\(relationshipId)\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings\" Target=\"sharedStrings.xml\"/>"
+        
+        xml += "</Relationships>"
+        
+        return xml
+    }
+    
+    /// 写入 xl/_rels/workbook.xml.rels 文件
+    func writeWorkbookRelsXML(to tempDir: URL, metas: [SheetMeta]) throws(BookError) {
+        let workbookRelsXML = generateWorkbookRelsXML(metas: metas)
+        let workbookRelsURL = tempDir.appendingPathComponent("xl/_rels/workbook.xml.rels")
+        
+        guard let xmlData = workbookRelsXML.data(using: .utf8) else {
+            throw BookError.encodingError("Failed to encode workbook.xml.rels as UTF-8")
+        }
+        
+        do {
+            try xmlData.write(to: workbookRelsURL)
+            print("✓ Created workbook.xml.rels")
+            print("  - Sheet relationships: \(metas.count)")
+            print("  - Total relationships: \(metas.count + 2)") // sheets + styles + sharedStrings
+            print("  - XML size: \(xmlData.count) bytes")
+        } catch {
+            throw BookError.fileWriteError(error)
+        }
+    }
+}

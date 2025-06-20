@@ -282,4 +282,105 @@ struct BookXMLGenerationTests {
         
         print("Successfully created [Content_Types].xml at: \(contentTypesURL.path)")
     }
+    
+    @Test("test generateWorkbookRelsXML Basic")
+    func testGenerateWorkbookRelsXMLBasic() {
+        // Create test metas
+        let metas = [
+            SheetMeta(
+                name: "Sheet1",
+                sheetId: 1,
+                relationshipId: "rId1",
+                hasHeader: true,
+                estimatedDataRowCount: 10,
+                activeColumnCount: 3,
+                dataRange: nil
+            ),
+            SheetMeta(
+                name: "Sheet2",
+                sheetId: 2,
+                relationshipId: "rId2",
+                hasHeader: false,
+                estimatedDataRowCount: 5,
+                activeColumnCount: 2,
+                dataRange: nil
+            )
+        ]
+        
+        let book = Book(style: BookStyle())
+        let xml = book.generateWorkbookRelsXML(metas: metas)
+        
+        // Verify XML structure
+        #expect(xml.contains("<?xml version=\"1.0\" encoding=\"UTF-8\""))
+        #expect(xml.contains("<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"))
+        #expect(xml.contains("</Relationships>"))
+        
+        // Verify sheet relationships
+        #expect(xml.contains("<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet1.xml\"/>"))
+        #expect(xml.contains("<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet2.xml\"/>"))
+        
+        // Verify styles and sharedStrings relationships
+        #expect(xml.contains("<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>"))
+        #expect(xml.contains("<Relationship Id=\"rId4\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings\" Target=\"sharedStrings.xml\"/>"))
+        
+        print("Generated Workbook Rels XML:")
+        print(xml)
+    }
+    
+    @Test("test generateWorkbookRelsXML No Sheets")
+    func testGenerateWorkbookRelsXMLNoSheets() {
+        let metas: [SheetMeta] = []
+        
+        let book = Book(style: BookStyle())
+        let xml = book.generateWorkbookRelsXML(metas: metas)
+        
+        // Should still have styles and sharedStrings relationships
+        #expect(xml.contains("<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\""))
+        #expect(xml.contains("<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings\""))
+        #expect(!xml.contains("worksheet"))
+        
+        print("Workbook Rels XML with no sheets:")
+        print(xml)
+    }
+    
+    @Test("test writeWorkbookRelsXML File Creation")
+    func testWriteWorkbookRelsXMLFileCreation() throws {
+        // Create test meta
+        let metas = [
+            SheetMeta(
+                name: "TestSheet",
+                sheetId: 1,
+                relationshipId: "rId1",
+                hasHeader: true,
+                estimatedDataRowCount: 5,
+                activeColumnCount: 2,
+                dataRange: nil
+            )
+        ]
+        
+        // Create temp directory
+        let tempDir = URL(fileURLWithPath: "/tmp/test_workbook_rels")
+        let book = Book(style: BookStyle())
+        try book.createXLSXDirectoryStructure(at: tempDir)
+        
+        // Write workbook.xml.rels
+        #expect(throws: Never.self) {
+            try book.writeWorkbookRelsXML(to: tempDir, metas: metas)
+        }
+        
+        // Verify file exists
+        let workbookRelsURL = tempDir.appendingPathComponent("xl/_rels/workbook.xml.rels")
+        #expect(FileManager.default.fileExists(atPath: workbookRelsURL.path))
+        
+        // Read and verify content
+        let content = try String(contentsOf: workbookRelsURL, encoding: .utf8)
+        #expect(content.contains("<Relationships"))
+        #expect(content.contains("</Relationships>"))
+        #expect(content.contains("rId1"))
+        #expect(content.contains("worksheet"))
+        #expect(content.contains("styles"))
+        #expect(content.contains("sharedStrings"))
+        
+        print("Successfully created workbook.xml.rels at: \(workbookRelsURL.path)")
+    }
 }
