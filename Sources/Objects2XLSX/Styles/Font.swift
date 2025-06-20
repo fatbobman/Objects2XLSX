@@ -133,25 +133,25 @@ extension Font {
     var xmlContent: String {
         var xml = "<font>"
 
-        // 字体大小
+        // font size
         xml += "<sz val=\"\(size ?? 12)\"/>"
 
-        // 颜色处理
+        // color
         if let color {
             xml += "<color rgb=\"\(color.argbHexString)\"/>"
         } else {
-            // 没有指定颜色时，使用主题色（写死）
+            // if no color is specified, use the theme color (hardcoded)
             xml += "<color theme=\"1\"/>"
         }
 
-        // 字体名称
+        // font name
         xml += "<name val=\"\(name ?? "Calibri")\"/>"
 
-        // 字体族（写死，基于常见字体）
+        // font family (hardcoded, based on common fonts)
         let fontFamily = getFontFamily(for: name ?? "Calibri")
         xml += "<family val=\"\(fontFamily)\"/>"
 
-        // 粗体、斜体等...
+        // bold, italic, underline, etc.
         if let bold, bold {
             xml += "<b/>"
         }
@@ -168,17 +168,25 @@ extension Font {
         return xml
     }
 
-    // 根据字体名称推断字体族
+    /// Determines the appropriate font family classification for Excel.
+    ///
+    /// Excel uses numeric font family codes to optimize font selection:
+    /// - 1: Roman (serif fonts like Times New Roman)
+    /// - 2: Swiss (sans-serif fonts like Arial, Calibri)
+    /// - 3: Modern (monospace fonts like Courier New)
+    ///
+    /// - Parameter fontName: The font family name to classify
+    /// - Returns: Excel font family code (1-3, defaults to 2 for sans-serif)
     private func getFontFamily(for fontName: String) -> Int {
         switch fontName.lowercased() {
             case "times", "times new roman", "georgia":
-                1 // Roman (衬线)
+                1 // Roman (serif fonts)
             case "calibri", "arial", "helvetica", "tahoma":
-                2 // Swiss (无衬线)
+                2 // Swiss (sans-serif fonts)
             case "courier", "courier new", "consolas":
-                3 // Modern (等宽)
+                3 // Modern (monospace fonts)
             default:
-                2 // 默认无衬线
+                2 // Default to sans-serif for unknown fonts
         }
     }
 }

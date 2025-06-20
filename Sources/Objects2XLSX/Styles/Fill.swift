@@ -8,7 +8,60 @@
 
 import Foundation
 
-// Represents a fill pattern for Excel cells
+/**
+ Cell background fill patterns and colors for Excel styling.
+
+ `Fill` provides comprehensive background styling for Excel cells, supporting
+ solid colors, pattern fills, and gradient fills. This enumeration covers all
+ Excel fill options while maintaining type safety and ease of use.
+
+ ## Overview
+
+ Excel cells can have various background fills, from simple solid colors to
+ complex patterns and gradients. This enumeration provides type-safe access
+ to all fill options, with automatic XML generation for Excel compatibility.
+
+ ## Fill Types
+
+ ### Basic Fills
+ - **none**: Transparent background (Excel default)
+ - **solid**: Single color background fill
+
+ ### Advanced Fills
+ - **pattern**: Patterned fills with foreground and background colors
+ - **gradient**: Gradient fills with multiple colors and direction control
+
+ ## Usage Examples
+
+ ### Solid Color Fills
+ ```swift
+ let redFill = Fill.solid(.red)
+ let blueFill = Fill.solid(red: 0, green: 100, blue: 255)
+ let hexFill = Fill.solid(hex: "#FF5733")
+ ```
+
+ ### Pattern Fills
+ ```swift
+ let stripedFill = Fill.pattern(.darkHorizontal, foreground: .black, background: .white)
+ let dottedFill = Fill.pattern(.gray125, foreground: .blue)
+ ```
+
+ ### Gradient Fills (Future Extension)
+ ```swift
+ let linearGradient = Fill.gradient(.linear(angle: 45), colors: [.red, .yellow, .green])
+ let radialGradient = Fill.gradient(.radial, colors: [.white, .blue])
+ ```
+
+ ## Excel Compatibility
+
+ All fill types generate Excel-compatible XML:
+ - Solid fills use Excel's patternFill with solid pattern type
+ - Pattern fills support all Excel pattern types with proper color mapping
+ - Gradient fills follow Excel's gradientFill specification
+ - Default fills include Excel-required empty fill slots
+
+ - Note: Some advanced fill types may have limited support in older Excel versions
+ */
 public enum Fill: Equatable, Sendable, Hashable {
     /// No fill (transparent)
     case none
@@ -38,7 +91,48 @@ extension Fill: Identifiable {
     }
 }
 
-/// Pattern types for fill
+/**
+ Pattern types for Excel cell background fills.
+
+ These pattern types correspond directly to Excel's built-in fill patterns,
+ providing access to all pattern options available in Excel's Format Cells dialog.
+
+ ## Pattern Categories
+
+ ### Basic Patterns
+ - **none**: No pattern (transparent)
+ - **solid**: Solid fill (most common)
+
+ ### Gray Patterns
+ - **gray125**: 12.5% gray pattern
+ - **gray0625**: 6.25% gray pattern
+
+ ### Line Patterns
+ - **darkHorizontal**: Dark horizontal lines
+ - **darkVertical**: Dark vertical lines
+ - **lightHorizontal**: Light horizontal lines
+ - **lightVertical**: Light vertical lines
+
+ ### Diagonal Patterns
+ - **darkDown**: Dark diagonal lines (top-left to bottom-right)
+ - **darkUp**: Dark diagonal lines (bottom-left to top-right)
+ - **lightDown**: Light diagonal lines (top-left to bottom-right)
+ - **lightUp**: Light diagonal lines (bottom-left to top-right)
+
+ ### Grid Patterns
+ - **darkGrid**: Dark grid pattern (horizontal and vertical)
+ - **darkTrellis**: Dark trellis pattern (diagonal grid)
+ - **lightGrid**: Light grid pattern
+ - **lightTrellis**: Light trellis pattern
+
+ ## Usage
+ Pattern fills require a foreground color and optionally a background color:
+ ```swift
+ let pattern = Fill.pattern(.darkGrid, foreground: .black, background: .white)
+ ```
+
+ - Note: Visual appearance may vary between Excel versions and display settings
+ */
 public enum PatternType: String, CaseIterable, Sendable, Hashable, Equatable {
     case none
     case solid
@@ -58,14 +152,40 @@ public enum PatternType: String, CaseIterable, Sendable, Hashable, Equatable {
     case lightTrellis
 }
 
-/// Gradient types (future use)
+/**
+ Gradient fill types for advanced Excel styling.
+
+ `GradientType` defines the direction and style of gradient fills,
+ supporting both linear and radial gradient patterns.
+
+ ## Gradient Types
+
+ - **linear**: Linear gradient with specified angle in degrees
+ - **radial**: Radial gradient emanating from center
+
+ ## Usage
+ ```swift
+ let horizontalGradient = GradientType.linear(angle: 0)    // Left to right
+ let verticalGradient = GradientType.linear(angle: 90)     // Top to bottom
+ let diagonalGradient = GradientType.linear(angle: 45)     // Diagonal
+ let circularGradient = GradientType.radial               // Center outward
+ ```
+
+ - Note: This is a future enhancement - gradient support may be limited in current Excel versions
+ */
 public enum GradientType: Sendable, Hashable {
     case linear(angle: Double)
     case radial
 }
 
 extension Fill {
-    /// Create default fills required by Excel
+    /// Default fill patterns required by Excel specification.
+    ///
+    /// Excel requires at least two default fill entries in the styles.xml file:
+    /// - Index 0: Default fill (none)
+    /// - Index 1: Gray125 pattern fill
+    ///
+    /// These fills are automatically included in every Excel workbook's style registry.
     static let defaultFills: [Fill] = [
         .none, // index 0: Excel requires at least one fill
         .none, // index 1: transparent fill
@@ -117,7 +237,7 @@ extension Fill {
                 return xml
 
             case let .gradient(type, colors):
-                // 渐变填充的实现（未来功能）
+                // Gradient fill implementation (future feature)
                 var xml = "<fill><gradientFill"
                 switch type {
                     case let .linear(angle):
@@ -127,7 +247,7 @@ extension Fill {
                 }
                 xml += ">"
 
-                // 添加渐变色点
+                // Add gradient color stops
                 for (index, color) in colors.enumerated() {
                     let position = colors.count > 1 ? Double(index) / Double(colors.count - 1) : 0.0
                     xml += "<stop position=\"\(position)\"><color rgb=\"\(color.argbHexString)\"/></stop>"

@@ -8,7 +8,70 @@
 
 import Foundation
 
-/// Represents the number format of a cell, including built-in and custom formats.
+/**
+ Comprehensive number formatting system for Excel cells.
+
+ `NumberFormat` provides type-safe access to Excel's number formatting capabilities,
+ supporting both built-in Excel formats and custom format specifications. This
+ enumeration covers the most commonly used number formats while maintaining
+ extensibility for future format types.
+
+ ## Overview
+
+ Excel's number formatting system controls how numeric values are displayed
+ in cells, affecting presentation without changing the underlying data. This
+ implementation provides Swift-native access to Excel's formatting while
+ ensuring compatibility with Excel's format codes and built-in formats.
+
+ ## Supported Formats
+
+ ### Basic Formats
+ - **general**: Excel's default format (automatic type detection)
+ - **percentage**: Percentage display with customizable decimal precision
+
+ ### Date and Time Formats
+ - **date**: Standard date format (yyyy-mm-dd)
+ - **time**: Standard time format (hh:mm:ss)
+ - **dateTime**: Combined date and time format
+
+ ### Advanced Formats (Future Extensions)
+ - **currency**: Currency formatting with locale support
+ - **scientific**: Scientific notation for large/small numbers
+
+ ## Usage Examples
+
+ ### Basic Number Formatting
+ ```swift
+ let generalFormat = NumberFormat.general
+ let percentFormat = NumberFormat.percentage(precision: 2)  // 0.00%
+ let dateFormat = NumberFormat.date
+ ```
+
+ ### Custom Precision
+ ```swift
+ let lowPrecisionPercent = NumberFormat.percentage(precision: 0)    // 0%
+ let highPrecisionPercent = NumberFormat.percentage(precision: 4)   // 0.0000%
+ ```
+
+ ## Excel Integration
+
+ Number formats integrate seamlessly with Excel:
+ - Built-in format IDs are used when available for maximum compatibility
+ - Custom format codes follow Excel's format string specification
+ - Format application preserves data while changing display
+ - Generated XML follows Excel's numberFormat specification
+
+ ## Format Codes
+
+ The underlying Excel format codes are:
+ - **General**: No specific code (Excel default)
+ - **Percentage**: "0.00%" pattern with variable precision
+ - **Date**: "yyyy-mm-dd" ISO format
+ - **Time**: "hh:mm:ss" 24-hour format
+ - **DateTime**: "yyyy-mm-dd hh:mm:ss" combined format
+
+ - Note: Format appearance may vary based on Excel version and system locale
+ */
 public enum NumberFormat: Equatable, Sendable, Hashable, Identifiable {
     /// General format (default).
     case general
@@ -25,7 +88,11 @@ public enum NumberFormat: Equatable, Sendable, Hashable, Identifiable {
     /// Scientific notation format (future extension).
     case scientific
 
-    /// A unique string identifier for the format, used for hashing and comparison.
+    /// Unique string identifier for the format.
+    ///
+    /// This identifier is used for hashing, comparison, and internal format
+    /// management. Each format type generates a consistent identifier that
+    /// includes relevant parameters (like precision for percentages).
     public var id: String {
         switch self {
             case .general:
@@ -45,7 +112,13 @@ public enum NumberFormat: Equatable, Sendable, Hashable, Identifiable {
         }
     }
 
-    /// The Excel format code string for this number format, if applicable.
+    /// Excel format code string for custom number formats.
+    ///
+    /// This property returns the Excel format string that defines how numbers
+    /// should be displayed. Built-in formats may return `nil` and rely on
+    /// their `builtinId` instead.
+    ///
+    /// - Returns: Excel format code string, or `nil` for built-in formats
     var formatCode: String? {
         switch self {
             case .general:
@@ -65,13 +138,19 @@ public enum NumberFormat: Equatable, Sendable, Hashable, Identifiable {
         }
     }
 
-    /// The built-in Excel number format ID for this format if available.
+    /// Built-in Excel format ID for predefined number formats.
+    ///
+    /// Excel has a set of predefined number formats with specific IDs that
+    /// provide optimized performance and guaranteed compatibility. When available,
+    /// these IDs are preferred over custom format codes.
+    ///
+    /// - Returns: Excel built-in format ID, or `nil` for custom formats
     var builtinId: Int? {
         switch self {
             case .date:
-                14 // Excel built-in date format
+                14 // Excel built-in date format (m/d/yyyy)
             case .dateTime:
-                22 // Excel built-in date-time format
+                22 // Excel built-in date-time format (m/d/yyyy h:mm)
             default:
                 nil
         }
