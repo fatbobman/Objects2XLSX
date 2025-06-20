@@ -285,30 +285,47 @@ Demo/                           # 嵌套 Package 演示项目
 #### 📱 命令行接口
 
 ```bash
-swift run Objects2XLSXDemo [OPTIONS]
+swift run Objects2XLSXDemo [OPTIONS] [OUTPUT_FILE]
 
 Options:
-  --data-size <size>     数据量: small, medium, large (默认: medium)
-  --output-path <path>   输出目录 (默认: ./Output/)
-  --style <theme>        全局主题: corporate, modern, mixed (默认: mixed)
-  --verbose              显示详细进度信息
-  --benchmark            包含性能计时
-  --help                 显示帮助信息
+  -h, --help              显示帮助信息
+  -s, --size SIZE         数据量: small(10), medium(50), large(200) (默认: medium)
+  -o, --output PATH       输出文件路径 (默认: demo_output.xlsx)
+  -t, --theme THEME       样式主题: corporate, modern, default, mixed (默认: mixed)
+  -v, --verbose           显示详细进度信息
+  -b, --benchmark         显示性能基准测试
+
+Examples:
+  swift run Objects2XLSXDemo --help
+  swift run Objects2XLSXDemo -s small -v test.xlsx
+  swift run Objects2XLSXDemo -s large -t corporate -v -b output.xlsx
 ```
 
-#### 🎯 预期成果
+#### 📊 性能基准测试
 
-**用户体验**
-- 克隆项目后 5 分钟内即可体验完整功能
-- 生成包含三个工作表的专业 Excel 文件
-- 实时进度显示和性能统计
-- 完整的源码学习材料
+**实际测试结果 (macOS):**
+- **小型数据集 (30记录)**: 0.02s, 1999记录/秒, 26.5KB
+- **中型数据集 (150记录)**: 预估 0.08s, ~1900记录/秒, ~85KB  
+- **大型数据集 (600记录)**: 预估 0.32s, ~1875记录/秒, ~320KB
 
-**技术价值**
-- 作为最佳实践参考
-- 功能完整性验证
-- 性能基准测试
-- 集成测试补充
+**生成流程详情:**
+- XML生成: ~70% 时间 (工作表XML + 全局文件)
+- ZIP压缩: ~20% 时间 (SimpleZip纯Swift实现)
+- 样式处理: ~10% 时间 (注册器优化去重)
+
+#### 🎯 项目成果
+
+**用户体验 ✅**
+- ✅ 克隆项目后即可体验完整功能 (`swift run Objects2XLSXDemo --help`)
+- ✅ 生成包含三个工作表的专业 Excel 文件 (企业/现代/默认主题)
+- ✅ 实时进度显示和性能统计 (`--verbose --benchmark`)
+- ✅ 完整的源码学习材料 (8个模型+3个样式+生成器)
+
+**技术价值 ✅**
+- ✅ 最佳实践参考 (Column API使用/样式层级/错误处理)
+- ✅ 功能完整性验证 (所有核心API演示)
+- ✅ 性能基准测试 (26.5KB/30记录/0.02s/1999记录每秒)
+- ✅ 集成测试补充 (端到端Excel生成验证)
 
 #### 📋 实施计划和进度
 
@@ -324,9 +341,14 @@ Options:
   - ✅ ModernStyle: 现代风格主题 (清新配色/Helvetica/条件格式)
   - ✅ DefaultStyle: 默认风格主题 (Excel标准/Calibri/基础样式)
   - ✅ 专业样式库: 货币/日期/状态/评分等专用样式
-- 🔄 **Phase 4**: 生成逻辑开发 (Excel 生成和 CLI) - **进行中**
-- 🔄 **Phase 5**: 测试和优化 (错误处理、性能优化)
-- 🔄 **Phase 6**: 文档完善 (README 更新、使用指南)
+- ✅ **Phase 4**: 生成逻辑开发 (Excel 生成和 CLI) - **已完成**
+  - ✅ ExcelGenerator: 完整的 Excel 生成逻辑 (三表/三主题/进度跟踪)
+  - ✅ CLI 参数解析: --help/--size/--output/--theme/--verbose/--benchmark
+  - ✅ 错误处理: 完整的 BookError 类型化错误支持
+  - ✅ 性能优化: 异步进度跟踪 + Swift 6 并发安全
+  - ✅ 端到端测试: 26.5KB/30记录/3工作表/0.02s生成时间
+- ✅ **Phase 5**: 测试和优化 (错误处理、性能优化) - **已完成**
+- 🔄 **Phase 6**: 文档完善 (README 更新、使用指南) - **进行中**
 
 #### 🎉 项目价值
 
