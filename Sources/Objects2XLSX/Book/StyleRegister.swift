@@ -13,8 +13,8 @@ import Foundation
 ///
 /// `StyleRegister` acts as the style management hub for Excel document generation, handling the collection,
 /// deduplication, and XML serialization of all style elements including fonts, fills, borders, alignments,
-/// and number formats.
-/// 当创建 Cell 后，会将每个 Cell 的 Style 注册在此，以实现去重，并统一生成 styles.xml
+/// and number formats. When cells are created, their styles are registered here to achieve deduplication
+/// and unified generation of styles.xml.
 ///
 /// ## Architecture
 /// The register maintains separate pools for each style component:
@@ -39,7 +39,7 @@ import Foundation
 ///
 /// ## Usage Example
 /// ```swift
-/// let registor = StyleRegistor()
+/// let register = StyleRegister()
 ///
 /// // Register a custom style
 /// let cellStyle = CellStyle(
@@ -47,10 +47,10 @@ import Foundation
 ///     fill: Fill.solid(.blue),
 ///     alignment: Alignment.center
 /// )
-/// let styleID = registor.registerStyle(cellStyle, for: .text)
+/// let styleID = register.registerCellStyle(cellStyle, cellType: .string("text"))
 ///
 /// // Generate the complete styles XML
-/// let stylesXML = registor.generateStylesXML()
+/// let stylesXML = register.generateXML()
 /// ```
 ///
 /// ## Excel Compatibility
@@ -162,17 +162,17 @@ final class StyleRegister {
             return builtinId
         }
 
-        // Excel built-in number format IDs:
-        // 0   -> General (default)
-        // 1   -> 0
-        // 2   -> 0.00
-        // 9   -> 0%
-        // 10  -> 0.00%
-        // 14  -> m/d/yy
-        // 15  -> d-mmm-yy
-        // 22  -> m/d/yy h:mm
-        // ... up to 163 built-in formats
-        // Custom formats start at 164
+        // Excel built-in number format IDs reference:
+        // 0   -> General (default format)
+        // 1   -> 0 (integer with no decimals)
+        // 2   -> 0.00 (number with 2 decimal places)
+        // 9   -> 0% (percentage with no decimals)
+        // 10  -> 0.00% (percentage with 2 decimal places)
+        // 14  -> m/d/yy (short date format)
+        // 15  -> d-mmm-yy (date with abbreviated month)
+        // 22  -> m/d/yy h:mm (date and time)
+        // ... up to 163 are reserved for built-in formats
+        // Custom formats start at ID 164 and increment from there
 
         if let index = numberFormatPool.ids.firstIndex(of: numberFormat.id) {
             return 164 + index
@@ -182,9 +182,14 @@ final class StyleRegister {
         return 164 + customIndex
     }
 
-    /// Initializes the style registries with default styles pre-registered.
-    /// - Note: Pre-registering default fills, fonts, borders, and styles is required by Excel,
-    ///         with default style always at index 0.
+    /// Initializes the style registries with required default styles pre-registered.
+    ///
+    /// Excel requires certain default elements to be present at specific indices:
+    /// - Index 0 must contain the default fill, font, border, and resolved style
+    /// - These defaults serve as fallbacks when no custom styling is applied
+    ///
+    /// - Note: This initialization ensures Excel compatibility by meeting the
+    ///         Office Open XML specification requirements for default style elements.
     init() {
         // Pre-register default fill pattern
         fillPool.append(.none)
@@ -205,40 +210,53 @@ final class StyleRegister {
         resolvedStylePool.append(defaultStyle)
     }
     
-    /// Generates the complete styles.xml content for the XLSX file
-    /// - Returns: XML string conforming to Office Open XML standards
+    /// Generates the complete styles.xml content for the XLSX file.
+    ///
+    /// Creates a comprehensive styles document containing all registered style components
+    /// organized into the required sections: number formats, fonts, fills, borders,
+    /// cell style XFs (master styles), cell XFs (actual styles), and named cell styles.
+    ///
+    /// The generated XML follows the Office Open XML specification structure and includes
+    /// all necessary default elements that Excel expects for proper document rendering.
+    ///
+    /// - Returns: Complete XML string ready for inclusion in the XLSX package as styles.xml
     func generateXML() -> String {
         var xml = """
         <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
         <styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
         """
         
-        // Generate number formats section (custom formats only)
+        // Generate number formats section (custom formats only, built-ins are implicit)
         xml += generateNumberFormatsXML()
         
-        // Generate fonts section
+        // Generate fonts section (typography definitions)
         xml += generateFontsXML()
         
-        // Generate fills section
+        // Generate fills section (background colors and patterns)
         xml += generateFillsXML()
         
-        // Generate borders section
+        // Generate borders section (cell border definitions)
         xml += generateBordersXML()
         
-        // Generate cell style XFs (not used in this implementation, but required by Excel)
+        // Generate cell style XFs (master format templates, required by Excel spec)
         xml += generateCellStyleXfsXML()
         
-        // Generate cell XFs (the actual styles used by cells)
+        // Generate cell XFs (actual format definitions referenced by cells)
         xml += generateCellXfsXML()
         
-        // Generate cell styles (named styles, required but minimal)
+        // Generate named cell styles (style names like "Normal", minimal but required)
         xml += generateCellStylesXML()
         
         xml += "</styleSheet>"
         return xml
     }
     
-    /// Generates the numFmts section for custom number formats
+    /// Generates the numFmts section containing custom number format definitions.
+    ///
+    /// Only custom number formats (ID 164+) are included since Excel has built-in
+    /// formats for standard cases. Each format includes its ID and format code.
+    ///
+    /// - Returns: XML fragment for the numFmts section, or empty string if no custom formats
     private func generateNumberFormatsXML() -> String {
         guard !numberFormatPool.isEmpty else { return "" }
         
@@ -255,7 +273,12 @@ final class StyleRegister {
         return xml
     }
     
-    /// Generates the fonts section
+    /// Generates the fonts section containing all registered font definitions.
+    ///
+    /// Each font element includes typography properties like size, family name,
+    /// weight (bold), style (italic), and color. The default font is always first.
+    ///
+    /// - Returns: XML fragment for the fonts section
     private func generateFontsXML() -> String {
         var xml = "<fonts count=\"\(fontPool.count)\">"
         
@@ -267,7 +290,12 @@ final class StyleRegister {
         return xml
     }
     
-    /// Generates the fills section
+    /// Generates the fills section containing all registered fill pattern definitions.
+    ///
+    /// Includes solid colors, patterns, and gradients. The default "none" fill
+    /// is always at index 0 as required by Excel specifications.
+    ///
+    /// - Returns: XML fragment for the fills section
     private func generateFillsXML() -> String {
         var xml = "<fills count=\"\(fillPool.count)\">"
         
@@ -279,7 +307,12 @@ final class StyleRegister {
         return xml
     }
     
-    /// Generates the borders section
+    /// Generates the borders section containing all registered border style definitions.
+    ///
+    /// Each border can define styles for left, right, top, bottom, and diagonal sides
+    /// with individual line styles and colors. The default "none" border is always first.
+    ///
+    /// - Returns: XML fragment for the borders section
     private func generateBordersXML() -> String {
         var xml = "<borders count=\"\(borderPool.count)\">"
         
@@ -291,48 +324,59 @@ final class StyleRegister {
         return xml
     }
     
-    /// Generates the cellStyleXfs section (master styles)
+    /// Generates the cellStyleXfs section containing master style format templates.
+    ///
+    /// These are template formats that named styles reference. Excel requires at least
+    /// one master style (the default) that references the default format components.
+    ///
+    /// - Returns: XML fragment for the cellStyleXfs section with required default master style
     private func generateCellStyleXfsXML() -> String {
-        // Excel requires at least one cellStyleXf (the master style)
+        // Excel specification requires at least one cellStyleXf (the master default style)
         return "<cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellStyleXfs>"
     }
     
-    /// Generates the cellXfs section (the actual cell formats)
+    /// Generates the cellXfs section containing actual cell format definitions.
+    ///
+    /// These are the format definitions that cells reference by index. Each cellXf
+    /// combines references to font, fill, border, alignment, and number format components.
+    /// This is where the actual styling magic happens for individual cells.
+    ///
+    /// - Returns: XML fragment for the cellXfs section
     private func generateCellXfsXML() -> String {
         var xml = "<cellXfs count=\"\(resolvedStylePool.count)\">"
         
         for resolvedStyle in resolvedStylePool {
             xml += "<xf"
             
-            // Add numFmtId
+            // Add number format ID (defaults to 0 for General format)
             if let numFmtId = resolvedStyle.numFmtId {
                 xml += " numFmtId=\"\(numFmtId)\""
             } else {
                 xml += " numFmtId=\"0\""
             }
             
-            // Add fontId
+            // Add font ID (defaults to 0 for default font)
             if let fontId = resolvedStyle.fontID {
                 xml += " fontId=\"\(fontId)\""
             } else {
                 xml += " fontId=\"0\""
             }
             
-            // Add fillId
+            // Add fill ID (defaults to 0 for no fill)
             if let fillId = resolvedStyle.fillID {
                 xml += " fillId=\"\(fillId)\""
             } else {
                 xml += " fillId=\"0\""
             }
             
-            // Add borderId
+            // Add border ID (defaults to 0 for no border)
             if let borderId = resolvedStyle.borderID {
                 xml += " borderId=\"\(borderId)\""
             } else {
                 xml += " borderId=\"0\""
             }
             
-            // Add alignment if present
+            // Add alignment if present (requires applyAlignment flag and inline definition)
             if let alignmentId = resolvedStyle.alignmentID,
                alignmentId < alignmentPool.count {
                 xml += " applyAlignment=\"1\">"
@@ -347,23 +391,52 @@ final class StyleRegister {
         return xml
     }
     
-    /// Generates the cellStyles section (named styles)
+    /// Generates the cellStyles section containing named style definitions.
+    ///
+    /// Named styles like "Normal", "Heading 1", etc. reference master styles in cellStyleXfs.
+    /// Excel requires at least the "Normal" style which serves as the document default.
+    ///
+    /// - Returns: XML fragment for the cellStyles section with required "Normal" style
     private func generateCellStylesXML() -> String {
-        // Excel requires at least the "Normal" style
+        // Excel specification requires at least the "Normal" style definition
         return "<cellStyles count=\"1\"><cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/></cellStyles>"
     }
 }
 
-/// Represents a fully resolved style referencing component style IDs.
-/// Used to identify unique combinations of style components in the registry.
+/// Represents a fully resolved style that combines references to all style component IDs.
+///
+/// `ResolvedStyle` serves as the final style definition that cells reference. Instead of
+/// storing the actual style objects, it stores the indices of components in their respective
+/// pools. This approach enables efficient deduplication and compact storage.
+///
+/// ## Component References
+/// - **fontID**: Index in the font pool (typography settings)
+/// - **fillID**: Index in the fill pool (background colors/patterns)
+/// - **borderID**: Index in the border pool (cell border styles)
+/// - **alignmentID**: Index in the alignment pool (text positioning)
+/// - **numFmtId**: Excel number format ID (built-in or custom)
+///
+/// ## Usage in Excel
+/// Cells reference resolved styles by their index in the resolved style pool,
+/// creating a two-level indirection that maximizes reuse and minimizes file size.
 struct ResolvedStyle: Hashable, Sendable, Identifiable {
+    /// Reference to font component (nil defaults to index 0)
     let fontID: Int?
+    /// Reference to fill component (nil defaults to index 0)
     let fillID: Int?
+    /// Reference to alignment component (nil means no alignment applied)
     let alignmentID: Int?
+    /// Excel number format ID (nil defaults to General format)
     let numFmtId: Int?
+    /// Reference to border component (nil defaults to index 0)
     let borderID: Int?
 
-    /// A unique string identifier combining all component IDs, used for hashing and comparison.
+    /// Generates a unique identifier by combining all component references.
+    ///
+    /// This ID is used for hashing and equality comparison to ensure that resolved
+    /// styles with identical component combinations are deduplicated effectively.
+    ///
+    /// - Returns: A string identifier in the format "numFmt_font_fill_align_border"
     var id: String {
         let numFmtStr = numFmtId.map(String.init) ?? "default"
         let fontStr = fontID.map(String.init) ?? "default"
