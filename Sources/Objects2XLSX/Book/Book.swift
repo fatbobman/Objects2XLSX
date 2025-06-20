@@ -13,6 +13,8 @@ public final class Book {
     public var style: BookStyle
     public var sheets: [AnySheet]
 
+    var sheetMetas: [SheetMeta] = []
+
     public init(style: BookStyle, sheets: [AnySheet] = []) {
         self.style = style
         self.sheets = sheets
@@ -39,33 +41,97 @@ public final class Book {
     }
 
     public func write(to url: URL) throws(BookError) {
-        // 第一阶段：收集所有 sheet 的元数据（轻量级操作）
-        let sheetMetas = collectSheetMetas()
-        
-        // 创建注册器，传递下去
+        // 创建注册器
         let styleRegister = StyleRegister()
         let shareStringRegister = ShareStringRegister()
-        
-        // TODO: 基于 sheetMetas 生成全局 XML 文件
-        // let workbookXML = generateWorkbookXML(metas: sheetMetas)
-        // let contentTypesXML = generateContentTypesXML(sheetCount: sheetMetas.count)
-        // let relsXML = generateRelsXML(metas: sheetMetas)
-        
-        // TODO: 第二阶段：流式生成每个 sheet 的 XML
+
+        // TODO: 创建 XLSX 包结构
+        // 流式处理：一次性完成数据加载、元数据收集和XML生成
+        var collectedMetas: [SheetMeta] = []
+
         for (index, sheet) in sheets.enumerated() {
-            // try generateAndWriteSheet(sheet: sheet, index: index, to: package, ...)
+            let sheetId = index + 1
+
+            // 加载数据一次
+            sheet.loadData()
+
+            // 生成元数据
+            let meta = sheet.makeSheetMeta(sheetId: sheetId)
+            collectedMetas.append(meta)
+
+            // 立即生成并写入 XML
+            try generateAndWriteSheetXML(
+                sheet: sheet,
+                meta: meta,
+                styleRegister: styleRegister,
+                shareStringRegister: shareStringRegister)
         }
+
+        // 使用收集的元数据生成全局文件
+        // let workbookXML = generateWorkbookXML(metas: collectedMetas)
+        // ...
+    }
+
+    func generateAndWriteSheetXML(
+        sheet: AnySheet,
+        meta: SheetMeta,
+        styleRegister: StyleRegister,
+        shareStringRegister: ShareStringRegister) throws(BookError)
+    {
+        guard let sheetXML = sheet.makeSheetXML(
+            bookStyle: style,
+            styleRegister: styleRegister,
+            shareStringRegister: shareStringRegister)
+        else {
+            throw BookError.dataProviderError("Sheet \(sheet.name) has no data provider")
+        }
+
+        // 生成 XML 内容
+        let xmlString = sheetXML.generateXML()
+        
+        // 验证 XML 内容不为空
+        guard !xmlString.isEmpty else {
+            throw BookError.xmlGenerationError("Generated XML for sheet '\(sheet.name)' is empty")
+        }
+        
+        // 将 XML 字符串转换为数据
+        guard let xmlData = xmlString.data(using: .utf8) else {
+            throw BookError.encodingError("Failed to encode XML for sheet '\(sheet.name)' as UTF-8")
+        }
+        
+        // TODO: 实际写入文件到 XLSX 包
+        // 目前先进行基本的数据验证和准备
+        // 后续需要实现 XLSX 包管理器来实际写入文件
+        
+        // 临时实现：记录生成的信息用于调试
+        print("Generated XML for sheet '\(meta.name)' (ID: \(meta.sheetId))")
+        print("- File path: \(meta.filePath)")
+        print("- XML size: \(xmlData.count) bytes")
+        print("- Data range: \(meta.dataRange?.excelRange ?? "None")")
+        
+        // 验证生成的 XML 包含必要的元素
+        try validateSheetXML(xmlString: xmlString, meta: meta)
     }
     
-    /// 收集所有 sheet 的元数据，用于生成全局 XML 文件
-    /// 注意：此方法会为每个 sheet 加载数据一次，然后生成元数据
-    private func collectSheetMetas() -> [SheetMeta] {
-        return sheets.enumerated().map { index, sheet in
-            let sheetId = index + 1
-            // 显式加载数据（只加载一次）
-            sheet.loadData()
-            return sheet.makeSheetMeta(sheetId: sheetId)
+    /// 验证生成的 Sheet XML 是否符合基本要求
+    private func validateSheetXML(xmlString: String, meta: SheetMeta) throws(BookError) {
+        // 检查基本的 XML 结构
+        guard xmlString.contains("<?xml version=\"1.0\" encoding=\"UTF-8\"") else {
+            throw BookError.xmlValidationError("Missing XML declaration in sheet '\(meta.name)'")
         }
+        
+        guard xmlString.contains("<worksheet") && xmlString.contains("</worksheet>") else {
+            throw BookError.xmlValidationError("Missing worksheet tags in sheet '\(meta.name)'")
+        }
+        
+        // 如果有数据，检查是否包含 sheetData
+        if meta.estimatedDataRowCount > 0 || meta.hasHeader {
+            guard xmlString.contains("<sheetData>") && xmlString.contains("</sheetData>") else {
+                throw BookError.xmlValidationError("Missing sheetData in non-empty sheet '\(meta.name)'")
+            }
+        }
+        
+        print("✓ XML validation passed for sheet '\(meta.name)'")
     }
 }
 
@@ -82,4 +148,7 @@ extension Book {
 public enum BookError: Error, Sendable {
     case fileWriteError(Error)
     case dataProviderError(String)
+    case xmlGenerationError(String)
+    case encodingError(String)
+    case xmlValidationError(String)
 }

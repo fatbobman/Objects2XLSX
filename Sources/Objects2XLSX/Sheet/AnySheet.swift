@@ -24,7 +24,7 @@ public final class AnySheet {
         _name = sheet.name
         _hasHeader = sheet.hasHeader
         _estimatedDataRowCount = sheet.estimatedDataRowCount
-        
+
         _loadData = {
             sheet.loadData()
         }
@@ -44,10 +44,10 @@ public final class AnySheet {
     }
 
     /// 加载数据（由 Book 显式调用，确保只加载一次）
-    public func loadData() {
+    func loadData() {
         _loadData()
     }
-    
+
     /// 生成 SheetXML（假设数据已通过 loadData() 加载）
     func makeSheetXML(
         bookStyle: BookStyle,
@@ -56,12 +56,12 @@ public final class AnySheet {
     {
         return _makeSheetXML(bookStyle, styleRegister, shareStringRegister)
     }
-    
+
     /// 构建 SheetMeta（假设数据已通过 loadData() 加载）
     public func makeSheetMeta(sheetId: Int) -> SheetMeta {
         return _makeSheetMeta(sheetId)
     }
-    
+
     /// 预估数据行数
     public func estimatedDataRowCount() -> Int {
         return _estimatedDataRowCount()
