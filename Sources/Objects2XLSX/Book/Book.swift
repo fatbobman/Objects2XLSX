@@ -9,69 +9,106 @@
 import Foundation
 import SimpleLogger
 
-// 对应 Excel 的 Workbook 对象
+/// Represents an Excel Workbook that contains multiple worksheets and manages XLSX file generation.
+///
+/// `Book` is the main entry point for creating XLSX files from Swift objects. It manages a collection
+/// of worksheets, handles styling, and provides real-time progress reporting during file generation.
+/// The class follows a builder pattern for easy configuration and supports both synchronous and
+/// asynchronous operations.
+///
+/// ## Key Features
+/// - **Type-safe sheet management**: Stores heterogeneous sheets through type erasure
+/// - **Progress reporting**: Real-time updates via AsyncStream during file generation
+/// - **Flexible styling**: Supports book-level, sheet-level, and cell-level styling
+/// - **Memory efficient**: Streams data processing to handle large datasets
+/// - **Thread-safe progress**: Progress monitoring can be observed from any thread
+///
+/// ## Usage
+/// ```swift
+/// let book = Book(style: BookStyle()) {
+///     Sheet<Person>(name: "Employees", dataProvider: { employees }) {
+///         Column(name: "Name", keyPath: \.name)
+///         Column(name: "Department", keyPath: \.department)
+///     }
+/// }
+/// 
+/// let outputURL = try book.write(to: URL(fileURLWithPath: "/path/to/output.xlsx"))
+/// ```
 public final class Book {
-    public var style: BookStyle
-    public var sheets: [AnySheet]
+    /// The styling configuration for the entire workbook
+    public private(set) var style: BookStyle
+    
+    /// Collection of worksheets in the workbook (type-erased for heterogeneous storage)
+    public private(set) var sheets: [AnySheet]
 
-    /// 日志管理器，支持自定义实现
+    /// Logger instance for debugging and monitoring (supports custom implementations)
     public let logger: LoggerManagerProtocol
 
-    /// 进度报告的 AsyncStream
+    /// AsyncStream for real-time progress reporting during XLSX generation
     public let progressStream: AsyncStream<BookGenerationProgress>
 
-    /// 进度报告的 Continuation，用于发送进度更新
+    /// Internal continuation for sending progress updates (thread-safe)
     private let progressContinuation: AsyncStream<BookGenerationProgress>.Continuation
 
+    /// Internal storage for sheet metadata (populated during processing)
     var sheetMetas: [SheetMeta] = []
 
+    /// Creates a new Book instance with the specified configuration.
+    ///
+    /// - Parameters:
+    ///   - style: The styling configuration for the entire workbook
+    ///   - sheets: Initial collection of worksheets (defaults to empty)
+    ///   - logger: Custom logger implementation (uses default if not provided)
     public init(style: BookStyle, sheets: [AnySheet] = [], logger: LoggerManagerProtocol? = nil) {
-        // 创建 AsyncStream 用于进度报告
+        // Create AsyncStream for progress reporting
         let (stream, continuation) = AsyncStream.makeStream(of: BookGenerationProgress.self)
-        self.progressStream = stream
-        self.progressContinuation = continuation
+        progressStream = stream
+        progressContinuation = continuation
 
         self.style = style
         self.sheets = sheets
         self.logger = logger ?? Self.defaultLogger
     }
 
+    /// Convenience initializer using the SheetBuilder pattern for declarative sheet configuration.
+    ///
+    /// - Parameters:
+    ///   - style: The styling configuration for the entire workbook
+    ///   - logger: Custom logger implementation (uses default if not provided)
+    ///   - sheets: Closure that returns an array of sheets using the @SheetBuilder
     public convenience init(style: BookStyle, logger: LoggerManagerProtocol? = nil, @SheetBuilder sheets: () -> [AnySheet]) {
         self.init(style: style, sheets: sheets(), logger: logger)
     }
 
-    /// 默认日志实现
+    /// Default logger implementation (console in debug, system logger in release)
     private static let defaultLogger: LoggerManagerProtocol = {
         #if DEBUG
-        return .console()
+            return .console()
         #else
-        return .default(subsystem: "com.objects2xlsx.fatbobman", category: "generation")
+            return .default(subsystem: "com.objects2xlsx.fatbobman", category: "generation")
         #endif
     }()
 
-    public func append(sheet: AnySheet) {
-        sheets.append(sheet)
-    }
-
-    public func append(sheets: [AnySheet]) {
-        self.sheets.append(contentsOf: sheets)
-    }
-
-    /// 发送进度更新（线程安全）
+    /// Sends progress updates to observers (thread-safe)
+    /// - Parameter progress: The current generation progress state
     private func sendProgress(_ progress: BookGenerationProgress) {
         progressContinuation.yield(progress)
         logger.debug("Progress update: \(progress.description)")
     }
 
-    /// 完成进度报告并关闭流
+    /// Completes progress reporting and closes the stream
     private func completeProgress() {
         progressContinuation.finish()
     }
 
+    /// Appends a strongly-typed sheet to the workbook
+    /// - Parameter sheet: The typed sheet to append (will be type-erased for storage)
     public func append<ObjectType>(sheet: Sheet<ObjectType>) {
         sheets.append(sheet.eraseToAnySheet())
     }
 
+    /// Appends multiple sheets using the SheetBuilder pattern
+    /// - Parameter sheets: Closure that returns an array of sheets to append
     public func append(@SheetBuilder sheets: () -> [AnySheet]) {
         self.sheets.append(contentsOf: sheets())
     }
@@ -140,20 +177,20 @@ public final class Book {
         // Ensure the URL has proper .xlsx extension and directory structure
         let outputURL = try prepareOutputURL(url)
 
-        // 开始生成进度报告
+        // Begin progress reporting
         sendProgress(.started)
 
         do {
-            // 创建注册器
+            // Create registries for optimization
             let styleRegister = StyleRegister()
             let shareStringRegister = ShareStringRegister()
 
-            // 创建临时目录用于构建 XLSX 包结构
+            // Create temporary directory for building XLSX package structure
             sendProgress(.creatingDirectory)
             let tempDir = outputURL.deletingPathExtension().appendingPathExtension("temp")
             try createXLSXDirectoryStructure(at: tempDir)
 
-            // 流式处理：一次性完成数据加载、元数据收集和XML生成
+            // Stream processing: complete data loading, metadata collection, and XML generation
             sendProgress(.processingSheets(totalCount: sheets.count))
             var collectedMetas: [SheetMeta] = []
 
@@ -161,17 +198,17 @@ public final class Book {
                 let sheetId = index + 1
                 let sheetName = sheet.name
 
-                // 发送当前 sheet 处理进度
+                // Send current sheet processing progress
                 sendProgress(.processingSheet(current: sheetId, total: sheets.count, sheetName: sheetName))
 
-                // 加载数据一次
+                // Load data once
                 sheet.loadData()
 
-                // 生成元数据
+                // Generate metadata
                 let meta = sheet.makeSheetMeta(sheetId: sheetId)
                 collectedMetas.append(meta)
 
-                // 立即生成并写入 XML
+                // Immediately generate and write XML
                 try generateAndWriteSheetXML(
                     sheet: sheet,
                     meta: meta,
@@ -180,10 +217,10 @@ public final class Book {
                     shareStringRegister: shareStringRegister)
             }
 
-            // 完成 Sheet 处理
+            // Complete sheet processing
             sendProgress(.sheetsCompleted(totalCount: sheets.count))
 
-            // 使用收集的元数据生成全局文件
+            // Generate global files using collected metadata
             sendProgress(.generatingGlobalFiles)
 
             sendProgress(.generatingContentTypes)
@@ -210,27 +247,26 @@ public final class Book {
             sendProgress(.generatingAppProperties)
             try writeAppPropsXML(to: tempDir, metas: collectedMetas)
 
-            // 打包为 ZIP 文件并重命名为 .xlsx
+            // Package as ZIP file and rename to .xlsx
             sendProgress(.preparingPackage)
             try createZipArchive(from: tempDir, to: outputURL)
 
-            // 清理临时目录
+            // Clean up temporary directory
             sendProgress(.cleaningUp)
             try FileManager.default.removeItem(at: tempDir)
 
-            // 完成所有操作
+            // Complete all operations
             sendProgress(.completed)
             completeProgress()
 
             return outputURL
 
         } catch {
-            // 发送错误状态并完成流
-            let bookError: BookError
-            if let existingBookError = error as? BookError {
-                bookError = existingBookError
+            // Send error status and complete stream
+            let bookError: BookError = if let existingBookError = error as? BookError {
+                existingBookError
             } else {
-                bookError = BookError.xmlGenerationError("Unknown error: \(error)")
+                BookError.xmlGenerationError("Unknown error: \(error)")
             }
             sendProgress(.failed(error: bookError))
             completeProgress()
@@ -238,26 +274,28 @@ public final class Book {
         }
     }
 
-    /// 创建 XLSX 包的目录结构
+    /// Creates the XLSX package directory structure
+    /// - Parameter tempDir: The temporary directory URL where the structure will be created
+    /// - Throws: BookError.fileWriteError if directory operations fail
     func createXLSXDirectoryStructure(at tempDir: URL) throws(BookError) {
         do {
             let fileManager = FileManager.default
 
-            // 删除已存在的临时目录
+            // Remove existing temporary directory if it exists
             if fileManager.fileExists(atPath: tempDir.path) {
                 try fileManager.removeItem(at: tempDir)
             }
 
-            // 创建根目录
+            // Create root directory
             try fileManager.createDirectory(at: tempDir, withIntermediateDirectories: true)
 
-            // 创建必要的子目录
+            // Create necessary subdirectories
             let directories = [
                 "_rels",
                 "docProps",
                 "xl",
                 "xl/_rels",
-                "xl/worksheets"
+                "xl/worksheets",
             ]
 
             for dir in directories {
@@ -322,8 +360,7 @@ public final class Book {
                 try FileManager.default.createDirectory(
                     at: parentDirectory,
                     withIntermediateDirectories: true,
-                    attributes: nil
-                )
+                    attributes: nil)
                 logger.info("Created parent directory: \(parentDirectory.path)")
             } catch {
                 logger.error("Failed to create parent directory: \(parentDirectory.path) - \(error)")
@@ -334,14 +371,17 @@ public final class Book {
             let error = NSError(
                 domain: "Objects2XLSX",
                 code: 1,
-                userInfo: [NSLocalizedDescriptionKey: "Parent path exists but is not a directory: \(parentDirectory.path)"]
-            )
+                userInfo: [NSLocalizedDescriptionKey: "Parent path exists but is not a directory: \(parentDirectory.path)"])
             logger.error("Parent path is not a directory: \(parentDirectory.path)")
             throw BookError.fileWriteError(error)
         }
     }
 
-    /// 使用 SimpleZip 创建 XLSX 文件
+    /// Creates XLSX file using SimpleZip compression
+    /// - Parameters:
+    ///   - tempDir: Source directory containing XLSX package structure
+    ///   - outputURL: Target URL for the final XLSX file
+    /// - Throws: BookError.fileWriteError if ZIP creation fails
     func createZipArchive(from tempDir: URL, to outputURL: URL) throws(BookError) {
         do {
             try SimpleZip.createFromDirectory(directoryURL: tempDir, outputURL: outputURL)
@@ -359,20 +399,50 @@ public final class Book {
     }
 }
 
+// MARK: - Document Properties & Sheet Management
+
 extension Book {
+    /// Sets the author of the document properties
+    /// - Parameter name: The author name to be stored in the XLSX metadata
     public func author(name: String) {
         style.properties.author = name
     }
 
+    /// Sets the title of the document properties
+    /// - Parameter name: The document title to be stored in the XLSX metadata
     public func title(name: String) {
         style.properties.title = name
     }
+
+    /// Appends a type-erased sheet to the workbook
+    /// - Parameter sheet: The sheet to append to the workbook
+    public func append(sheet: AnySheet) {
+        sheets.append(sheet)
+    }
+
+    /// Appends multiple sheets to the workbook
+    /// - Parameter sheets: Array of sheets to append to the workbook
+    public func append(sheets: [AnySheet]) {
+        self.sheets.append(contentsOf: sheets)
+    }
 }
 
+// MARK: - Error Types
+
+/// Errors that can occur during XLSX generation and file operations
 public enum BookError: Error, Sendable {
+    /// File system operation failed (directory creation, file writing, etc.)
     case fileWriteError(Error)
+    
+    /// Sheet data provider is missing or failed to load data
     case dataProviderError(String)
+    
+    /// XML generation process failed
     case xmlGenerationError(String)
+    
+    /// Text encoding operation failed (typically UTF-8 encoding)
     case encodingError(String)
+    
+    /// Generated XML failed validation checks
     case xmlValidationError(String)
 }
