@@ -416,7 +416,7 @@ struct SheetXML {
             }
         }
 
-        guard minRow <= maxRow && minColumn <= maxColumn else { return nil }
+        guard minRow <= maxRow, minColumn <= maxColumn else { return nil }
 
         let startCell = "\(columnIndexToExcelColumn(minColumn))\(minRow)"
         let endCell = "\(columnIndexToExcelColumn(maxColumn))\(maxRow)"

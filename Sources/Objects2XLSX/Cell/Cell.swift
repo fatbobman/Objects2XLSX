@@ -123,10 +123,10 @@ extension Cell {
         // Add cell type attribute for shared strings
         if sharedStringID != nil {
             switch value {
-            case .string, .url:
-                xml += " t=\"s\""
-            default:
-                break
+                case .string, .url:
+                    xml += " t=\"s\""
+                default:
+                    break
             }
         }
 
