@@ -8,36 +8,153 @@
 
 import Foundation
 
-/// Sheet 元数据，包含生成其他 XML 文件所需的关键信息
-/// 相比完整的 SheetXML，SheetMeta 只包含轻量级的元数据，避免大数据量时的内存问题
+/**
+ Lightweight metadata for worksheets containing essential information for XML generation.
+ 
+ `SheetMeta` provides a compact representation of worksheet properties needed for
+ generating various Excel file components without requiring the full `SheetXML` data.
+ This approach prevents memory issues when processing large datasets.
+ 
+ ## Overview
+ 
+ The metadata includes:
+ - Basic worksheet identification (name, ID, file paths)
+ - Structural information (row/column counts, data ranges)
+ - Relationship identifiers for Excel file organization
+ - Layout properties (header presence, dimensions)
+ 
+ ## Usage
+ 
+ ```swift
+ let meta = sheet.makeSheetMeta(sheetId: 1)
+ print("Worksheet: \(meta.name)")
+ print("Data range: \(meta.dataRange?.excelRange ?? "None")")
+ print("File path: \(meta.filePath)")
+ ```
+ 
+ ## Memory Efficiency
+ 
+ Unlike `SheetXML` which contains all row and cell data, `SheetMeta` only stores
+ summary information. This makes it suitable for:
+ - Early planning phases of Excel generation
+ - Progress reporting and estimation
+ - Cross-referencing between workbook components
+ 
+ - Note: This structure is typically created by calling `makeSheetMeta(sheetId:)` on a `Sheet`
+ */
 public struct SheetMeta: Sendable {
-    /// Sheet 名称（已清理过的安全名称）
+    
+    // MARK: - Properties
+    
+    /**
+     The sanitized name of the worksheet.
+     
+     This name has been processed to comply with Excel requirements and
+     appears on the worksheet tab in Excel.
+     */
     public let name: String
-    /// Sheet 在 workbook 中的 ID（从 1 开始）
+    
+    /**
+     The unique identifier for this worksheet within the workbook.
+     
+     Sheet IDs start from 1 and are used for internal Excel file organization
+     and cross-referencing between different XML components.
+     */
     public let sheetId: Int
-    /// 在 workbook.xml.rels 中的关系 ID（如 "rId1", "rId2"）
+    
+    /**
+     The relationship identifier used in workbook.xml.rels.
+     
+     Follows the pattern "rId1", "rId2", etc. and establishes the connection
+     between the workbook and individual worksheet files.
+     */
     public let relationshipId: String
-    /// 是否包含表头行
+    
+    /**
+     Whether the worksheet includes a header row.
+     
+     This affects row counting, data range calculation, and XML generation.
+     When `true`, the first row contains column names.
+     */
     public let hasHeader: Bool
-    /// 预估的数据行数（不包含表头）
+    
+    /**
+     The estimated number of data rows (excluding header).
+     
+     This count may be an estimate if calculated before full data loading,
+     useful for progress reporting and resource planning.
+     */
     public let estimatedDataRowCount: Int
-    /// 活跃列数（实际会生成的列数）
+    
+    /**
+     The number of active columns that will be generated.
+     
+     Based on column filtering and conditional rendering rules,
+     this represents the actual width of the generated worksheet.
+     */
     public let activeColumnCount: Int
-    /// 总行数（包含表头，如果有的话）
+    
+    /**
+     The total number of rows including header (if present).
+     
+     Calculated as `estimatedDataRowCount + (hasHeader ? 1 : 0)`.
+     */
     public let totalRowCount: Int
-    /// 数据范围信息（用于生成 dimension 等）
+    
+    /**
+     Data range information for Excel dimension calculation.
+     
+     Defines the used area of the worksheet in Excel's coordinate system.
+     `nil` if the worksheet has no data.
+     */
     public let dataRange: DataRangeInfo?
-    /// Sheet 在 XLSX 包中的文件路径
+    
+    /**
+     The file path within the XLSX package structure.
+     
+     Follows Excel's standard path pattern: "xl/worksheets/sheet{id}.xml".
+     */
     public let filePath: String
 
-    /// 数据范围信息
+    /**
+     Information about the data range in Excel coordinates.
+     
+     Represents the rectangular area of the worksheet that contains data,
+     used for Excel's dimension calculations and navigation features.
+     */
     public struct DataRangeInfo: Sendable {
+        
+        /**
+         The starting row number (1-based Excel indexing).
+         */
         public let startRow: Int
+        
+        /**
+         The starting column number (1-based Excel indexing).
+         */
         public let startColumn: Int
+        
+        /**
+         The ending row number (1-based Excel indexing).
+         */
         public let endRow: Int
+        
+        /**
+         The ending column number (1-based Excel indexing).
+         */
         public let endColumn: Int
 
-        /// Excel 格式的范围字符串（如 "A1:C10"）
+        /**
+         The data range in Excel's A1 notation format.
+         
+         Converts the numeric coordinates to Excel's letter-number notation.
+         
+         ## Examples
+         - A range from (1,1) to (3,10) becomes "A1:C10"
+         - A range from (2,5) to (8,26) becomes "E2:Z8"
+         
+         - Returns: A string in Excel range format (e.g., "A1:C10")
+         */
         public var excelRange: String {
             let startCol = columnIndexToExcelColumn(startColumn)
             let endCol = columnIndexToExcelColumn(endColumn)
@@ -45,6 +162,22 @@ public struct SheetMeta: Sendable {
         }
     }
 
+    // MARK: - Initialization
+    
+    /**
+     Creates a new SheetMeta instance with the specified properties.
+     
+     - Parameters:
+        - name: The sanitized worksheet name
+        - sheetId: The unique worksheet identifier (1-based)
+        - relationshipId: The relationship ID for Excel file organization
+        - hasHeader: Whether the worksheet includes a header row
+        - estimatedDataRowCount: The estimated number of data rows
+        - activeColumnCount: The number of active columns to be generated
+        - dataRange: Optional data range information
+     
+     The total row count and file path are calculated automatically based on the provided parameters.
+     */
     public init(
         name: String,
         sheetId: Int,
@@ -69,14 +202,31 @@ public struct SheetMeta: Sendable {
 // MARK: - Sheet Extensions
 
 extension Sheet {
-    /// 构建 SheetMeta，用于 Book 级别的 XML 生成
-    /// 注意：此方法假设数据已通过 loadData() 预先加载
+    /**
+     Creates metadata for this worksheet for use in workbook-level XML generation.
+     
+     This method generates a lightweight representation of the worksheet containing
+     essential information needed for various Excel file components. It should be
+     called after data has been loaded via `loadData()`.
+     
+     - Parameter sheetId: The unique identifier to assign to this worksheet
+     - Returns: A `SheetMeta` instance containing worksheet metadata
+     
+     ## Usage
+     ```swift
+     sheet.loadData() // Ensure data is loaded first
+     let meta = sheet.makeSheetMeta(sheetId: 1)
+     ```
+     
+     - Important: This method assumes data has been pre-loaded through `loadData()`.
+       Calling it before data loading may result in incorrect row/column counts.
+     */
     public func makeSheetMeta(sheetId: Int) -> SheetMeta {
         let dataRowCount = data?.count ?? 0
         let activeColumns = activeColumns(objects: data ?? [])
         let activeColumnCount = activeColumns.count
 
-        // 构建数据范围信息
+        // Build data range information
         let dataRange: SheetMeta.DataRangeInfo?
         if totalRowCount > 0 && activeColumnCount > 0 {
             dataRange = SheetMeta.DataRangeInfo(
@@ -100,21 +250,42 @@ extension Sheet {
         )
     }
 
-    /// 获取总行数（包含表头，如果有的话）
+    /**
+     The total number of rows including header (if present).
+     
+     Calculated as the sum of data rows and one header row (if enabled).
+     This count is used for worksheet dimension calculations.
+     */
     public var totalRowCount: Int {
         (data?.count ?? 0) + (hasHeader ? 1 : 0)
     }
 
-    /// 预估数据行数（不触发实际数据加载，仅用于早期估算）
+    /**
+     Provides an estimate of data row count without triggering data loading.
+     
+     This method is useful for early estimation and progress planning during
+     Excel generation. It returns the actual count if data is already loaded,
+     or 0 if data hasn't been loaded yet.
+     
+     - Returns: The estimated number of data rows (excluding header)
+     
+     ## Implementation Notes
+     
+     - If data is already loaded, returns the actual count
+     - If data provider exists but data isn't loaded, returns 0 (unknown)
+     - For more accurate estimation, consider implementing a dedicated count provider
+     
+     - Note: This method does not trigger data loading to avoid performance impacts
+     */
     public func estimatedDataRowCount() -> Int {
-        // 如果数据已加载，返回实际数量
+        // If data is already loaded, return actual count
         if let data = data {
             return data.count
         }
 
-        // 如果有 dataProvider，可以尝试调用获取数量
-        // 这里简化处理，返回 0 表示未知
-        // 实际使用时可以考虑添加专门的 countProvider
+        // If there's a data provider, we could potentially call it to get count
+        // For now, simplified approach returns 0 indicating unknown
+        // In production, consider adding a dedicated countProvider for better estimation
         return 0
     }
 }
