@@ -1,0 +1,25 @@
+# Swift Package Manager
+.build/
+.swiftpm/
+Package.resolved
+
+# Xcode
+*.xcodeproj/
+*.xcworkspace/
+DerivedData/
+.DS_Store
+
+# Demo Output
+Output/*.xlsx
+Output/*.csv
+Output/benchmark-*.txt
+
+# IDE
+.vscode/
+*.swp
+*.swo
+
+# Temporary files
+*.tmp
+*.temp
+*.log

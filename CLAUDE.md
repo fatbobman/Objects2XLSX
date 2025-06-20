@@ -197,6 +197,136 @@ swift package generate-xcodeproj
 - 无外部依赖
 - Linux/macOS 兼容性
 
+### 📚 当前工作：综合演示项目 (Demo Project)
+
+#### 🎯 项目目标
+创建一个完整的可执行演示项目，全面展示 Objects2XLSX 库的所有核心功能，作为用户学习和评估的最佳入口。
+
+#### 📁 项目结构
+```
+Demo/                           # 嵌套 Package 演示项目
+├── Package.swift              # 可执行 SPM 配置
+├── Sources/Objects2XLSXDemo/
+│   ├── main.swift            # 程序入口
+│   ├── Models/               # 三种业务数据模型
+│   │   ├── Employee.swift    # 员工模型 (复杂数据类型)
+│   │   ├── Product.swift     # 产品模型 (条件格式)
+│   │   └── Order.swift       # 订单模型 (关联数据)
+│   ├── Data/                 # 演示数据生成器
+│   │   ├── SampleEmployees.swift
+│   │   ├── SampleProducts.swift
+│   │   └── SampleOrders.swift
+│   ├── Styles/               # 三种样式主题
+│   │   ├── CorporateStyle.swift    # 企业风格
+│   │   ├── ModernStyle.swift       # 现代风格
+│   │   └── DefaultStyle.swift      # 默认风格
+│   └── ExcelGenerator.swift # 生成逻辑
+├── Output/                   # 输出目录
+└── README.md                # 演示项目说明
+```
+
+#### 🎨 三表演示方案
+
+**1. Employee 工作表 (企业风格 + 行高设置)**
+- 样式：深蓝色企业主题，Times New Roman 字体
+- 特色：自定义行高 25pt，完整边框
+- 列功能演示：
+  - `name`: 字符串 + 列宽 20
+  - `age`: 数字 + filter(>= 18)
+  - `department`: 枚举 + mapping 转换
+  - `salary`: Double + 货币格式 + nil handling
+  - `email`: URL + 验证过滤
+  - `hireDate`: Date + 格式化
+  - `isManager`: Bool + mapping("是"/"否")
+  - `address`: Optional String + nil 显示为 "未提供"
+
+**2. Product 工作表 (现代风格)**
+- 样式：渐变色背景，Helvetica 字体，交替行颜色
+- 特色：条件格式化，现代配色方案
+- 列功能演示：
+  - `id`: 自增ID + 列宽 8
+  - `name`: 产品名 + 列宽 25 + 自动换行
+  - `category`: 分类 + filter(只显示特定分类)
+  - `price`: 价格 + 货币格式 + nil handling
+  - `stock`: 库存 + 条件格式(低库存红色)
+  - `rating`: 评分 + mapping(星级显示)
+  - `isActive`: 状态 + mapping + filter
+  - `description`: 描述 + 自动换行 + 列宽 30
+
+**3. Order 工作表 (默认风格)**
+- 样式：Excel 默认样式，展示基础效果
+- 特色：最小化样式，关注数据展示
+- 列功能演示：
+  - `orderID`: 订单号 + 格式化
+  - `customerName`: 客户名 + filter(非空)
+  - `orderDate`: 订单日期 + 日期格式
+  - `items`: 商品列表 + mapping(数组转字符串)
+  - `subtotal`: 小计 + 计算字段
+  - `tax`: 税费 + 百分比格式
+  - `total`: 总计 + 货币格式 + 加粗
+  - `status`: 状态 + mapping + 条件颜色
+
+#### 🛠 技术特性演示
+
+**列功能全面展示**
+- ✅ Filter: 年龄过滤、状态过滤、非空过滤
+- ✅ Mapping: 枚举转换、布尔值转换、数组转字符串
+- ✅ Nil Handling: 自定义空值显示、默认值设置
+- ✅ 列宽设置: 不同列的宽度优化
+- ✅ 数据格式: 货币、百分比、日期、URL
+
+**高级功能演示**
+- ✅ 多表格工作簿: 三个不同主题的表格
+- ✅ 进度跟踪: 实时生成进度显示
+- ✅ 样式层级: Book → Sheet → Column → Cell
+- ✅ 内存优化: 大数据集处理演示
+- ✅ 错误处理: 完整的异常处理示例
+
+#### 📱 命令行接口
+
+```bash
+swift run Objects2XLSXDemo [OPTIONS]
+
+Options:
+  --data-size <size>     数据量: small, medium, large (默认: medium)
+  --output-path <path>   输出目录 (默认: ./Output/)
+  --style <theme>        全局主题: corporate, modern, mixed (默认: mixed)
+  --verbose              显示详细进度信息
+  --benchmark            包含性能计时
+  --help                 显示帮助信息
+```
+
+#### 🎯 预期成果
+
+**用户体验**
+- 克隆项目后 5 分钟内即可体验完整功能
+- 生成包含三个工作表的专业 Excel 文件
+- 实时进度显示和性能统计
+- 完整的源码学习材料
+
+**技术价值**
+- 作为最佳实践参考
+- 功能完整性验证
+- 性能基准测试
+- 集成测试补充
+
+#### 📋 实施计划
+
+- 🔄 **Phase 1**: 基础结构搭建 (Package.swift, 目录结构)
+- 🔄 **Phase 2**: 数据模型定义 (三个业务模型)
+- 🔄 **Phase 3**: 样式主题实现 (三种样式配置)
+- 🔄 **Phase 4**: 生成逻辑开发 (Excel 生成和 CLI)
+- 🔄 **Phase 5**: 测试和优化 (错误处理、性能优化)
+- 🔄 **Phase 6**: 文档完善 (README 更新、使用指南)
+
+#### 🎉 项目价值
+
+这个演示项目将成为 Objects2XLSX 库的：
+- **功能展示窗口** - 完整展示库的所有核心能力
+- **学习入门教程** - 用户学习使用的最佳起点
+- **最佳实践指南** - 展示正确的使用模式
+- **质量保证工具** - 作为持续集成的一部分
+
 ### 后续发展方向
 
 #### v1.1 增强功能（可选）

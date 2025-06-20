@@ -1,0 +1,9 @@
+# Output Directory
+
+This directory will contain the generated Excel files from the demo.
+
+Generated files:
+- `demo-workbook.xlsx` - Main demo output file
+- Performance logs and benchmark results (when enabled)
+
+Note: Generated files are not tracked in git.
