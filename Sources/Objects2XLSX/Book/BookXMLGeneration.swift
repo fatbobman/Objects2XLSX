@@ -55,3 +55,50 @@ extension Book {
         }
     }
 }
+
+// MARK: - Styles XML Writing
+extension Book {
+    /// 写入 styles.xml 文件
+    func writeStylesXML(to tempDir: URL, styleRegister: StyleRegister) throws(BookError) {
+        let stylesXML = styleRegister.generateXML()
+        let stylesURL = tempDir.appendingPathComponent("xl/styles.xml")
+        
+        guard let xmlData = stylesXML.data(using: .utf8) else {
+            throw BookError.encodingError("Failed to encode styles.xml as UTF-8")
+        }
+        
+        do {
+            try xmlData.write(to: stylesURL)
+            print("✓ Created styles.xml")
+            print("  - Fonts: \(styleRegister.fontPool.count)")
+            print("  - Fills: \(styleRegister.fillPool.count)")
+            print("  - Borders: \(styleRegister.borderPool.count)")
+            print("  - Cell styles: \(styleRegister.resolvedStylePool.count)")
+            print("  - XML size: \(xmlData.count) bytes")
+        } catch {
+            throw BookError.fileWriteError(error)
+        }
+    }
+}
+
+// MARK: - Shared Strings XML Writing
+extension Book {
+    /// 写入 sharedStrings.xml 文件
+    func writeSharedStringsXML(to tempDir: URL, shareStringRegister: ShareStringRegister) throws(BookError) {
+        let sharedStringsXML = shareStringRegister.generateXML()
+        let sharedStringsURL = tempDir.appendingPathComponent("xl/sharedStrings.xml")
+        
+        guard let xmlData = sharedStringsXML.data(using: .utf8) else {
+            throw BookError.encodingError("Failed to encode sharedStrings.xml as UTF-8")
+        }
+        
+        do {
+            try xmlData.write(to: sharedStringsURL)
+            print("✓ Created sharedStrings.xml")
+            print("  - Unique strings: \(shareStringRegister.allStrings.count)")
+            print("  - XML size: \(xmlData.count) bytes")
+        } catch {
+            throw BookError.fileWriteError(error)
+        }
+    }
+}

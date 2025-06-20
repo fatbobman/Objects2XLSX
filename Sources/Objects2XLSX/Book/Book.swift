@@ -73,6 +73,8 @@ public final class Book {
 
         // 使用收集的元数据生成全局文件
         try writeWorkbookXML(to: tempDir, metas: collectedMetas)
+        try writeStylesXML(to: tempDir, styleRegister: styleRegister)
+        try writeSharedStringsXML(to: tempDir, shareStringRegister: shareStringRegister)
         
         // TODO: 打包为 ZIP 文件并重命名为 .xlsx
         // TODO: 清理临时目录

@@ -146,4 +146,71 @@ struct BookXMLGenerationTests {
         print("Empty workbook XML:")
         print(xml)
     }
+    
+    @Test("test writeStylesXML File Creation")
+    func testWriteStylesXMLFileCreation() throws {
+        // Create temp directory
+        let tempDir = URL(fileURLWithPath: "/tmp/test_styles_xml")
+        let book = Book(style: BookStyle())
+        try book.createXLSXDirectoryStructure(at: tempDir)
+        
+        // Create style register with some styles
+        let styleRegister = StyleRegister()
+        let cellStyle = CellStyle(
+            font: Font(size: 12, name: "Arial"),
+            fill: .solid(.blue),
+            alignment: Alignment(horizontal: .center, vertical: .center)
+        )
+        _ = styleRegister.registerCellStyle(cellStyle, cellType: .string("test"))
+        
+        // Write styles.xml
+        #expect(throws: Never.self) {
+            try book.writeStylesXML(to: tempDir, styleRegister: styleRegister)
+        }
+        
+        // Verify file exists
+        let stylesURL = tempDir.appendingPathComponent("xl/styles.xml")
+        #expect(FileManager.default.fileExists(atPath: stylesURL.path))
+        
+        // Read and verify content
+        let content = try String(contentsOf: stylesURL, encoding: .utf8)
+        #expect(content.contains("<?xml version=\"1.0\" encoding=\"UTF-8\""))
+        #expect(content.contains("<styleSheet"))
+        #expect(content.contains("</styleSheet>"))
+        
+        print("Successfully created styles.xml at: \(stylesURL.path)")
+    }
+    
+    @Test("test writeSharedStringsXML File Creation")
+    func testWriteSharedStringsXMLFileCreation() throws {
+        // Create temp directory
+        let tempDir = URL(fileURLWithPath: "/tmp/test_sharedstrings_xml")
+        let book = Book(style: BookStyle())
+        try book.createXLSXDirectoryStructure(at: tempDir)
+        
+        // Create share string register with some strings
+        let shareStringRegister = ShareStringRegister()
+        _ = shareStringRegister.register("Hello World")
+        _ = shareStringRegister.register("Test String")
+        _ = shareStringRegister.register("Excel & XML")
+        
+        // Write sharedStrings.xml
+        #expect(throws: Never.self) {
+            try book.writeSharedStringsXML(to: tempDir, shareStringRegister: shareStringRegister)
+        }
+        
+        // Verify file exists
+        let sharedStringsURL = tempDir.appendingPathComponent("xl/sharedStrings.xml")
+        #expect(FileManager.default.fileExists(atPath: sharedStringsURL.path))
+        
+        // Read and verify content
+        let content = try String(contentsOf: sharedStringsURL, encoding: .utf8)
+        #expect(content.contains("<?xml version=\"1.0\" encoding=\"UTF-8\""))
+        #expect(content.contains("<sst"))
+        #expect(content.contains("</sst>"))
+        #expect(content.contains("Hello World"))
+        #expect(content.contains("Excel &amp; XML"))
+        
+        print("Successfully created sharedStrings.xml at: \(sharedStringsURL.path)")
+    }
 }
