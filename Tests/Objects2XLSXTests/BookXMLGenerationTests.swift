@@ -383,4 +383,55 @@ struct BookXMLGenerationTests {
         
         print("Successfully created workbook.xml.rels at: \(workbookRelsURL.path)")
     }
+    
+    @Test("test generateRootRelsXML")
+    func testGenerateRootRelsXML() {
+        let book = Book(style: BookStyle())
+        let xml = book.generateRootRelsXML()
+        
+        // Verify XML structure
+        #expect(xml.contains("<?xml version=\"1.0\" encoding=\"UTF-8\""))
+        #expect(xml.contains("<Relationships xmlns=\"http://schemas.openxmlformats.org/package/2006/relationships\">"))
+        #expect(xml.contains("</Relationships>"))
+        
+        // Verify the three core relationships
+        #expect(xml.contains("<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument\" Target=\"xl/workbook.xml\"/>"))
+        #expect(xml.contains("<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties\" Target=\"docProps/core.xml\"/>"))
+        #expect(xml.contains("<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties\" Target=\"docProps/app.xml\"/>"))
+        
+        print("Generated Root Rels XML:")
+        print(xml)
+    }
+    
+    @Test("test writeRootRelsXML File Creation")
+    func testWriteRootRelsXMLFileCreation() throws {
+        // Create temp directory
+        let tempDir = URL(fileURLWithPath: "/tmp/test_root_rels")
+        let book = Book(style: BookStyle())
+        try book.createXLSXDirectoryStructure(at: tempDir)
+        
+        // Write _rels/.rels
+        #expect(throws: Never.self) {
+            try book.writeRootRelsXML(to: tempDir)
+        }
+        
+        // Verify file exists
+        let rootRelsURL = tempDir.appendingPathComponent("_rels/.rels")
+        #expect(FileManager.default.fileExists(atPath: rootRelsURL.path))
+        
+        // Read and verify content
+        let content = try String(contentsOf: rootRelsURL, encoding: .utf8)
+        #expect(content.contains("<Relationships"))
+        #expect(content.contains("</Relationships>"))
+        #expect(content.contains("officeDocument"))
+        #expect(content.contains("core-properties"))
+        #expect(content.contains("extended-properties"))
+        
+        // Verify all three relationships exist
+        #expect(content.contains("rId1"))
+        #expect(content.contains("rId2"))
+        #expect(content.contains("rId3"))
+        
+        print("Successfully created .rels at: \(rootRelsURL.path)")
+    }
 }

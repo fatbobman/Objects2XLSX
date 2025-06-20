@@ -204,3 +204,38 @@ extension Book {
         }
     }
 }
+
+// MARK: - Root Relationships XML Generation
+extension Book {
+    /// 生成 _rels/.rels 文件内容（根关系文件）
+    func generateRootRelsXML() -> String {
+        let xml = """
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+        <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+        <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>
+        <Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/>
+        </Relationships>
+        """
+        
+        return xml
+    }
+    
+    /// 写入 _rels/.rels 文件
+    func writeRootRelsXML(to tempDir: URL) throws(BookError) {
+        let rootRelsXML = generateRootRelsXML()
+        let rootRelsURL = tempDir.appendingPathComponent("_rels/.rels")
+        
+        guard let xmlData = rootRelsXML.data(using: .utf8) else {
+            throw BookError.encodingError("Failed to encode .rels as UTF-8")
+        }
+        
+        do {
+            try xmlData.write(to: rootRelsURL)
+            print("✓ Created .rels (root relationships)")
+            print("  - XML size: \(xmlData.count) bytes")
+        } catch {
+            throw BookError.fileWriteError(error)
+        }
+    }
+}
