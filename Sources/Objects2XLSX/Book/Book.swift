@@ -7,22 +7,36 @@
 // Copyright © 2025 Fatbobman. All rights reserved.
 
 import Foundation
+import SimpleLogger
 
 // 对应 Excel 的 Workbook 对象
 public final class Book {
     public var style: BookStyle
     public var sheets: [AnySheet]
+    
+    /// 日志管理器，支持自定义实现
+    public let logger: LoggerManagerProtocol
 
     var sheetMetas: [SheetMeta] = []
 
-    public init(style: BookStyle, sheets: [AnySheet] = []) {
+    public init(style: BookStyle, sheets: [AnySheet] = [], logger: LoggerManagerProtocol? = nil) {
         self.style = style
         self.sheets = sheets
+        self.logger = logger ?? Self.defaultLogger
     }
 
-    public convenience init(style: BookStyle, @SheetBuilder sheets: () -> [AnySheet]) {
-        self.init(style: style, sheets: sheets())
+    public convenience init(style: BookStyle, logger: LoggerManagerProtocol? = nil, @SheetBuilder sheets: () -> [AnySheet]) {
+        self.init(style: style, sheets: sheets(), logger: logger)
     }
+    
+    /// 默认日志实现
+    private static let defaultLogger: LoggerManagerProtocol = {
+        #if DEBUG
+        return .console()
+        #else
+        return .default(subsystem: "com.objects2xlsx.fatbobman", category: "generation")
+        #endif
+    }()
 
     public func append(sheet: AnySheet) {
         sheets.append(sheet)
@@ -134,9 +148,7 @@ public final class Book {
         // 验证生成的 XML 包含必要的元素
         try validateSheetXML(xmlString: xmlString, meta: meta)
         
-        print("✓ Created sheet file: \(meta.filePath)")
-        print("  - XML size: \(xmlData.count) bytes")
-        print("  - Data range: \(meta.dataRange?.excelRange ?? "None")")
+        logger.info("Created sheet file: \(meta.filePath) - XML size: \(xmlData.count) bytes, Data range: \(meta.dataRange?.excelRange ?? "None")")
     }
 
     /// 验证生成的 Sheet XML 是否符合基本要求
@@ -157,7 +169,7 @@ public final class Book {
             }
         }
 
-        print("✓ XML validation passed for sheet '\(meta.name)'")
+        logger.debug("XML validation passed for sheet '\(meta.name)'")
     }
     
     /// 创建 XLSX 包的目录结构
@@ -187,7 +199,7 @@ public final class Book {
                 try fileManager.createDirectory(at: dirURL, withIntermediateDirectories: true)
             }
             
-            print("✓ Created XLSX directory structure at: \(tempDir.path)")
+            logger.info("Created XLSX directory structure at: \(tempDir.path)")
             
         } catch {
             throw BookError.fileWriteError(error)

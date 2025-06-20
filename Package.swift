@@ -21,6 +21,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/pointfreeco/swift-identified-collections.git", from: "1.0.0"),
+        .package(url: "https://github.com/fatbobman/SimpleLogger.git", from: "0.0.1"),
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -29,6 +30,7 @@ let package = Package(
             name: "Objects2XLSX",
             dependencies: [
                 .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
+                .product(name: "SimpleLogger", package: "SimpleLogger"),
             ]),
         .testTarget(
             name: "Objects2XLSXTests",

@@ -7,6 +7,7 @@
 // Copyright © 2025 Fatbobman. All rights reserved.
 
 import Foundation
+import SimpleLogger
 
 // MARK: - Workbook XML Generation
 extension Book {
@@ -47,9 +48,7 @@ extension Book {
         
         do {
             try xmlData.write(to: workbookURL)
-            print("✓ Created workbook.xml")
-            print("  - Sheet count: \(metas.count)")
-            print("  - XML size: \(xmlData.count) bytes")
+            logger.info("Created workbook.xml - Sheet count: \(metas.count), XML size: \(xmlData.count) bytes")
         } catch {
             throw BookError.fileWriteError(error)
         }
@@ -69,12 +68,7 @@ extension Book {
         
         do {
             try xmlData.write(to: stylesURL)
-            print("✓ Created styles.xml")
-            print("  - Fonts: \(styleRegister.fontPool.count)")
-            print("  - Fills: \(styleRegister.fillPool.count)")
-            print("  - Borders: \(styleRegister.borderPool.count)")
-            print("  - Cell styles: \(styleRegister.resolvedStylePool.count)")
-            print("  - XML size: \(xmlData.count) bytes")
+            logger.info("Created styles.xml - Fonts: \(styleRegister.fontPool.count), Fills: \(styleRegister.fillPool.count), Borders: \(styleRegister.borderPool.count), Cell styles: \(styleRegister.resolvedStylePool.count), XML size: \(xmlData.count) bytes")
         } catch {
             throw BookError.fileWriteError(error)
         }
@@ -94,9 +88,7 @@ extension Book {
         
         do {
             try xmlData.write(to: sharedStringsURL)
-            print("✓ Created sharedStrings.xml")
-            print("  - Unique strings: \(shareStringRegister.allStrings.count)")
-            print("  - XML size: \(xmlData.count) bytes")
+            logger.info("Created sharedStrings.xml - Unique strings: \(shareStringRegister.allStrings.count), XML size: \(xmlData.count) bytes")
         } catch {
             throw BookError.fileWriteError(error)
         }
@@ -146,9 +138,7 @@ extension Book {
         
         do {
             try xmlData.write(to: contentTypesURL)
-            print("✓ Created [Content_Types].xml")
-            print("  - Sheet count: \(sheetCount)")
-            print("  - XML size: \(xmlData.count) bytes")
+            logger.info("Created [Content_Types].xml - Sheet count: \(sheetCount), XML size: \(xmlData.count) bytes")
         } catch {
             throw BookError.fileWriteError(error)
         }
@@ -195,10 +185,7 @@ extension Book {
         
         do {
             try xmlData.write(to: workbookRelsURL)
-            print("✓ Created workbook.xml.rels")
-            print("  - Sheet relationships: \(metas.count)")
-            print("  - Total relationships: \(metas.count + 2)") // sheets + styles + sharedStrings
-            print("  - XML size: \(xmlData.count) bytes")
+            logger.info("Created workbook.xml.rels - Sheet relationships: \(metas.count), Total relationships: \(metas.count + 2), XML size: \(xmlData.count) bytes")
         } catch {
             throw BookError.fileWriteError(error)
         }
@@ -232,8 +219,7 @@ extension Book {
         
         do {
             try xmlData.write(to: rootRelsURL)
-            print("✓ Created .rels (root relationships)")
-            print("  - XML size: \(xmlData.count) bytes")
+            logger.info("Created .rels (root relationships) - XML size: \(xmlData.count) bytes")
         } catch {
             throw BookError.fileWriteError(error)
         }
@@ -299,10 +285,7 @@ extension Book {
         
         do {
             try xmlData.write(to: appPropsURL)
-            print("✓ Created app.xml")
-            print("  - Application: Objects2XLSX")
-            print("  - Worksheets: \(metas.count)")
-            print("  - XML size: \(xmlData.count) bytes")
+            logger.info("Created app.xml - Application: Objects2XLSX, Worksheets: \(metas.count), XML size: \(xmlData.count) bytes")
         } catch {
             throw BookError.fileWriteError(error)
         }
@@ -344,10 +327,7 @@ extension Book {
         
         do {
             try xmlData.write(to: corePropsURL)
-            print("✓ Created core.xml")
-            print("  - Title: \(style.properties.title ?? "(none)")")
-            print("  - Author: \(style.properties.author ?? "Objects2XLSX")")
-            print("  - XML size: \(xmlData.count) bytes")
+            logger.info("Created core.xml - Title: \(style.properties.title ?? "(none)"), Author: \(style.properties.author ?? "Objects2XLSX"), XML size: \(xmlData.count) bytes")
         } catch {
             throw BookError.fileWriteError(error)
         }
