@@ -35,15 +35,24 @@ struct BookWriteTests {
         book.sheets[0].loadData()
         let meta = book.sheets[0].makeSheetMeta(sheetId: 1)
         
+        // Create temp directory for testing
+        let tempURL = URL(fileURLWithPath: "/tmp/test_xlsx_basic")
+        try book.createXLSXDirectoryStructure(at: tempURL)
+        
         // Test generateAndWriteSheetXML
         #expect(throws: Never.self) {
             try book.generateAndWriteSheetXML(
                 sheet: book.sheets[0],
                 meta: meta,
+                tempDir: tempURL,
                 styleRegister: styleRegister,
                 shareStringRegister: shareStringRegister
             )
         }
+        
+        // Verify file was created
+        let sheetFileURL = tempURL.appendingPathComponent(meta.filePath)
+        #expect(FileManager.default.fileExists(atPath: sheetFileURL.path))
         
         print("Basic generateAndWriteSheetXML test completed successfully")
         print("Sheet: \(meta.name), Rows: \(meta.totalRowCount), Columns: \(meta.activeColumnCount)")
@@ -67,15 +76,24 @@ struct BookWriteTests {
         book.sheets[0].loadData()
         let meta = book.sheets[0].makeSheetMeta(sheetId: 1)
         
+        // Create temp directory for testing
+        let tempURL = URL(fileURLWithPath: "/tmp/test_xlsx_empty")
+        try book.createXLSXDirectoryStructure(at: tempURL)
+        
         // Test generateAndWriteSheetXML with empty data
         #expect(throws: Never.self) {
             try book.generateAndWriteSheetXML(
                 sheet: book.sheets[0],
                 meta: meta,
+                tempDir: tempURL,
                 styleRegister: styleRegister,
                 shareStringRegister: shareStringRegister
             )
         }
+        
+        // Verify file was created
+        let sheetFileURL = tempURL.appendingPathComponent(meta.filePath)
+        #expect(FileManager.default.fileExists(atPath: sheetFileURL.path))
         
         print("Empty sheet generateAndWriteSheetXML test completed successfully")
         print("Empty sheet has header: \(meta.hasHeader), Data rows: \(meta.estimatedDataRowCount)")
@@ -113,11 +131,19 @@ struct BookWriteTests {
             productsSheet.eraseToAnySheet()
         ])
         
-        // Test complete write flow (without actual file writing)
-        let tempURL = URL(fileURLWithPath: "/tmp/test.xlsx")
+        // Test complete write flow
+        let outputURL = URL(fileURLWithPath: "/tmp/test_complete.xlsx")
         
         #expect(throws: Never.self) {
-            try book.write(to: tempURL)
+            try book.write(to: outputURL)
+        }
+        
+        // Verify temp directory structure was created
+        let tempDir = outputURL.deletingPathExtension().appendingPathExtension("temp")
+        let directories = ["_rels", "docProps", "xl", "xl/_rels", "xl/worksheets"]
+        for dir in directories {
+            let dirURL = tempDir.appendingPathComponent(dir)
+            #expect(FileManager.default.fileExists(atPath: dirURL.path))
         }
         
         print("Complete write flow test completed successfully")
@@ -142,15 +168,24 @@ struct BookWriteTests {
         book.sheets[0].loadData()
         let meta = book.sheets[0].makeSheetMeta(sheetId: 1)
         
+        // Create temp directory for testing
+        let tempURL = URL(fileURLWithPath: "/tmp/test_xlsx_nil_provider")
+        try book.createXLSXDirectoryStructure(at: tempURL)
+        
         // Even with nil dataProvider, this should succeed (creates empty sheet with header)
         #expect(throws: Never.self) {
             try book.generateAndWriteSheetXML(
                 sheet: book.sheets[0],
                 meta: meta,
+                tempDir: tempURL,
                 styleRegister: styleRegister,
                 shareStringRegister: shareStringRegister
             )
         }
+        
+        // Verify file was created
+        let sheetFileURL = tempURL.appendingPathComponent(meta.filePath)
+        #expect(FileManager.default.fileExists(atPath: sheetFileURL.path))
         
         // Verify the meta reflects empty data
         #expect(meta.estimatedDataRowCount == 0)

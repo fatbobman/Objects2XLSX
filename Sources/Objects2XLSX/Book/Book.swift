@@ -45,7 +45,10 @@ public final class Book {
         let styleRegister = StyleRegister()
         let shareStringRegister = ShareStringRegister()
 
-        // TODO: 创建 XLSX 包结构
+        // 创建临时目录用于构建 XLSX 包结构
+        let tempDir = url.deletingPathExtension().appendingPathExtension("temp")
+        try createXLSXDirectoryStructure(at: tempDir)
+        
         // 流式处理：一次性完成数据加载、元数据收集和XML生成
         var collectedMetas: [SheetMeta] = []
 
@@ -63,6 +66,7 @@ public final class Book {
             try generateAndWriteSheetXML(
                 sheet: sheet,
                 meta: meta,
+                tempDir: tempDir,
                 styleRegister: styleRegister,
                 shareStringRegister: shareStringRegister)
         }
@@ -70,11 +74,15 @@ public final class Book {
         // 使用收集的元数据生成全局文件
         // let workbookXML = generateWorkbookXML(metas: collectedMetas)
         // ...
+        
+        // TODO: 打包为 ZIP 文件并重命名为 .xlsx
+        // TODO: 清理临时目录
     }
 
     func generateAndWriteSheetXML(
         sheet: AnySheet,
         meta: SheetMeta,
+        tempDir: URL,
         styleRegister: StyleRegister,
         shareStringRegister: ShareStringRegister) throws(BookError)
     {
@@ -88,50 +96,96 @@ public final class Book {
 
         // 生成 XML 内容
         let xmlString = sheetXML.generateXML()
-        
+
         // 验证 XML 内容不为空
         guard !xmlString.isEmpty else {
             throw BookError.xmlGenerationError("Generated XML for sheet '\(sheet.name)' is empty")
         }
-        
+
         // 将 XML 字符串转换为数据
         guard let xmlData = xmlString.data(using: .utf8) else {
             throw BookError.encodingError("Failed to encode XML for sheet '\(sheet.name)' as UTF-8")
         }
+
+        // 创建完整的文件路径
+        let sheetFileURL = tempDir.appendingPathComponent(meta.filePath)
         
-        // TODO: 实际写入文件到 XLSX 包
-        // 目前先进行基本的数据验证和准备
-        // 后续需要实现 XLSX 包管理器来实际写入文件
+        // 确保父目录存在
+        let parentDir = sheetFileURL.deletingLastPathComponent()
+        do {
+            try FileManager.default.createDirectory(at: parentDir, withIntermediateDirectories: true)
+        } catch {
+            throw BookError.fileWriteError(error)
+        }
         
-        // 临时实现：记录生成的信息用于调试
-        print("Generated XML for sheet '\(meta.name)' (ID: \(meta.sheetId))")
-        print("- File path: \(meta.filePath)")
-        print("- XML size: \(xmlData.count) bytes")
-        print("- Data range: \(meta.dataRange?.excelRange ?? "None")")
-        
+        // 写入 XML 文件
+        do {
+            try xmlData.write(to: sheetFileURL)
+        } catch {
+            throw BookError.fileWriteError(error)
+        }
+
         // 验证生成的 XML 包含必要的元素
         try validateSheetXML(xmlString: xmlString, meta: meta)
+        
+        print("✓ Created sheet file: \(meta.filePath)")
+        print("  - XML size: \(xmlData.count) bytes")
+        print("  - Data range: \(meta.dataRange?.excelRange ?? "None")")
     }
-    
+
     /// 验证生成的 Sheet XML 是否符合基本要求
     private func validateSheetXML(xmlString: String, meta: SheetMeta) throws(BookError) {
         // 检查基本的 XML 结构
         guard xmlString.contains("<?xml version=\"1.0\" encoding=\"UTF-8\"") else {
             throw BookError.xmlValidationError("Missing XML declaration in sheet '\(meta.name)'")
         }
-        
+
         guard xmlString.contains("<worksheet") && xmlString.contains("</worksheet>") else {
             throw BookError.xmlValidationError("Missing worksheet tags in sheet '\(meta.name)'")
         }
-        
+
         // 如果有数据，检查是否包含 sheetData
         if meta.estimatedDataRowCount > 0 || meta.hasHeader {
             guard xmlString.contains("<sheetData>") && xmlString.contains("</sheetData>") else {
                 throw BookError.xmlValidationError("Missing sheetData in non-empty sheet '\(meta.name)'")
             }
         }
-        
+
         print("✓ XML validation passed for sheet '\(meta.name)'")
+    }
+    
+    /// 创建 XLSX 包的目录结构
+    func createXLSXDirectoryStructure(at tempDir: URL) throws(BookError) {
+        do {
+            let fileManager = FileManager.default
+            
+            // 删除已存在的临时目录
+            if fileManager.fileExists(atPath: tempDir.path) {
+                try fileManager.removeItem(at: tempDir)
+            }
+            
+            // 创建根目录
+            try fileManager.createDirectory(at: tempDir, withIntermediateDirectories: true)
+            
+            // 创建必要的子目录
+            let directories = [
+                "_rels",
+                "docProps",
+                "xl",
+                "xl/_rels",
+                "xl/worksheets"
+            ]
+            
+            for dir in directories {
+                let dirURL = tempDir.appendingPathComponent(dir)
+                try fileManager.createDirectory(at: dirURL, withIntermediateDirectories: true)
+            }
+            
+            print("✓ Created XLSX directory structure at: \(tempDir.path)")
+            
+        } catch {
+            throw BookError.fileWriteError(error)
+        }
     }
 }
 
