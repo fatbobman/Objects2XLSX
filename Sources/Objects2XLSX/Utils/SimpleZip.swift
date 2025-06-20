@@ -110,7 +110,7 @@ public struct SimpleZip: Sendable {
         let enumerator = fileManager.enumerator(
             at: directoryURL,
             includingPropertiesForKeys: [.isRegularFileKey, .contentModificationDateKey],
-            options: [.skipsHiddenFiles])
+            options: [])
 
         while let fileURL = enumerator?.nextObject() as? URL {
             let resourceValues = try fileURL.resourceValues(forKeys: [.isRegularFileKey, .contentModificationDateKey])
