@@ -1,18 +1,10 @@
-//
-// main.swift
-// Objects2XLSXDemo
-//
-// Created by Objects2XLSX Demo Generator
-//
-
 import Foundation
 import Objects2XLSX
 
-// MARK: - Main Entry Point
+// MARK: - Demo Runner
 
-@main
-struct Objects2XLSXDemo {
-    static func main() async throws {
+struct DemoRunner {
+    static func run() async throws {
         print("🚀 Objects2XLSX Demo Starting...")
         
         // TODO: Implement command line argument parsing
@@ -24,3 +16,17 @@ struct Objects2XLSXDemo {
         print("✅ Demo implementation coming soon!")
     }
 }
+
+// MARK: - Main Entry Point
+
+let task = Task {
+    do {
+        try await DemoRunner.run()
+    } catch {
+        print("❌ Demo failed with error: \(error)")
+        exit(1)
+    }
+}
+
+// Wait for completion
+RunLoop.current.run(until: Date(timeIntervalSinceNow: 5))
