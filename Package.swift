@@ -20,7 +20,6 @@ let package = Package(
             targets: ["Objects2XLSX"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/tadija/AEXML.git", from: "4.7.0"),
         .package(url: "https://github.com/pointfreeco/swift-identified-collections.git", from: "1.0.0"),
     ],
     targets: [
@@ -29,7 +28,6 @@ let package = Package(
         .target(
             name: "Objects2XLSX",
             dependencies: [
-                .product(name: "AEXML", package: "AEXML"),
                 .product(name: "IdentifiedCollections", package: "swift-identified-collections"),
             ]),
         .testTarget(
