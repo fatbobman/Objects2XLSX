@@ -78,6 +78,8 @@ public final class Book {
         try writeWorkbookRelsXML(to: tempDir, metas: collectedMetas)
         try writeStylesXML(to: tempDir, styleRegister: styleRegister)
         try writeSharedStringsXML(to: tempDir, shareStringRegister: shareStringRegister)
+        try writeCorePropsXML(to: tempDir)
+        try writeAppPropsXML(to: tempDir, metas: collectedMetas)
         
         // TODO: 打包为 ZIP 文件并重命名为 .xlsx
         // TODO: 清理临时目录

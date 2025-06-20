@@ -239,3 +239,117 @@ extension Book {
         }
     }
 }
+
+// MARK: - App Properties XML Generation
+extension Book {
+    /// 生成 docProps/app.xml 文件内容（应用程序属性）
+    func generateAppPropsXML(metas: [SheetMeta]) -> String {
+        var xml = """
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">
+        """
+        
+        // 应用程序信息
+        xml += "<Application>Objects2XLSX</Application>"
+        xml += "<DocSecurity>0</DocSecurity>"
+        xml += "<LinksUpToDate>false</LinksUpToDate>"
+        xml += "<SharedDoc>false</SharedDoc>"
+        xml += "<HyperlinksChanged>false</HyperlinksChanged>"
+        xml += "<AppVersion>1.0</AppVersion>"
+        xml += "<Company>Objects2XLSX Library</Company>"
+        
+        // 工作表名称列表
+        if !metas.isEmpty {
+            xml += "<TitlesOfParts>"
+            xml += "<vt:vector size=\"\(metas.count)\" baseType=\"lpstr\">"
+            
+            for meta in metas {
+                xml += "<vt:lpstr>\(meta.name.xmlEscaped)</vt:lpstr>"
+            }
+            
+            xml += "</vt:vector>"
+            xml += "</TitlesOfParts>"
+            
+            // 各部分的标题数组
+            xml += "<HeadingPairs>"
+            xml += "<vt:vector size=\"2\" baseType=\"variant\">"
+            xml += "<vt:variant>"
+            xml += "<vt:lpstr>Worksheets</vt:lpstr>"
+            xml += "</vt:variant>"
+            xml += "<vt:variant>"
+            xml += "<vt:i4>\(metas.count)</vt:i4>"
+            xml += "</vt:variant>"
+            xml += "</vt:vector>"
+            xml += "</HeadingPairs>"
+        }
+        
+        xml += "</Properties>"
+        
+        return xml
+    }
+    
+    /// 写入 docProps/app.xml 文件
+    func writeAppPropsXML(to tempDir: URL, metas: [SheetMeta]) throws(BookError) {
+        let appPropsXML = generateAppPropsXML(metas: metas)
+        let appPropsURL = tempDir.appendingPathComponent("docProps/app.xml")
+        
+        guard let xmlData = appPropsXML.data(using: .utf8) else {
+            throw BookError.encodingError("Failed to encode app.xml as UTF-8")
+        }
+        
+        do {
+            try xmlData.write(to: appPropsURL)
+            print("✓ Created app.xml")
+            print("  - Application: Objects2XLSX")
+            print("  - Worksheets: \(metas.count)")
+            print("  - XML size: \(xmlData.count) bytes")
+        } catch {
+            throw BookError.fileWriteError(error)
+        }
+    }
+}
+
+// MARK: - Core Properties XML Generation
+extension Book {
+    /// 生成 docProps/core.xml 文件内容（核心属性）
+    func generateCorePropsXML() -> String {
+        let now = Date()
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss'Z'"
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        let timestamp = formatter.string(from: now)
+        
+        let xml = """
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+        <dc:title>\(style.properties.title?.xmlEscaped ?? "")</dc:title>
+        <dc:creator>\(style.properties.author?.xmlEscaped ?? "Objects2XLSX")</dc:creator>
+        <cp:lastModifiedBy>\(style.properties.author?.xmlEscaped ?? "Objects2XLSX")</cp:lastModifiedBy>
+        <dcterms:created xsi:type="dcterms:W3CDTF">\(timestamp)</dcterms:created>
+        <dcterms:modified xsi:type="dcterms:W3CDTF">\(timestamp)</dcterms:modified>
+        </cp:coreProperties>
+        """
+        
+        return xml
+    }
+    
+    /// 写入 docProps/core.xml 文件
+    func writeCorePropsXML(to tempDir: URL) throws(BookError) {
+        let corePropsXML = generateCorePropsXML()
+        let corePropsURL = tempDir.appendingPathComponent("docProps/core.xml")
+        
+        guard let xmlData = corePropsXML.data(using: .utf8) else {
+            throw BookError.encodingError("Failed to encode core.xml as UTF-8")
+        }
+        
+        do {
+            try xmlData.write(to: corePropsURL)
+            print("✓ Created core.xml")
+            print("  - Title: \(style.properties.title ?? "(none)")")
+            print("  - Author: \(style.properties.author ?? "Objects2XLSX")")
+            print("  - XML size: \(xmlData.count) bytes")
+        } catch {
+            throw BookError.fileWriteError(error)
+        }
+    }
+}

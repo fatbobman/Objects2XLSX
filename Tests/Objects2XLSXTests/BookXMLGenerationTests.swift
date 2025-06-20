@@ -434,4 +434,183 @@ struct BookXMLGenerationTests {
         
         print("Successfully created .rels at: \(rootRelsURL.path)")
     }
+    
+    @Test("test generateAppPropsXML Basic")
+    func testGenerateAppPropsXMLBasic() {
+        // Create test metas
+        let metas = [
+            SheetMeta(
+                name: "Sales Data",
+                sheetId: 1,
+                relationshipId: "rId1",
+                hasHeader: true,
+                estimatedDataRowCount: 100,
+                activeColumnCount: 5,
+                dataRange: nil
+            ),
+            SheetMeta(
+                name: "Reports & Analysis",
+                sheetId: 2,
+                relationshipId: "rId2",
+                hasHeader: true,
+                estimatedDataRowCount: 50,
+                activeColumnCount: 3,
+                dataRange: nil
+            )
+        ]
+        
+        let book = Book(style: BookStyle())
+        let xml = book.generateAppPropsXML(metas: metas)
+        
+        // Verify XML structure
+        #expect(xml.contains("<?xml version=\"1.0\" encoding=\"UTF-8\""))
+        #expect(xml.contains("<Properties xmlns=\"http://schemas.openxmlformats.org/officeDocument/2006/extended-properties\""))
+        #expect(xml.contains("</Properties>"))
+        
+        // Verify application info
+        #expect(xml.contains("<Application>Objects2XLSX</Application>"))
+        #expect(xml.contains("<AppVersion>1.0</AppVersion>"))
+        #expect(xml.contains("<Company>Objects2XLSX Library</Company>"))
+        
+        // Verify worksheet names (with XML escaping)
+        #expect(xml.contains("<vt:lpstr>Sales Data</vt:lpstr>"))
+        #expect(xml.contains("<vt:lpstr>Reports &amp; Analysis</vt:lpstr>"))
+        
+        // Verify headings and counts
+        #expect(xml.contains("<vt:lpstr>Worksheets</vt:lpstr>"))
+        #expect(xml.contains("<vt:i4>2</vt:i4>"))
+        
+        print("Generated App Props XML:")
+        print(xml)
+    }
+    
+    @Test("test generateAppPropsXML No Sheets")
+    func testGenerateAppPropsXMLNoSheets() {
+        let metas: [SheetMeta] = []
+        
+        let book = Book(style: BookStyle())
+        let xml = book.generateAppPropsXML(metas: metas)
+        
+        // Should have basic properties but no worksheet info
+        #expect(xml.contains("<Application>Objects2XLSX</Application>"))
+        #expect(!xml.contains("TitlesOfParts"))
+        #expect(!xml.contains("HeadingPairs"))
+        #expect(!xml.contains("Worksheets"))
+        
+        print("App Props XML with no sheets:")
+        print(xml)
+    }
+    
+    @Test("test writeAppPropsXML File Creation")
+    func testWriteAppPropsXMLFileCreation() throws {
+        // Create test metas
+        let metas = [
+            SheetMeta(
+                name: "TestSheet",
+                sheetId: 1,
+                relationshipId: "rId1",
+                hasHeader: true,
+                estimatedDataRowCount: 10,
+                activeColumnCount: 2,
+                dataRange: nil
+            )
+        ]
+        
+        // Create temp directory
+        let tempDir = URL(fileURLWithPath: "/tmp/test_app_props")
+        let book = Book(style: BookStyle())
+        try book.createXLSXDirectoryStructure(at: tempDir)
+        
+        // Write app.xml
+        #expect(throws: Never.self) {
+            try book.writeAppPropsXML(to: tempDir, metas: metas)
+        }
+        
+        // Verify file exists
+        let appPropsURL = tempDir.appendingPathComponent("docProps/app.xml")
+        #expect(FileManager.default.fileExists(atPath: appPropsURL.path))
+        
+        // Read and verify content
+        let content = try String(contentsOf: appPropsURL, encoding: .utf8)
+        #expect(content.contains("<Properties"))
+        #expect(content.contains("</Properties>"))
+        #expect(content.contains("Objects2XLSX"))
+        #expect(content.contains("TestSheet"))
+        #expect(content.contains("Worksheets"))
+        
+        print("Successfully created app.xml at: \(appPropsURL.path)")
+    }
+    
+    // MARK: - Core Properties XML Tests
+    
+    @Test func testGenerateCorePropsXML() throws {
+        var style = BookStyle()
+        style.properties.title = "Test Document"
+        style.properties.author = "Test Author"
+        
+        let book = Book(style: style)
+        let xml = book.generateCorePropsXML()
+        
+        // 验证 XML 结构
+        #expect(xml.contains("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"))
+        #expect(xml.contains("<cp:coreProperties"))
+        #expect(xml.contains("</cp:coreProperties>"))
+        
+        // 验证命名空间
+        #expect(xml.contains("xmlns:cp=\"http://schemas.openxmlformats.org/package/2006/metadata/core-properties\""))
+        #expect(xml.contains("xmlns:dc=\"http://purl.org/dc/elements/1.1/\""))
+        #expect(xml.contains("xmlns:dcterms=\"http://purl.org/dc/terms/\""))
+        
+        // 验证内容
+        #expect(xml.contains("<dc:title>Test Document</dc:title>"))
+        #expect(xml.contains("<dc:creator>Test Author</dc:creator>"))
+        #expect(xml.contains("<cp:lastModifiedBy>Test Author</cp:lastModifiedBy>"))
+        
+        // 验证时间戳格式
+        #expect(xml.contains("<dcterms:created xsi:type=\"dcterms:W3CDTF\">"))
+        #expect(xml.contains("<dcterms:modified xsi:type=\"dcterms:W3CDTF\">"))
+        
+        print("Generated core.xml (\(xml.count) chars)")
+    }
+    
+    @Test func testGenerateCorePropsXMLWithoutTitleAndAuthor() throws {
+        let book = Book(style: BookStyle())
+        let xml = book.generateCorePropsXML()
+        
+        // 验证空标题和默认作者
+        #expect(xml.contains("<dc:title></dc:title>"))
+        #expect(xml.contains("<dc:creator>Objects2XLSX</dc:creator>"))
+        #expect(xml.contains("<cp:lastModifiedBy>Objects2XLSX</cp:lastModifiedBy>"))
+        
+        print("Generated core.xml without title/author (\(xml.count) chars)")
+    }
+    
+    @Test func testWriteCorePropsXML() throws {
+        var style = BookStyle()
+        style.properties.title = "Test XLSX Document"
+        style.properties.author = "Test User"
+        
+        // Create temp directory
+        let tempDir = URL(fileURLWithPath: "/tmp/test_core_props")
+        let book = Book(style: style)
+        try book.createXLSXDirectoryStructure(at: tempDir)
+        
+        // Write core.xml
+        #expect(throws: Never.self) {
+            try book.writeCorePropsXML(to: tempDir)
+        }
+        
+        // Verify file exists
+        let corePropsURL = tempDir.appendingPathComponent("docProps/core.xml")
+        #expect(FileManager.default.fileExists(atPath: corePropsURL.path))
+        
+        // Read and verify content
+        let content = try String(contentsOf: corePropsURL, encoding: .utf8)
+        #expect(content.contains("<cp:coreProperties"))
+        #expect(content.contains("</cp:coreProperties>"))
+        #expect(content.contains("Test XLSX Document"))
+        #expect(content.contains("Test User"))
+        
+        print("Successfully created core.xml at: \(corePropsURL.path)")
+    }
 }
