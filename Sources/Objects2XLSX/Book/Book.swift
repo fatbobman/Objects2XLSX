@@ -23,6 +23,45 @@ import SimpleLogger
 /// - **Memory efficient**: Streams data processing to handle large datasets
 /// - **Thread-safe progress**: Progress monitoring can be observed from any thread
 ///
+/// ## ⚠️ Concurrency and Thread Safety
+/// **IMPORTANT**: `Book` itself is NOT thread-safe. You must ensure that:
+/// - The `Book` instance is used on the same thread as your data objects
+/// - All data access operations are performed on the correct thread context
+/// - Only the `progressStream` can be safely observed from other threads
+///
+/// ### Core Data Usage
+/// When working with Core Data objects, always use `Book` within the appropriate `perform` block:
+/// ```swift
+/// viewContext.perform {
+///     let employees = // fetch Core Data objects
+///     let book = Book(style: BookStyle()) {
+///         Sheet<Employee>(name: "Staff", dataProvider: { employees }) {
+///             Column(name: "Name", keyPath: \.name)
+///             Column(name: "Department", keyPath: \.department?.name)
+///         }
+///     }
+///     try book.write(to: outputURL)
+/// }
+/// ```
+///
+/// ### SwiftData Usage
+/// When working with SwiftData objects, use `Book` within a `@ModelActor`:
+/// ```swift
+/// @ModelActor
+/// actor DataExporter {
+///     func exportEmployees() async throws -> URL {
+///         let employees = // fetch SwiftData objects
+///         let book = Book(style: BookStyle()) {
+///             Sheet<Employee>(name: "Staff", dataProvider: { employees }) {
+///                 Column(name: "Name", keyPath: \.name)
+///                 Column(name: "Department", keyPath: \.department?.name)
+///             }
+///         }
+///         return try book.write(to: outputURL)
+///     }
+/// }
+/// ```
+///
 /// ## Usage
 /// ```swift
 /// let book = Book(style: BookStyle()) {
@@ -31,13 +70,13 @@ import SimpleLogger
 ///         Column(name: "Department", keyPath: \.department)
 ///     }
 /// }
-/// 
+///
 /// let outputURL = try book.write(to: URL(fileURLWithPath: "/path/to/output.xlsx"))
 /// ```
 public final class Book {
     /// The styling configuration for the entire workbook
     public private(set) var style: BookStyle
-    
+
     /// Collection of worksheets in the workbook (type-erased for heterogeneous storage)
     public private(set) var sheets: [AnySheet]
 
@@ -164,9 +203,13 @@ public final class Book {
     /// 5. **Cleanup**: Removes temporary files and reports completion
     ///
     /// ## Thread Safety
-    /// This method is not thread-safe. The `Book` instance should only be accessed from a single
-    /// thread during the write operation. However, progress monitoring via `progressStream` is
-    /// thread-safe and can be observed from any thread.
+    /// **CRITICAL**: This method is NOT thread-safe. You must ensure that:
+    /// - The `Book` instance and all its data objects are accessed from the same thread
+    /// - For Core Data: Call this method within the appropriate `perform` or `performAndWait` block
+    /// - For SwiftData: Call this method within a `@ModelActor` context
+    /// - Progress monitoring via `progressStream` is thread-safe and can be observed from any thread
+    ///
+    /// **Violating thread safety requirements may result in crashes or data corruption.**
     ///
     /// ## Performance
     /// The method uses streaming processing to minimize memory usage. Large datasets are processed
@@ -414,12 +457,6 @@ extension Book {
         style.properties.title = name
     }
 
-    /// Appends a type-erased sheet to the workbook
-    /// - Parameter sheet: The sheet to append to the workbook
-    public func append(sheet: AnySheet) {
-        sheets.append(sheet)
-    }
-
     /// Appends multiple sheets to the workbook
     /// - Parameter sheets: Array of sheets to append to the workbook
     public func append(sheets: [AnySheet]) {
@@ -433,16 +470,16 @@ extension Book {
 public enum BookError: Error, Sendable {
     /// File system operation failed (directory creation, file writing, etc.)
     case fileWriteError(Error)
-    
+
     /// Sheet data provider is missing or failed to load data
     case dataProviderError(String)
-    
+
     /// XML generation process failed
     case xmlGenerationError(String)
-    
+
     /// Text encoding operation failed (typically UTF-8 encoding)
     case encodingError(String)
-    
+
     /// Generated XML failed validation checks
     case xmlValidationError(String)
 }
