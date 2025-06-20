@@ -138,13 +138,9 @@ struct BookWriteTests {
             try book.write(to: outputURL)
         }
         
-        // Verify temp directory structure was created
+        // Verify temp directory was cleaned up (should not exist after successful write)
         let tempDir = outputURL.deletingPathExtension().appendingPathExtension("temp")
-        let directories = ["_rels", "docProps", "xl", "xl/_rels", "xl/worksheets"]
-        for dir in directories {
-            let dirURL = tempDir.appendingPathComponent(dir)
-            #expect(FileManager.default.fileExists(atPath: dirURL.path))
-        }
+        #expect(!FileManager.default.fileExists(atPath: tempDir.path), "Temp directory should be cleaned up after successful write")
         
         print("Complete write flow test completed successfully")
         print("Processed \(book.sheets.count) sheets")

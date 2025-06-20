@@ -76,7 +76,70 @@ public final class Book {
         self.sheets.append(contentsOf: sheets())
     }
 
-    public func write(to url: URL) throws(BookError) {
+    /// Writes the workbook to an XLSX file at the specified URL.
+    ///
+    /// This method generates a complete XLSX file by processing all sheets, creating the necessary
+    /// XML structure, and packaging everything into a standard XLSX format. The operation includes
+    /// real-time progress reporting through the `progressStream` property.
+    ///
+    /// - Parameter url: The target URL where the XLSX file should be written. If the URL doesn't 
+    ///   have a `.xlsx` extension, it will be automatically appended. The parent directory will be 
+    ///   created if it doesn't exist.
+    ///
+    /// - Returns: The actual URL where the XLSX file was written. This may differ from the input URL
+    ///   if the `.xlsx` extension was automatically added.
+    ///
+    /// - Throws: `BookError` if any step of the generation process fails, including:
+    ///   - `BookError.dataProviderError`: When sheet data cannot be loaded
+    ///   - `BookError.xmlGenerationError`: When XML content generation fails
+    ///   - `BookError.fileWriteError`: When file system operations fail
+    ///   - `BookError.encodingError`: When text encoding fails
+    ///   - `BookError.xmlValidationError`: When generated XML is invalid
+    ///
+    /// ## Usage Example
+    /// ```swift
+    /// let book = Book(style: BookStyle()) {
+    ///     Sheet<Person>(name: "People", dataProvider: { people }) {
+    ///         Column(name: "Name", keyPath: \.name)
+    ///         Column(name: "Age", keyPath: \.age)
+    ///     }
+    /// }
+    /// 
+    /// // Write to a specific location
+    /// let outputURL = try book.write(to: URL(fileURLWithPath: "/path/to/report"))
+    /// // outputURL will be "/path/to/report.xlsx"
+    /// 
+    /// // Monitor progress during generation
+    /// Task {
+    ///     for await progress in book.progressStream {
+    ///         print("Progress: \(Int(progress.progressPercentage * 100))%")
+    ///         if progress.isFinal { break }
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// ## Generation Process
+    /// The method performs the following steps:
+    /// 1. **Validation**: Ensures the output URL has proper extension and directory structure
+    /// 2. **Sheet Processing**: Loads data and generates XML for each worksheet
+    /// 3. **Global Files**: Creates all required XLSX components (styles, relationships, etc.)
+    /// 4. **Packaging**: Compresses everything into a standard XLSX ZIP archive
+    /// 5. **Cleanup**: Removes temporary files and reports completion
+    ///
+    /// ## Thread Safety
+    /// This method is not thread-safe. The `Book` instance should only be accessed from a single
+    /// thread during the write operation. However, progress monitoring via `progressStream` is
+    /// thread-safe and can be observed from any thread.
+    ///
+    /// ## Performance
+    /// The method uses streaming processing to minimize memory usage. Large datasets are processed
+    /// incrementally, making it suitable for generating files with thousands of rows while
+    /// maintaining reasonable memory consumption.
+    @discardableResult
+    public func write(to url: URL) throws(BookError) -> URL {
+        // Ensure the URL has proper .xlsx extension and directory structure
+        let outputURL = try prepareOutputURL(url)
+        
         // 开始生成进度报告
         sendProgress(.started)
         
@@ -87,7 +150,7 @@ public final class Book {
 
             // 创建临时目录用于构建 XLSX 包结构
             sendProgress(.creatingDirectory)
-            let tempDir = url.deletingPathExtension().appendingPathExtension("temp")
+            let tempDir = outputURL.deletingPathExtension().appendingPathExtension("temp")
             try createXLSXDirectoryStructure(at: tempDir)
             
             // 流式处理：一次性完成数据加载、元数据收集和XML生成
@@ -149,7 +212,7 @@ public final class Book {
             
             // 打包为 ZIP 文件并重命名为 .xlsx
             sendProgress(.preparingPackage)
-            try createZipArchive(from: tempDir, to: url)
+            try createZipArchive(from: tempDir, to: outputURL)
             
             // 清理临时目录
             sendProgress(.cleaningUp)
@@ -158,6 +221,8 @@ public final class Book {
             // 完成所有操作
             sendProgress(.completed)
             completeProgress()
+            
+            return outputURL
             
         } catch {
             // 发送错误状态并完成流
@@ -276,6 +341,75 @@ public final class Book {
             logger.info("Created XLSX directory structure at: \(tempDir.path)")
             
         } catch {
+            throw BookError.fileWriteError(error)
+        }
+    }
+    
+    /// Prepares the output URL by ensuring proper .xlsx extension and creating parent directories
+    /// - Parameter url: The input URL provided by the user
+    /// - Returns: The prepared output URL with .xlsx extension
+    /// - Throws: BookError.fileWriteError if directory creation fails
+    private func prepareOutputURL(_ url: URL) throws(BookError) -> URL {
+        // Ensure .xlsx extension
+        let outputURL = ensureXLSXExtension(url)
+        
+        // Create parent directory if needed
+        try createParentDirectoryIfNeeded(outputURL)
+        
+        return outputURL
+    }
+    
+    /// Ensures the URL has a .xlsx extension
+    /// - Parameter url: The input URL
+    /// - Returns: URL with .xlsx extension (replaces existing extension if different)
+    private func ensureXLSXExtension(_ url: URL) -> URL {
+        let pathExtension = url.pathExtension.lowercased()
+        
+        // If already has .xlsx extension, return as-is
+        if pathExtension == "xlsx" {
+            return url
+        }
+        
+        // If has no extension, add .xlsx
+        if pathExtension.isEmpty {
+            return url.appendingPathExtension("xlsx")
+        }
+        
+        // If has different extension, replace it with .xlsx
+        return url.deletingPathExtension().appendingPathExtension("xlsx")
+    }
+    
+    /// Creates parent directory if it doesn't exist
+    /// - Parameter url: The output URL whose parent directory should be created
+    /// - Throws: BookError.fileWriteError if directory creation fails
+    private func createParentDirectoryIfNeeded(_ url: URL) throws(BookError) {
+        let parentDirectory = url.deletingLastPathComponent()
+        
+        // Check if parent directory exists
+        var isDirectory: ObjCBool = false
+        let exists = FileManager.default.fileExists(atPath: parentDirectory.path, isDirectory: &isDirectory)
+        
+        if !exists {
+            // Parent directory doesn't exist, create it
+            do {
+                try FileManager.default.createDirectory(
+                    at: parentDirectory,
+                    withIntermediateDirectories: true,
+                    attributes: nil
+                )
+                logger.info("Created parent directory: \(parentDirectory.path)")
+            } catch {
+                logger.error("Failed to create parent directory: \(parentDirectory.path) - \(error)")
+                throw BookError.fileWriteError(error)
+            }
+        } else if !isDirectory.boolValue {
+            // Path exists but is not a directory
+            let error = NSError(
+                domain: "Objects2XLSX",
+                code: 1,
+                userInfo: [NSLocalizedDescriptionKey: "Parent path exists but is not a directory: \(parentDirectory.path)"]
+            )
+            logger.error("Parent path is not a directory: \(parentDirectory.path)")
             throw BookError.fileWriteError(error)
         }
     }
