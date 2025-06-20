@@ -213,4 +213,73 @@ struct BookXMLGenerationTests {
         
         print("Successfully created sharedStrings.xml at: \(sharedStringsURL.path)")
     }
+    
+    @Test("test generateContentTypesXML Basic")
+    func testGenerateContentTypesXMLBasic() {
+        let book = Book(style: BookStyle())
+        let xml = book.generateContentTypesXML(sheetCount: 3)
+        
+        // Verify XML structure
+        #expect(xml.contains("<?xml version=\"1.0\" encoding=\"UTF-8\""))
+        #expect(xml.contains("<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">"))
+        #expect(xml.contains("</Types>"))
+        
+        // Verify default types
+        #expect(xml.contains("<Default Extension=\"rels\""))
+        #expect(xml.contains("<Default Extension=\"xml\""))
+        
+        // Verify override types for core files
+        #expect(xml.contains("<Override PartName=\"/xl/workbook.xml\""))
+        #expect(xml.contains("<Override PartName=\"/xl/styles.xml\""))
+        #expect(xml.contains("<Override PartName=\"/xl/sharedStrings.xml\""))
+        #expect(xml.contains("<Override PartName=\"/docProps/core.xml\""))
+        #expect(xml.contains("<Override PartName=\"/docProps/app.xml\""))
+        
+        // Verify sheet overrides
+        #expect(xml.contains("<Override PartName=\"/xl/worksheets/sheet1.xml\""))
+        #expect(xml.contains("<Override PartName=\"/xl/worksheets/sheet2.xml\""))
+        #expect(xml.contains("<Override PartName=\"/xl/worksheets/sheet3.xml\""))
+        
+        print("Generated Content Types XML:")
+        print(xml)
+    }
+    
+    @Test("test generateContentTypesXML No Sheets")
+    func testGenerateContentTypesXMLNoSheets() {
+        let book = Book(style: BookStyle())
+        let xml = book.generateContentTypesXML(sheetCount: 0)
+        
+        // Should still have core files but no sheet overrides
+        #expect(xml.contains("<Override PartName=\"/xl/workbook.xml\""))
+        #expect(!xml.contains("<Override PartName=\"/xl/worksheets/sheet"))
+        
+        print("Content Types XML with no sheets:")
+        print(xml)
+    }
+    
+    @Test("test writeContentTypesXML File Creation")
+    func testWriteContentTypesXMLFileCreation() throws {
+        // Create temp directory
+        let tempDir = URL(fileURLWithPath: "/tmp/test_content_types_xml")
+        let book = Book(style: BookStyle())
+        try book.createXLSXDirectoryStructure(at: tempDir)
+        
+        // Write [Content_Types].xml
+        #expect(throws: Never.self) {
+            try book.writeContentTypesXML(to: tempDir, sheetCount: 2)
+        }
+        
+        // Verify file exists
+        let contentTypesURL = tempDir.appendingPathComponent("[Content_Types].xml")
+        #expect(FileManager.default.fileExists(atPath: contentTypesURL.path))
+        
+        // Read and verify content
+        let content = try String(contentsOf: contentTypesURL, encoding: .utf8)
+        #expect(content.contains("<Types"))
+        #expect(content.contains("</Types>"))
+        #expect(content.contains("sheet1.xml"))
+        #expect(content.contains("sheet2.xml"))
+        
+        print("Successfully created [Content_Types].xml at: \(contentTypesURL.path)")
+    }
 }

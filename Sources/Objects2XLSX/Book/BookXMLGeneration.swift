@@ -102,3 +102,55 @@ extension Book {
         }
     }
 }
+
+// MARK: - Content Types XML Generation
+extension Book {
+    /// 生成 [Content_Types].xml 文件内容
+    func generateContentTypesXML(sheetCount: Int) -> String {
+        var xml = """
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+        """
+        
+        // 添加默认类型
+        xml += "<Default Extension=\"rels\" ContentType=\"application/vnd.openxmlformats-package.relationships+xml\"/>"
+        xml += "<Default Extension=\"xml\" ContentType=\"application/xml\"/>"
+        
+        // 添加覆盖类型 - 必需的文件
+        xml += "<Override PartName=\"/xl/workbook.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml\"/>"
+        xml += "<Override PartName=\"/xl/styles.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml\"/>"
+        xml += "<Override PartName=\"/xl/sharedStrings.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.sharedStrings+xml\"/>"
+        xml += "<Override PartName=\"/docProps/core.xml\" ContentType=\"application/vnd.openxmlformats-package.core-properties+xml\"/>"
+        xml += "<Override PartName=\"/docProps/app.xml\" ContentType=\"application/vnd.openxmlformats-officedocument.extended-properties+xml\"/>"
+        
+        // 为每个工作表添加覆盖类型
+        if sheetCount > 0 {
+            for i in 1...sheetCount {
+                xml += "<Override PartName=\"/xl/worksheets/sheet\(i).xml\" ContentType=\"application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml\"/>"
+            }
+        }
+        
+        xml += "</Types>"
+        
+        return xml
+    }
+    
+    /// 写入 [Content_Types].xml 文件
+    func writeContentTypesXML(to tempDir: URL, sheetCount: Int) throws(BookError) {
+        let contentTypesXML = generateContentTypesXML(sheetCount: sheetCount)
+        let contentTypesURL = tempDir.appendingPathComponent("[Content_Types].xml")
+        
+        guard let xmlData = contentTypesXML.data(using: .utf8) else {
+            throw BookError.encodingError("Failed to encode [Content_Types].xml as UTF-8")
+        }
+        
+        do {
+            try xmlData.write(to: contentTypesURL)
+            print("✓ Created [Content_Types].xml")
+            print("  - Sheet count: \(sheetCount)")
+            print("  - XML size: \(xmlData.count) bytes")
+        } catch {
+            throw BookError.fileWriteError(error)
+        }
+    }
+}
