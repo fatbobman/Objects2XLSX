@@ -46,7 +46,7 @@ import Foundation
      wrapText: true,
      indent: 2
  )
- 
+
  let rotatedText = Alignment(textRotation: 45)
  let verticalText = Alignment(textRotation: 255) // Special vertical mode
  ```

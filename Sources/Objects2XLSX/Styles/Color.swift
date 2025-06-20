@@ -112,6 +112,7 @@ public struct Color: Equatable, Sendable, Hashable {
 }
 
 // MARK: - Convenience Constructors
+
 extension Color {
     public static func rgba(_ red: UInt8, _ green: UInt8, _ blue: UInt8, _ alpha: ColorAlpha) -> Color {
         Color(red: red, green: green, blue: blue, alpha: alpha)
@@ -147,11 +148,11 @@ extension Color {
  - Note: Alpha channel support depends on the Excel version and styling context
  */
 public enum ColorAlpha: UInt8, CaseIterable, Sendable, Hashable, Equatable {
-    case transparent = 0  /// Completely transparent (0% opacity)
-    case light = 64       /// Light transparency (25% opacity)
-    case medium = 128     /// Medium transparency (50% opacity)
-    case strong = 192     /// Strong opacity (75% opacity)
-    case opaque = 255     /// Completely opaque (100% opacity, default)
+    case transparent = 0 /// Completely transparent (0% opacity)
+    case light = 64 /// Light transparency (25% opacity)
+    case medium = 128 /// Medium transparency (50% opacity)
+    case strong = 192 /// Strong opacity (75% opacity)
+    case opaque = 255 /// Completely opaque (100% opacity, default)
 }
 
 // MARK: - Predefined Colors
@@ -159,31 +160,31 @@ public enum ColorAlpha: UInt8, CaseIterable, Sendable, Hashable, Equatable {
 extension Color {
     /// Pure black color (RGB: 0, 0, 0)
     public static let black = Color(red: 0, green: 0, blue: 0)
-    
+
     /// Pure white color (RGB: 255, 255, 255)
     public static let white = Color(red: 255, green: 255, blue: 255)
-    
+
     /// Pure red color (RGB: 255, 0, 0)
     public static let red = Color(red: 255, green: 0, blue: 0)
-    
+
     /// Pure green color (RGB: 0, 255, 0)
     public static let green = Color(red: 0, green: 255, blue: 0)
-    
+
     /// Pure blue color (RGB: 0, 0, 255)
     public static let blue = Color(red: 0, green: 0, blue: 255)
-    
+
     /// Pure yellow color (RGB: 255, 255, 0)
     public static let yellow = Color(red: 255, green: 255, blue: 0)
-    
+
     /// Pure cyan color (RGB: 0, 255, 255)
     public static let cyan = Color(red: 0, green: 255, blue: 255)
-    
+
     /// Pure magenta color (RGB: 255, 0, 255)
     public static let magenta = Color(red: 255, green: 0, blue: 255)
-    
+
     /// Medium gray color (RGB: 128, 128, 128)
     public static let gray = Color(red: 128, green: 128, blue: 128)
-    
+
     /// Light gray color (RGB: 211, 211, 211)
     public static let lightGray = Color(red: 211, green: 211, blue: 211)
 }

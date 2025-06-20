@@ -67,15 +67,15 @@ import Foundation
 public struct Border: Equatable, Sendable, Hashable {
     /**
      Configuration for an individual border side.
-     
+
      `Side` represents the styling for a single edge of a cell border,
      combining line style and color information. This granular approach
      allows for precise control over each border edge.
-     
+
      ## Properties
      - **style**: The line style (thin, thick, dashed, etc.)
      - **color**: The border color (defaults to black)
-     
+
      ## Usage
      ```swift
      let redThickSide = Border.Side(style: .thick, color: .red)
@@ -312,24 +312,24 @@ extension Border {
 extension Border {
     /**
      Merges two border configurations with precedence handling.
-     
+
      This method combines two border configurations, with the additional border
      taking precedence over the base border for any conflicting sides. This is
      useful when applying multiple border styles to overlapping regions.
-     
+
      - Parameters:
         - base: The base border configuration (lower precedence)
         - additional: The additional border configuration (higher precedence)
-     
+
      - Returns: A merged `Border` with combined styling, or `nil` if both inputs are `nil`
-     
+
      ## Merge Logic
-     
+
      For each border side (left, right, top, bottom, diagonal):
      1. If `additional` has a style for that side, use it
      2. Otherwise, use the style from `base` if available
      3. If neither has a style, that side remains unset
-     
+
      ## Usage Example
      ```swift
      let baseBorder = Border.all(style: .thin, color: .black)
