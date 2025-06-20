@@ -78,3 +78,17 @@ extension URL? {
         self?.absoluteString ?? ""
     }
 }
+
+// MARK: - XML Escaping Extension
+
+extension String {
+    /// Returns a version of the string with XML special characters escaped
+    var xmlEscaped: String {
+        self
+            .replacingOccurrences(of: "&", with: "&amp;")
+            .replacingOccurrences(of: "<", with: "&lt;")
+            .replacingOccurrences(of: ">", with: "&gt;")
+            .replacingOccurrences(of: "\"", with: "&quot;")
+            .replacingOccurrences(of: "'", with: "&apos;")
+    }
+}
