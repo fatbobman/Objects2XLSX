@@ -151,3 +151,52 @@ swift package generate-xcodeproj
 2. 添加 XLSX 文件打包功能
 3. 实现必需的 Excel 文件组件（workbook.xml、styles.xml、sharedStrings.xml）
 4. 补充集成测试和性能测试
+
+## XLSX 全局文件生成计划
+
+### 实现顺序（按依赖关系）
+
+1. **xl/workbook.xml** - 工作簿定义文件
+   - 使用 collectedMetas 中的 name, sheetId, relationshipId
+   - 定义所有工作表的基本信息
+   - 添加测试验证 XML 结构和内容
+
+2. **xl/styles.xml** - 样式定义文件 ✅ **已实现**
+   - styleRegister.generateXML() 已完成
+   - 直接写入文件即可
+
+3. **xl/sharedStrings.xml** - 共享字符串文件 ✅ **已实现**
+   - shareStringRegister.generateXML() 已完成
+   - 直接写入文件即可
+
+4. **[Content_Types].xml** - 内容类型定义
+   - 定义文件扩展名与 MIME 类型的映射
+   - 根据工作表数量生成对应的 worksheet 条目
+   - 添加测试验证动态内容生成
+
+5. **xl/_rels/workbook.xml.rels** - 工作簿关系文件
+   - 定义工作簿与工作表、样式、共享字符串的关系
+   - 使用 collectedMetas 生成每个工作表的关系条目
+   - 添加测试验证关系正确性
+
+6. **_rels/.rels** - 根关系文件
+   - 定义根级别的关系（app.xml, core.xml, workbook.xml）
+   - 固定内容，直接生成
+   - 添加测试验证文件结构
+
+7. **docProps/app.xml** - 应用程序属性
+   - 包含应用程序信息、工作表名称列表
+   - 使用 collectedMetas 中的工作表名称
+   - 添加测试验证属性正确性
+
+8. **docProps/core.xml** - 核心属性
+   - 包含文档元数据（标题、作者、创建时间等）
+   - 使用 style.properties 中的信息
+   - 添加测试验证元数据正确性
+
+### 实现策略
+
+- 每个文件单独实现，包含生成方法和对应测试
+- 使用扩展方式组织代码，保持 Book 类清晰
+- 所有 XML 生成遵循 Office Open XML 规范
+- 每完成一个文件进行测试验证

@@ -72,8 +72,7 @@ public final class Book {
         }
 
         // 使用收集的元数据生成全局文件
-        // let workbookXML = generateWorkbookXML(metas: collectedMetas)
-        // ...
+        try writeWorkbookXML(to: tempDir, metas: collectedMetas)
         
         // TODO: 打包为 ZIP 文件并重命名为 .xlsx
         // TODO: 清理临时目录
