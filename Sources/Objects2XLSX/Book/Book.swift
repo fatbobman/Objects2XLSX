@@ -32,7 +32,7 @@ import SimpleLogger
 /// ### Core Data Usage
 /// When working with Core Data objects, always use `Book` within the appropriate `perform` block:
 /// ```swift
-/// viewContext.perform {
+/// privateContext.perform {
 ///     let employees = // fetch Core Data objects
 ///     let book = Book(style: BookStyle()) {
 ///         Sheet<Employee>(name: "Staff", dataProvider: { employees }) {
