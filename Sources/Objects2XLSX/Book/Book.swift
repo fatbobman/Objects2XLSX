@@ -13,13 +13,13 @@ import SimpleLogger
 public final class Book {
     public var style: BookStyle
     public var sheets: [AnySheet]
-    
+
     /// 日志管理器，支持自定义实现
     public let logger: LoggerManagerProtocol
-    
+
     /// 进度报告的 AsyncStream
     public let progressStream: AsyncStream<BookGenerationProgress>
-    
+
     /// 进度报告的 Continuation，用于发送进度更新
     private let progressContinuation: AsyncStream<BookGenerationProgress>.Continuation
 
@@ -30,7 +30,7 @@ public final class Book {
         let (stream, continuation) = AsyncStream.makeStream(of: BookGenerationProgress.self)
         self.progressStream = stream
         self.progressContinuation = continuation
-        
+
         self.style = style
         self.sheets = sheets
         self.logger = logger ?? Self.defaultLogger
@@ -39,7 +39,7 @@ public final class Book {
     public convenience init(style: BookStyle, logger: LoggerManagerProtocol? = nil, @SheetBuilder sheets: () -> [AnySheet]) {
         self.init(style: style, sheets: sheets(), logger: logger)
     }
-    
+
     /// 默认日志实现
     private static let defaultLogger: LoggerManagerProtocol = {
         #if DEBUG
@@ -56,13 +56,13 @@ public final class Book {
     public func append(sheets: [AnySheet]) {
         self.sheets.append(contentsOf: sheets)
     }
-    
+
     /// 发送进度更新（线程安全）
     private func sendProgress(_ progress: BookGenerationProgress) {
         progressContinuation.yield(progress)
         logger.debug("Progress update: \(progress.description)")
     }
-    
+
     /// 完成进度报告并关闭流
     private func completeProgress() {
         progressContinuation.finish()
@@ -82,8 +82,8 @@ public final class Book {
     /// XML structure, and packaging everything into a standard XLSX format. The operation includes
     /// real-time progress reporting through the `progressStream` property.
     ///
-    /// - Parameter url: The target URL where the XLSX file should be written. If the URL doesn't 
-    ///   have a `.xlsx` extension, it will be automatically appended. The parent directory will be 
+    /// - Parameter url: The target URL where the XLSX file should be written. If the URL doesn't
+    ///   have a `.xlsx` extension, it will be automatically appended. The parent directory will be
     ///   created if it doesn't exist.
     ///
     /// - Returns: The actual URL where the XLSX file was written. This may differ from the input URL
@@ -104,11 +104,11 @@ public final class Book {
     ///         Column(name: "Age", keyPath: \.age)
     ///     }
     /// }
-    /// 
+    ///
     /// // Write to a specific location
     /// let outputURL = try book.write(to: URL(fileURLWithPath: "/path/to/report"))
     /// // outputURL will be "/path/to/report.xlsx"
-    /// 
+    ///
     /// // Monitor progress during generation
     /// Task {
     ///     for await progress in book.progressStream {
@@ -139,10 +139,10 @@ public final class Book {
     public func write(to url: URL) throws(BookError) -> URL {
         // Ensure the URL has proper .xlsx extension and directory structure
         let outputURL = try prepareOutputURL(url)
-        
+
         // 开始生成进度报告
         sendProgress(.started)
-        
+
         do {
             // 创建注册器
             let styleRegister = StyleRegister()
@@ -152,7 +152,7 @@ public final class Book {
             sendProgress(.creatingDirectory)
             let tempDir = outputURL.deletingPathExtension().appendingPathExtension("temp")
             try createXLSXDirectoryStructure(at: tempDir)
-            
+
             // 流式处理：一次性完成数据加载、元数据收集和XML生成
             sendProgress(.processingSheets(totalCount: sheets.count))
             var collectedMetas: [SheetMeta] = []
@@ -160,7 +160,7 @@ public final class Book {
             for (index, sheet) in sheets.enumerated() {
                 let sheetId = index + 1
                 let sheetName = sheet.name
-                
+
                 // 发送当前 sheet 处理进度
                 sendProgress(.processingSheet(current: sheetId, total: sheets.count, sheetName: sheetName))
 
@@ -185,45 +185,45 @@ public final class Book {
 
             // 使用收集的元数据生成全局文件
             sendProgress(.generatingGlobalFiles)
-            
+
             sendProgress(.generatingContentTypes)
             try writeContentTypesXML(to: tempDir, sheetCount: collectedMetas.count)
-            
+
             sendProgress(.generatingRootRelationships)
             try writeRootRelsXML(to: tempDir)
-            
+
             sendProgress(.generatingWorkbook)
             try writeWorkbookXML(to: tempDir, metas: collectedMetas)
-            
+
             sendProgress(.generatingWorkbookRelationships)
             try writeWorkbookRelsXML(to: tempDir, metas: collectedMetas)
-            
+
             sendProgress(.generatingStyles)
             try writeStylesXML(to: tempDir, styleRegister: styleRegister)
-            
+
             sendProgress(.generatingSharedStrings)
             try writeSharedStringsXML(to: tempDir, shareStringRegister: shareStringRegister)
-            
+
             sendProgress(.generatingCoreProperties)
             try writeCorePropsXML(to: tempDir)
-            
+
             sendProgress(.generatingAppProperties)
             try writeAppPropsXML(to: tempDir, metas: collectedMetas)
-            
+
             // 打包为 ZIP 文件并重命名为 .xlsx
             sendProgress(.preparingPackage)
             try createZipArchive(from: tempDir, to: outputURL)
-            
+
             // 清理临时目录
             sendProgress(.cleaningUp)
             try FileManager.default.removeItem(at: tempDir)
-            
+
             // 完成所有操作
             sendProgress(.completed)
             completeProgress()
-            
+
             return outputURL
-            
+
         } catch {
             // 发送错误状态并完成流
             let bookError: BookError
@@ -238,92 +238,19 @@ public final class Book {
         }
     }
 
-    func generateAndWriteSheetXML(
-        sheet: AnySheet,
-        meta: SheetMeta,
-        tempDir: URL,
-        styleRegister: StyleRegister,
-        shareStringRegister: ShareStringRegister) throws(BookError)
-    {
-        guard let sheetXML = sheet.makeSheetXML(
-            bookStyle: style,
-            styleRegister: styleRegister,
-            shareStringRegister: shareStringRegister)
-        else {
-            throw BookError.dataProviderError("Sheet \(sheet.name) has no data provider")
-        }
-
-        // 生成 XML 内容
-        let xmlString = sheetXML.generateXML()
-
-        // 验证 XML 内容不为空
-        guard !xmlString.isEmpty else {
-            throw BookError.xmlGenerationError("Generated XML for sheet '\(sheet.name)' is empty")
-        }
-
-        // 将 XML 字符串转换为数据
-        guard let xmlData = xmlString.data(using: .utf8) else {
-            throw BookError.encodingError("Failed to encode XML for sheet '\(sheet.name)' as UTF-8")
-        }
-
-        // 创建完整的文件路径
-        let sheetFileURL = tempDir.appendingPathComponent(meta.filePath)
-        
-        // 确保父目录存在
-        let parentDir = sheetFileURL.deletingLastPathComponent()
-        do {
-            try FileManager.default.createDirectory(at: parentDir, withIntermediateDirectories: true)
-        } catch {
-            throw BookError.fileWriteError(error)
-        }
-        
-        // 写入 XML 文件
-        do {
-            try xmlData.write(to: sheetFileURL)
-        } catch {
-            throw BookError.fileWriteError(error)
-        }
-
-        // 验证生成的 XML 包含必要的元素
-        try validateSheetXML(xmlString: xmlString, meta: meta)
-        
-        logger.info("Created sheet file: \(meta.filePath) - XML size: \(xmlData.count) bytes, Data range: \(meta.dataRange?.excelRange ?? "None")")
-    }
-
-    /// 验证生成的 Sheet XML 是否符合基本要求
-    private func validateSheetXML(xmlString: String, meta: SheetMeta) throws(BookError) {
-        // 检查基本的 XML 结构
-        guard xmlString.contains("<?xml version=\"1.0\" encoding=\"UTF-8\"") else {
-            throw BookError.xmlValidationError("Missing XML declaration in sheet '\(meta.name)'")
-        }
-
-        guard xmlString.contains("<worksheet") && xmlString.contains("</worksheet>") else {
-            throw BookError.xmlValidationError("Missing worksheet tags in sheet '\(meta.name)'")
-        }
-
-        // 如果有数据，检查是否包含 sheetData
-        if meta.estimatedDataRowCount > 0 || meta.hasHeader {
-            guard xmlString.contains("<sheetData>") && xmlString.contains("</sheetData>") else {
-                throw BookError.xmlValidationError("Missing sheetData in non-empty sheet '\(meta.name)'")
-            }
-        }
-
-        logger.debug("XML validation passed for sheet '\(meta.name)'")
-    }
-    
     /// 创建 XLSX 包的目录结构
     func createXLSXDirectoryStructure(at tempDir: URL) throws(BookError) {
         do {
             let fileManager = FileManager.default
-            
+
             // 删除已存在的临时目录
             if fileManager.fileExists(atPath: tempDir.path) {
                 try fileManager.removeItem(at: tempDir)
             }
-            
+
             // 创建根目录
             try fileManager.createDirectory(at: tempDir, withIntermediateDirectories: true)
-            
+
             // 创建必要的子目录
             let directories = [
                 "_rels",
@@ -332,19 +259,19 @@ public final class Book {
                 "xl/_rels",
                 "xl/worksheets"
             ]
-            
+
             for dir in directories {
                 let dirURL = tempDir.appendingPathComponent(dir)
                 try fileManager.createDirectory(at: dirURL, withIntermediateDirectories: true)
             }
-            
+
             logger.info("Created XLSX directory structure at: \(tempDir.path)")
-            
+
         } catch {
             throw BookError.fileWriteError(error)
         }
     }
-    
+
     /// Prepares the output URL by ensuring proper .xlsx extension and creating parent directories
     /// - Parameter url: The input URL provided by the user
     /// - Returns: The prepared output URL with .xlsx extension
@@ -352,43 +279,43 @@ public final class Book {
     private func prepareOutputURL(_ url: URL) throws(BookError) -> URL {
         // Ensure .xlsx extension
         let outputURL = ensureXLSXExtension(url)
-        
+
         // Create parent directory if needed
         try createParentDirectoryIfNeeded(outputURL)
-        
+
         return outputURL
     }
-    
+
     /// Ensures the URL has a .xlsx extension
     /// - Parameter url: The input URL
     /// - Returns: URL with .xlsx extension (replaces existing extension if different)
     private func ensureXLSXExtension(_ url: URL) -> URL {
         let pathExtension = url.pathExtension.lowercased()
-        
+
         // If already has .xlsx extension, return as-is
         if pathExtension == "xlsx" {
             return url
         }
-        
+
         // If has no extension, add .xlsx
         if pathExtension.isEmpty {
             return url.appendingPathExtension("xlsx")
         }
-        
+
         // If has different extension, replace it with .xlsx
         return url.deletingPathExtension().appendingPathExtension("xlsx")
     }
-    
+
     /// Creates parent directory if it doesn't exist
     /// - Parameter url: The output URL whose parent directory should be created
     /// - Throws: BookError.fileWriteError if directory creation fails
     private func createParentDirectoryIfNeeded(_ url: URL) throws(BookError) {
         let parentDirectory = url.deletingLastPathComponent()
-        
+
         // Check if parent directory exists
         var isDirectory: ObjCBool = false
         let exists = FileManager.default.fileExists(atPath: parentDirectory.path, isDirectory: &isDirectory)
-        
+
         if !exists {
             // Parent directory doesn't exist, create it
             do {
@@ -413,15 +340,15 @@ public final class Book {
             throw BookError.fileWriteError(error)
         }
     }
-    
+
     /// 使用 SimpleZip 创建 XLSX 文件
     func createZipArchive(from tempDir: URL, to outputURL: URL) throws(BookError) {
         do {
             try SimpleZip.createFromDirectory(directoryURL: tempDir, outputURL: outputURL)
-            
+
             let fileSize = try FileManager.default.attributesOfItem(atPath: outputURL.path)[.size] as? Int ?? 0
             logger.info("Created XLSX file: \(outputURL.path) - Size: \(fileSize) bytes")
-            
+
         } catch let zipError as SimpleZip.ZipError {
             logger.error("ZIP creation failed: \(zipError)")
             throw BookError.fileWriteError(zipError)
