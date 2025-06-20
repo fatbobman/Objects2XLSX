@@ -35,6 +35,20 @@ extension Sheet {
         var mergedSheetStyle = mergedSheetStyle(bookStyle: bookStyle, sheetStyle: sheetStyleToUse)
         let columns = activeColumns(objects: objects)
 
+        // Transfer column widths from Column definitions to SheetStyle
+        // Use all columns for width transfer even if no data exists
+        let columnsForWidth = objects.isEmpty ? self.columns : columns
+        for (index, column) in columnsForWidth.enumerated() {
+            if let width = column.width {
+                let columnIndex = index + 1 // Excel uses 1-based column indexing
+                mergedSheetStyle.columnWidths[columnIndex] = SheetStyle.ColumnWidth(
+                    width: Double(width),
+                    unit: .characters,
+                    isCustomWidth: true
+                )
+            }
+        }
+
         // 计算数据区域并设置边框区域（如果启用）
         let dataRowCount = objects.count
         let dataColumnCount = columns.count

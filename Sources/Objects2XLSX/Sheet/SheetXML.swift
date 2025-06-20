@@ -128,7 +128,7 @@ struct SheetXML {
         var xml = "<cols>"
 
         for (index, columnWidth) in style.columnWidths.sorted(by: { $0.key < $1.key }) {
-            xml += "<col min=\"\(index + 1)\" max=\"\(index + 1)\" width=\"\(columnWidth.width)\" customWidth=\"1\"/>"
+            xml += "<col min=\"\(index)\" max=\"\(index)\" width=\"\(columnWidth.width)\" customWidth=\"1\"/>"
         }
 
         xml += "</cols>"

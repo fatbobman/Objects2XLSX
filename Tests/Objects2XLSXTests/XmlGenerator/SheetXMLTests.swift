@@ -53,8 +53,8 @@ struct SheetXMLTest {
     @Test("Sheet XML with column widths")
     func sheetXMLWithColumnWidths() throws {
         var style = SheetStyle()
-        style.setColumnWidth(SheetStyle.ColumnWidth(width: 15.0, unit: .points, isCustomWidth: true), at: 0)
-        style.setColumnWidth(SheetStyle.ColumnWidth(width: 20.0, unit: .points, isCustomWidth: true), at: 2)
+        style.setColumnWidth(SheetStyle.ColumnWidth(width: 15.0, unit: .points, isCustomWidth: true), at: 1)
+        style.setColumnWidth(SheetStyle.ColumnWidth(width: 20.0, unit: .points, isCustomWidth: true), at: 3)
 
         let sheetXML = SheetXML(name: "TestSheet", rows: [], style: style)
         let xml = sheetXML.generateXML()
@@ -141,7 +141,7 @@ struct SheetXMLTest {
             .freezePanes(.freeze(rows: 2, columns: 1))
             .zoom(.custom(120))
 
-        style.setColumnWidth(SheetStyle.ColumnWidth(width: 15.0, unit: .points, isCustomWidth: true), at: 0)
+        style.setColumnWidth(SheetStyle.ColumnWidth(width: 15.0, unit: .points, isCustomWidth: true), at: 1)
 
         let sheetXML = SheetXML(name: "TestSheet", rows: [], style: style)
         let xml = sheetXML.generateXML()
