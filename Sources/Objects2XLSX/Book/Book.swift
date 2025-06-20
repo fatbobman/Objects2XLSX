@@ -16,10 +16,21 @@ public final class Book {
     
     /// 日志管理器，支持自定义实现
     public let logger: LoggerManagerProtocol
+    
+    /// 进度报告的 AsyncStream
+    public let progressStream: AsyncStream<BookGenerationProgress>
+    
+    /// 进度报告的 Continuation，用于发送进度更新
+    private let progressContinuation: AsyncStream<BookGenerationProgress>.Continuation
 
     var sheetMetas: [SheetMeta] = []
 
     public init(style: BookStyle, sheets: [AnySheet] = [], logger: LoggerManagerProtocol? = nil) {
+        // 创建 AsyncStream 用于进度报告
+        let (stream, continuation) = AsyncStream.makeStream(of: BookGenerationProgress.self)
+        self.progressStream = stream
+        self.progressContinuation = continuation
+        
         self.style = style
         self.sheets = sheets
         self.logger = logger ?? Self.defaultLogger
@@ -45,6 +56,17 @@ public final class Book {
     public func append(sheets: [AnySheet]) {
         self.sheets.append(contentsOf: sheets)
     }
+    
+    /// 发送进度更新（线程安全）
+    private func sendProgress(_ progress: BookGenerationProgress) {
+        progressContinuation.yield(progress)
+        logger.debug("Progress update: \(progress.description)")
+    }
+    
+    /// 完成进度报告并关闭流
+    private func completeProgress() {
+        progressContinuation.finish()
+    }
 
     public func append<ObjectType>(sheet: Sheet<ObjectType>) {
         sheets.append(sheet.eraseToAnySheet())
@@ -55,48 +77,98 @@ public final class Book {
     }
 
     public func write(to url: URL) throws(BookError) {
-        // 创建注册器
-        let styleRegister = StyleRegister()
-        let shareStringRegister = ShareStringRegister()
-
-        // 创建临时目录用于构建 XLSX 包结构
-        let tempDir = url.deletingPathExtension().appendingPathExtension("temp")
-        try createXLSXDirectoryStructure(at: tempDir)
+        // 开始生成进度报告
+        sendProgress(.started)
         
-        // 流式处理：一次性完成数据加载、元数据收集和XML生成
-        var collectedMetas: [SheetMeta] = []
+        do {
+            // 创建注册器
+            let styleRegister = StyleRegister()
+            let shareStringRegister = ShareStringRegister()
 
-        for (index, sheet) in sheets.enumerated() {
-            let sheetId = index + 1
+            // 创建临时目录用于构建 XLSX 包结构
+            sendProgress(.creatingDirectory)
+            let tempDir = url.deletingPathExtension().appendingPathExtension("temp")
+            try createXLSXDirectoryStructure(at: tempDir)
+            
+            // 流式处理：一次性完成数据加载、元数据收集和XML生成
+            sendProgress(.processingSheets(totalCount: sheets.count))
+            var collectedMetas: [SheetMeta] = []
 
-            // 加载数据一次
-            sheet.loadData()
+            for (index, sheet) in sheets.enumerated() {
+                let sheetId = index + 1
+                let sheetName = sheet.name
+                
+                // 发送当前 sheet 处理进度
+                sendProgress(.processingSheet(current: sheetId, total: sheets.count, sheetName: sheetName))
 
-            // 生成元数据
-            let meta = sheet.makeSheetMeta(sheetId: sheetId)
-            collectedMetas.append(meta)
+                // 加载数据一次
+                sheet.loadData()
 
-            // 立即生成并写入 XML
-            try generateAndWriteSheetXML(
-                sheet: sheet,
-                meta: meta,
-                tempDir: tempDir,
-                styleRegister: styleRegister,
-                shareStringRegister: shareStringRegister)
+                // 生成元数据
+                let meta = sheet.makeSheetMeta(sheetId: sheetId)
+                collectedMetas.append(meta)
+
+                // 立即生成并写入 XML
+                try generateAndWriteSheetXML(
+                    sheet: sheet,
+                    meta: meta,
+                    tempDir: tempDir,
+                    styleRegister: styleRegister,
+                    shareStringRegister: shareStringRegister)
+            }
+
+            // 完成 Sheet 处理
+            sendProgress(.sheetsCompleted(totalCount: sheets.count))
+
+            // 使用收集的元数据生成全局文件
+            sendProgress(.generatingGlobalFiles)
+            
+            sendProgress(.generatingContentTypes)
+            try writeContentTypesXML(to: tempDir, sheetCount: collectedMetas.count)
+            
+            sendProgress(.generatingRootRelationships)
+            try writeRootRelsXML(to: tempDir)
+            
+            sendProgress(.generatingWorkbook)
+            try writeWorkbookXML(to: tempDir, metas: collectedMetas)
+            
+            sendProgress(.generatingWorkbookRelationships)
+            try writeWorkbookRelsXML(to: tempDir, metas: collectedMetas)
+            
+            sendProgress(.generatingStyles)
+            try writeStylesXML(to: tempDir, styleRegister: styleRegister)
+            
+            sendProgress(.generatingSharedStrings)
+            try writeSharedStringsXML(to: tempDir, shareStringRegister: shareStringRegister)
+            
+            sendProgress(.generatingCoreProperties)
+            try writeCorePropsXML(to: tempDir)
+            
+            sendProgress(.generatingAppProperties)
+            try writeAppPropsXML(to: tempDir, metas: collectedMetas)
+            
+            // TODO: 打包为 ZIP 文件并重命名为 .xlsx
+            sendProgress(.preparingPackage)
+            
+            // TODO: 清理临时目录
+            sendProgress(.cleaningUp)
+            
+            // 完成所有操作
+            sendProgress(.completed)
+            completeProgress()
+            
+        } catch {
+            // 发送错误状态并完成流
+            let bookError: BookError
+            if let existingBookError = error as? BookError {
+                bookError = existingBookError
+            } else {
+                bookError = BookError.xmlGenerationError("Unknown error: \(error)")
+            }
+            sendProgress(.failed(error: bookError))
+            completeProgress()
+            throw bookError
         }
-
-        // 使用收集的元数据生成全局文件
-        try writeContentTypesXML(to: tempDir, sheetCount: collectedMetas.count)
-        try writeRootRelsXML(to: tempDir)
-        try writeWorkbookXML(to: tempDir, metas: collectedMetas)
-        try writeWorkbookRelsXML(to: tempDir, metas: collectedMetas)
-        try writeStylesXML(to: tempDir, styleRegister: styleRegister)
-        try writeSharedStringsXML(to: tempDir, shareStringRegister: shareStringRegister)
-        try writeCorePropsXML(to: tempDir)
-        try writeAppPropsXML(to: tempDir, metas: collectedMetas)
-        
-        // TODO: 打包为 ZIP 文件并重命名为 .xlsx
-        // TODO: 清理临时目录
     }
 
     func generateAndWriteSheetXML(
