@@ -10,21 +10,21 @@ import Foundation
 
 // 对应 Excel 的 Workbook 对象
 public final class Book {
-    public var styles: BookStyle
+    public var style: BookStyle
     public var sheets: [AnySheet]
 
     let styleRegister: StyleRegister
     let shareStringRegister: ShareStringRegister
 
-    public init(styles: BookStyle, sheets: [AnySheet] = []) {
-        self.styles = styles
+    public init(style: BookStyle, sheets: [AnySheet] = []) {
+        self.style = style
         self.sheets = sheets
         styleRegister = StyleRegister()
         shareStringRegister = ShareStringRegister()
     }
 
-    public convenience init(styles: BookStyle, @SheetBuilder sheets: () -> [AnySheet]) {
-        self.init(styles: styles, sheets: sheets())
+    public convenience init(style: BookStyle, @SheetBuilder sheets: () -> [AnySheet]) {
+        self.init(style: style, sheets: sheets())
     }
 
     public func append(sheet: AnySheet) {
@@ -43,9 +43,38 @@ public final class Book {
         self.sheets.append(contentsOf: sheets())
     }
 
-    public func write(to url: URL) throws {
-        // 生成逻辑
-        let data = Data()
-        try data.write(to: url)
+
+    public func write(to url: URL) throws(BookError) {
+        for (index, sheet) in sheets.enumerated() {
+            try makeSheetXML(sheet: sheet, sheetIndex: index + 1) // 是否需要保存信息？
+        }
+
     }
+
+    /// 在对应的 url 中创建 sheetx.xml 文件, 或许应该返回一些用于生成其他 xml 的信息？
+    func makeSheetXML(sheet: AnySheet, sheetIndex: Int) throws(BookError)  {
+        guard let sheetXML = sheet.makeSheetXML(bookStyle: style, styleRegister: styleRegister, shareStringRegister: shareStringRegister) else {
+            throw BookError.dataProviderError("Sheet \(sheet.name) has no data provider")
+        }
+
+        // 生成 sheetx.xml 文件
+
+        // 返回需要的信息
+
+    }
+}
+
+extension Book {
+    public func author(name: String) {
+        style.properties.author = name
+    }
+
+    public func title(name: String) {
+        style.properties.title = name
+    }
+}
+
+public enum BookError: Error, Sendable {
+    case fileWriteError(Error)
+    case dataProviderError(String)
 }

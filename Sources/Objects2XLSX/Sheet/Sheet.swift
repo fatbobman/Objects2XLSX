@@ -64,7 +64,7 @@ public final class Sheet<ObjectType>: SheetProtocol {
         return columns.filter { $0.shouldGenerate(for: firstObject) }
     }
 
-    /// 加载数据
+    /// 加载数据, 在构建 xml 时，会调用，以时间数据的懒加载
     func loadData() {
         data = dataProvider?()
         updateDataRange()
@@ -89,17 +89,16 @@ public final class Sheet<ObjectType>: SheetProtocol {
         style.dataBorder = SheetStyle.DataBorderSettings(
             enabled: enabled,
             includeHeader: includeHeader,
-            borderStyle: borderStyle
-        )
+            borderStyle: borderStyle)
         return self
     }
-    
+
     /// 启用包含表头的数据边框
     public func dataBorderWithHeader(borderStyle: BorderStyle = .thin) -> Self {
         style.dataBorder = .withHeader(style: borderStyle)
         return self
     }
-    
+
     /// 启用不包含表头的数据边框
     public func dataBorderWithoutHeader(borderStyle: BorderStyle = .thin) -> Self {
         style.dataBorder = .withoutHeader(style: borderStyle)

@@ -12,11 +12,15 @@ import Foundation
 public final class AnySheet {
     private let _name: String
     private let _makeSheetXML: (BookStyle, StyleRegister, ShareStringRegister) -> SheetXML?
+    private let _loadData: () -> Void
 
     public var name: String { _name }
 
     public init<ObjectType>(_ sheet: Sheet<ObjectType>) {
         _name = sheet.name
+        _loadData = {
+            sheet.loadData()
+        }
         _makeSheetXML = { bookStyle, styleRegister, shareStringRegister in
             // 获取数据
             let objects = sheet.dataProvider?() ?? []
@@ -35,6 +39,7 @@ public final class AnySheet {
         styleRegister: StyleRegister,
         shareStringRegister: ShareStringRegister) -> SheetXML?
     {
-        _makeSheetXML(bookStyle, styleRegister, shareStringRegister)
+        _loadData()
+        return _makeSheetXML(bookStyle, styleRegister, shareStringRegister)
     }
 }

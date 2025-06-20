@@ -20,8 +20,8 @@ public struct DocumentProperties {
     public var manager: String?
 
     // 创建和修改时间
-    public var created: Date?
-    public var modified: Date?
+    public var created: Date? = Date()
+    public var modified: Date? = Date()
 
     // 应用程序属性 (app.xml)
     public var application: String = "Objects2XLSX"
