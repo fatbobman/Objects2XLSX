@@ -137,7 +137,7 @@ extension Font {
         xml += "<sz val=\"\(size ?? 12)\"/>"
 
         // 颜色处理
-        if let color = color {
+        if let color {
             xml += "<color rgb=\"\(color.argbHexString)\"/>"
         } else {
             // 没有指定颜色时，使用主题色（写死）
@@ -152,15 +152,15 @@ extension Font {
         xml += "<family val=\"\(fontFamily)\"/>"
 
         // 粗体、斜体等...
-        if let bold = bold, bold {
+        if let bold, bold {
             xml += "<b/>"
         }
 
-        if let italic = italic, italic {
+        if let italic, italic {
             xml += "<i/>"
         }
 
-        if let underline = underline, underline {
+        if let underline, underline {
             xml += "<u val=\"single\"/>"
         }
 
@@ -171,14 +171,14 @@ extension Font {
     // 根据字体名称推断字体族
     private func getFontFamily(for fontName: String) -> Int {
         switch fontName.lowercased() {
-        case "times", "times new roman", "georgia":
-            return 1  // Roman (衬线)
-        case "calibri", "arial", "helvetica", "tahoma":
-            return 2  // Swiss (无衬线)
-        case "courier", "courier new", "consolas":
-            return 3  // Modern (等宽)
-        default:
-            return 2  // 默认无衬线
+            case "times", "times new roman", "georgia":
+                1 // Roman (衬线)
+            case "calibri", "arial", "helvetica", "tahoma":
+                2 // Swiss (无衬线)
+            case "courier", "courier new", "consolas":
+                3 // Modern (等宽)
+            default:
+                2 // 默认无衬线
         }
     }
 }

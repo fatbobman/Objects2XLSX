@@ -209,7 +209,7 @@ final class StyleRegister {
             borderID: 0)
         resolvedStylePool.append(defaultStyle)
     }
-    
+
     /// Generates the complete styles.xml content for the XLSX file.
     ///
     /// Creates a comprehensive styles document containing all registered style components
@@ -222,35 +222,35 @@ final class StyleRegister {
     /// - Returns: Complete XML string ready for inclusion in the XLSX package as styles.xml
     func generateXML() -> String {
         var xml = """
-        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-        <styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-        """
-        
+            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+            <styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+            """
+
         // Generate number formats section (custom formats only, built-ins are implicit)
         xml += generateNumberFormatsXML()
-        
+
         // Generate fonts section (typography definitions)
         xml += generateFontsXML()
-        
+
         // Generate fills section (background colors and patterns)
         xml += generateFillsXML()
-        
+
         // Generate borders section (cell border definitions)
         xml += generateBordersXML()
-        
+
         // Generate cell style XFs (master format templates, required by Excel spec)
         xml += generateCellStyleXfsXML()
-        
+
         // Generate cell XFs (actual format definitions referenced by cells)
         xml += generateCellXfsXML()
-        
+
         // Generate named cell styles (style names like "Normal", minimal but required)
         xml += generateCellStylesXML()
-        
+
         xml += "</styleSheet>"
         return xml
     }
-    
+
     /// Generates the numFmts section containing custom number format definitions.
     ///
     /// Only custom number formats (ID 164+) are included since Excel has built-in
@@ -259,20 +259,20 @@ final class StyleRegister {
     /// - Returns: XML fragment for the numFmts section, or empty string if no custom formats
     private func generateNumberFormatsXML() -> String {
         guard !numberFormatPool.isEmpty else { return "" }
-        
+
         var xml = "<numFmts count=\"\(numberFormatPool.count)\">"
-        
+
         for (index, numberFormat) in numberFormatPool.enumerated() {
             let formatId = 164 + index // Custom formats start at 164
             if let formatCode = numberFormat.formatCode {
                 xml += "<numFmt numFmtId=\"\(formatId)\" formatCode=\"\(formatCode.xmlEscaped)\"/>"
             }
         }
-        
+
         xml += "</numFmts>"
         return xml
     }
-    
+
     /// Generates the fonts section containing all registered font definitions.
     ///
     /// Each font element includes typography properties like size, family name,
@@ -281,15 +281,15 @@ final class StyleRegister {
     /// - Returns: XML fragment for the fonts section
     private func generateFontsXML() -> String {
         var xml = "<fonts count=\"\(fontPool.count)\">"
-        
+
         for font in fontPool {
             xml += font.xmlContent
         }
-        
+
         xml += "</fonts>"
         return xml
     }
-    
+
     /// Generates the fills section containing all registered fill pattern definitions.
     ///
     /// Includes solid colors, patterns, and gradients. The default "none" fill
@@ -298,15 +298,15 @@ final class StyleRegister {
     /// - Returns: XML fragment for the fills section
     private func generateFillsXML() -> String {
         var xml = "<fills count=\"\(fillPool.count)\">"
-        
+
         for fill in fillPool {
             xml += fill.xmlContent
         }
-        
+
         xml += "</fills>"
         return xml
     }
-    
+
     /// Generates the borders section containing all registered border style definitions.
     ///
     /// Each border can define styles for left, right, top, bottom, and diagonal sides
@@ -315,15 +315,15 @@ final class StyleRegister {
     /// - Returns: XML fragment for the borders section
     private func generateBordersXML() -> String {
         var xml = "<borders count=\"\(borderPool.count)\">"
-        
+
         for border in borderPool {
             xml += border.xmlContent
         }
-        
+
         xml += "</borders>"
         return xml
     }
-    
+
     /// Generates the cellStyleXfs section containing master style format templates.
     ///
     /// These are template formats that named styles reference. Excel requires at least
@@ -332,9 +332,9 @@ final class StyleRegister {
     /// - Returns: XML fragment for the cellStyleXfs section with required default master style
     private func generateCellStyleXfsXML() -> String {
         // Excel specification requires at least one cellStyleXf (the master default style)
-        return "<cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellStyleXfs>"
+        "<cellStyleXfs count=\"1\"><xf numFmtId=\"0\" fontId=\"0\" fillId=\"0\" borderId=\"0\"/></cellStyleXfs>"
     }
-    
+
     /// Generates the cellXfs section containing actual cell format definitions.
     ///
     /// These are the format definitions that cells reference by index. Each cellXf
@@ -344,41 +344,42 @@ final class StyleRegister {
     /// - Returns: XML fragment for the cellXfs section
     private func generateCellXfsXML() -> String {
         var xml = "<cellXfs count=\"\(resolvedStylePool.count)\">"
-        
+
         for resolvedStyle in resolvedStylePool {
             xml += "<xf"
-            
+
             // Add number format ID (defaults to 0 for General format)
             if let numFmtId = resolvedStyle.numFmtId {
                 xml += " numFmtId=\"\(numFmtId)\""
             } else {
                 xml += " numFmtId=\"0\""
             }
-            
+
             // Add font ID (defaults to 0 for default font)
             if let fontId = resolvedStyle.fontID {
                 xml += " fontId=\"\(fontId)\""
             } else {
                 xml += " fontId=\"0\""
             }
-            
+
             // Add fill ID (defaults to 0 for no fill)
             if let fillId = resolvedStyle.fillID {
                 xml += " fillId=\"\(fillId)\""
             } else {
                 xml += " fillId=\"0\""
             }
-            
+
             // Add border ID (defaults to 0 for no border)
             if let borderId = resolvedStyle.borderID {
                 xml += " borderId=\"\(borderId)\""
             } else {
                 xml += " borderId=\"0\""
             }
-            
+
             // Add alignment if present (requires applyAlignment flag and inline definition)
             if let alignmentId = resolvedStyle.alignmentID,
-               alignmentId < alignmentPool.count {
+               alignmentId < alignmentPool.count
+            {
                 xml += " applyAlignment=\"1\">"
                 xml += alignmentPool[alignmentId].xmlContent
                 xml += "</xf>"
@@ -386,11 +387,11 @@ final class StyleRegister {
                 xml += "/>"
             }
         }
-        
+
         xml += "</cellXfs>"
         return xml
     }
-    
+
     /// Generates the cellStyles section containing named style definitions.
     ///
     /// Named styles like "Normal", "Heading 1", etc. reference master styles in cellStyleXfs.
@@ -399,7 +400,7 @@ final class StyleRegister {
     /// - Returns: XML fragment for the cellStyles section with required "Normal" style
     private func generateCellStylesXML() -> String {
         // Excel specification requires at least the "Normal" style definition
-        return "<cellStyles count=\"1\"><cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/></cellStyles>"
+        "<cellStyles count=\"1\"><cellStyle name=\"Normal\" xfId=\"0\" builtinId=\"0\"/></cellStyles>"
     }
 }
 

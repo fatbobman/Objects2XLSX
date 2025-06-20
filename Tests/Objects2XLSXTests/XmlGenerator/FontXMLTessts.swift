@@ -10,7 +10,7 @@ import Foundation
 @testable import Objects2XLSX
 import Testing
 
-@Suite("Font XML Generator Tests",.tags(.xml))
+@Suite("Font XML Generator Tests", .tags(.xml))
 struct FontXMLTests {
     @Test("Complete Font XML Generation")
     func completeFontXMLGeneration() async throws {
@@ -33,7 +33,7 @@ struct FontXMLTests {
     }
 
     @Test("Default Font XML Generation")
-    func testDefaultFontXMLGeneration() async throws {
+    func defaultFontXMLGeneration() async throws {
         let font = Font() // 所有属性都是 nil
         let xml = font.xmlContent
 
@@ -158,4 +158,3 @@ struct FontXMLTests {
         #expect(font1.id != font3.id, "Expected different fonts to have different IDs")
     }
 }
-

@@ -159,8 +159,7 @@ extension String {
     ///
     /// - Returns: String with XML special characters properly escaped
     var xmlEscaped: String {
-        self
-            .replacingOccurrences(of: "&", with: "&amp;")
+        replacingOccurrences(of: "&", with: "&amp;")
             .replacingOccurrences(of: "<", with: "&lt;")
             .replacingOccurrences(of: ">", with: "&gt;")
             .replacingOccurrences(of: "\"", with: "&quot;")

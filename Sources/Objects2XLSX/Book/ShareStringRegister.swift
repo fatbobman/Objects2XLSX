@@ -1,5 +1,5 @@
 //
-// ShareStringRegistor.swift
+// ShareStringRegister.swift
 // Created by Xu Yang on 2025-06-05.
 // Blog: https://fatbobman.com
 // GitHub: https://github.com/fatbobman
@@ -72,7 +72,7 @@ final class ShareStringRegister {
     func stringIndex(for string: String) -> Int? {
         stringPool[string]
     }
-    
+
     /// Generates the complete sharedStrings.xml content for the XLSX file.
     ///
     /// Creates a standards-compliant shared string table XML that contains all registered
@@ -85,18 +85,18 @@ final class ShareStringRegister {
     func generateXML() -> String {
         let sortedStrings = allStrings
         let count = sortedStrings.count
-        
+
         var xml = """
-        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-        <sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="\(count)" uniqueCount="\(count)">
-        """
-        
+            <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+            <sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="\(count)" uniqueCount="\(count)">
+            """
+
         for string in sortedStrings {
             xml += "<si><t>"
             xml += string.xmlEscaped
             xml += "</t></si>"
         }
-        
+
         xml += "</sst>"
         return xml
     }

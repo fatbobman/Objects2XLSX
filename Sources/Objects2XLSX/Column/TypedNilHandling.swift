@@ -48,7 +48,7 @@ public enum TypedNilHandling<V: ColumnOutputTypeProtocol> {
     /// **Excel Behavior**: Empty cells in Excel are truly empty and don't affect
     /// calculations, averages, or other functions unless explicitly included.
     case keepEmpty
-    
+
     /// Substitute a default value when the extracted data is nil.
     ///
     /// When the extracted data is nil, the specified default value will be used

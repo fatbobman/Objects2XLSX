@@ -173,20 +173,20 @@ extension Cell {
         /// Text string value with optional shared string optimization.
         /// - Parameter string: The string content (nil represents empty cell)
         case string(String?)
-        
+
         /// Floating-point numeric value.
         /// - Parameter double: The numeric value (nil represents empty cell)
         case double(Double?)
-        
+
         /// Integer numeric value.
         /// - Parameter int: The integer value (nil represents empty cell)
         case int(Int?)
-        
+
         /// Date and time value with timezone support.
         /// - Parameter date: The date/time value (nil represents empty cell)
         /// - Parameter timeZone: Timezone for date interpretation (defaults to current)
         case date(Date?, timeZone: TimeZone = TimeZone.current)
-        
+
         /// Boolean value with customizable text representation.
         /// - Parameter boolean: The boolean value (nil represents empty cell)
         /// - Parameter booleanExpressions: Text format for true/false values
@@ -195,11 +195,11 @@ extension Cell {
             Bool?,
             booleanExpressions: BooleanExpressions = .oneAndZero,
             caseStrategy: CaseStrategy = .upper)
-        
+
         /// URL value stored as text with optional shared string optimization.
         /// - Parameter url: The URL value (nil represents empty cell)
         case url(URL?)
-        
+
         /// Percentage value with configurable decimal precision.
         /// - Parameter percentage: The percentage as decimal (0.5 = 50%)
         /// - Parameter precision: Number of decimal places to preserve
@@ -251,16 +251,16 @@ extension Cell {
     public enum BooleanExpressions: Equatable, Sendable {
         /// Standard Excel boolean format: "TRUE" / "FALSE"
         case trueAndFalse
-        
+
         /// Abbreviated format: "T" / "F"
         case tAndF
-        
+
         /// Numeric-style format: "1" / "0"
         case oneAndZero
-        
+
         /// Natural language format: "YES" / "NO"
         case yesAndNo
-        
+
         /// Custom boolean text representation
         /// - Parameter true: Text to display for true values
         /// - Parameter false: Text to display for false values
@@ -306,10 +306,10 @@ extension Cell {
     public enum CaseStrategy: Equatable, Sendable {
         /// Transform text to all uppercase (e.g., "true" → "TRUE")
         case upper
-        
+
         /// Transform text to all lowercase (e.g., "TRUE" → "true")
         case lower
-        
+
         /// Transform text to title case (e.g., "true" → "True")
         case firstLetterUpper
 

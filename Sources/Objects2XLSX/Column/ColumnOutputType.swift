@@ -188,7 +188,7 @@ public struct DateColumnType: ColumnOutputTypeProtocol {
 /// ```swift
 /// Column<Task, Bool, BoolColumnType>(name: "Complete", keyPath: \.isComplete)
 /// Column<User, Bool?, BoolColumnType>(
-///     name: "Active", 
+///     name: "Active",
 ///     keyPath: \.isActive,
 ///     booleanExpressions: .yesAndNo,
 ///     caseStrategy: .firstLetterUpper

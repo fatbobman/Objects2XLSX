@@ -25,11 +25,11 @@ import Foundation
 /// ```swift
 /// public struct MyColumnType: ColumnOutputTypeProtocol {
 ///     public let config: MyColumnConfig
-///     
+///
 ///     public var cellType: Cell.CellType {
 ///         // Convert config to appropriate Cell.CellType
 ///     }
-///     
+///
 ///     public static func withDefaultValue(_ value: ValueType, config: MyColumnConfig) -> Self {
 ///         // Create instance with substituted value
 ///     }
@@ -47,10 +47,10 @@ import Foundation
 public protocol ColumnOutputTypeProtocol: Sendable, Equatable {
     /// The configuration type that defines formatting and display options for this output type
     associatedtype Config: ColumnTypeConfig
-    
+
     /// The configuration instance containing formatting parameters and the source value
     var config: Config { get }
-    
+
     /// Converts this output type to an Excel-compatible cell value for serialization
     var cellType: Cell.CellType { get }
 

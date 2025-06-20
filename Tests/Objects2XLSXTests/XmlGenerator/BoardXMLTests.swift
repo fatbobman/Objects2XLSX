@@ -10,7 +10,7 @@ import Foundation
 @testable import Objects2XLSX
 import Testing
 
-@Suite("Board XML Generator Tests",.tags(.xml))
+@Suite("Board XML Generator Tests", .tags(.xml))
 struct BorderXMLTests {
     @Test("None Border XML Generation")
     func noneBorderXMLGeneration() async throws {

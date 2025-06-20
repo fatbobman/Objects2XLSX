@@ -1,13 +1,13 @@
 //
-// ColumnWidthAndRowHeightTests.swift
+// ColumnWidthTests.swift
 // Created by Xu Yang on 2025-06-20.
 // Blog: https://fatbobman.com
 // GitHub: https://github.com/fatbobman
 //
 // Copyright © 2025 Fatbobman. All rights reserved.
 
-import Testing
 @testable import Objects2XLSX
+import Testing
 
 private struct TestProductWithDesc {
     let id: Int
@@ -18,13 +18,12 @@ private struct TestProductWithDesc {
 
 @Suite("Column Width Tests")
 struct ColumnWidthTests {
-
     @Test("Column width defined in Column should transfer to SheetStyle")
     func columnWidthTransfer() throws {
         let products = [
             TestProductWithDesc(id: 1, name: "Product A", price: 99.99, description: "A very long description that requires more space"),
             TestProductWithDesc(id: 2, name: "Product B", price: 149.99, description: nil),
-            TestProductWithDesc(id: 3, name: "Product C", price: 199.99, description: "Short desc")
+            TestProductWithDesc(id: 3, name: "Product C", price: 199.99, description: "Short desc"),
         ]
 
         let columns: [AnyColumn<TestProductWithDesc>] = [
@@ -39,7 +38,7 @@ struct ColumnWidthTests {
                 .eraseToAnyColumn(),
             Column<TestProductWithDesc, String?, TextColumnType>(name: "Description", keyPath: \.description, mapping: { TextColumnType(TextColumnConfig(value: $0)) }, nilHandling: .keepEmpty)
                 .width(40)
-                .eraseToAnyColumn()
+                .eraseToAnyColumn(),
         ]
 
         let sheet = Sheet(name: "Products", dataProvider: { products }, columns: { columns })
@@ -52,8 +51,7 @@ struct ColumnWidthTests {
             bookStyle: bookStyle,
             sheetStyle: sheet.style,
             styleRegister: styleRegister,
-            shareStringRegistor: shareStringRegister
-        )
+            shareStringRegistor: shareStringRegister)
 
         #expect(sheetXML != nil)
 
@@ -80,28 +78,28 @@ struct ColumnWidthTests {
     @Test("Mixed column width sources - Column and SheetStyle")
     func mixedColumnWidthSources() throws {
         let products = [
-            TestProductWithDesc(id: 1, name: "Product A", price: 99.99, description: "Description A")
+            TestProductWithDesc(id: 1, name: "Product A", price: 99.99, description: "Description A"),
         ]
 
         let columns: [AnyColumn<TestProductWithDesc>] = [
             Column<TestProductWithDesc, Int, IntColumnType>(name: "ID", keyPath: \.id)
-                .width(5)  // Width from Column
+                .width(5) // Width from Column
                 .eraseToAnyColumn(),
             Column<TestProductWithDesc, String, TextColumnType>(name: "Name", keyPath: \.name)
                 // No width specified in Column
-                .eraseToAnyColumn(),
+                    .eraseToAnyColumn(),
             Column<TestProductWithDesc, Double, DoubleColumnType>(name: "Price", keyPath: \.price)
-                .width(15)  // Width from Column
+                .width(15) // Width from Column
                 .eraseToAnyColumn(),
             Column<TestProductWithDesc, String?, TextColumnType>(name: "Description", keyPath: \.description, mapping: { TextColumnType(TextColumnConfig(value: $0)) }, nilHandling: .keepEmpty)
                 // No width specified in Column
-                .eraseToAnyColumn()
+                    .eraseToAnyColumn(),
         ]
 
         // Set some widths directly in SheetStyle
         var sheetStyle = SheetStyle()
-        sheetStyle.columnWidths[2] = SheetStyle.ColumnWidth(width: 25.0, unit: .characters, isCustomWidth: true)  // Name column
-        sheetStyle.columnWidths[4] = SheetStyle.ColumnWidth(width: 30.0, unit: .characters, isCustomWidth: true)  // Description column
+        sheetStyle.columnWidths[2] = SheetStyle.ColumnWidth(width: 25.0, unit: .characters, isCustomWidth: true) // Name column
+        sheetStyle.columnWidths[4] = SheetStyle.ColumnWidth(width: 30.0, unit: .characters, isCustomWidth: true) // Description column
 
         let sheet = Sheet(name: "Products", style: sheetStyle, dataProvider: { products }, columns: { columns })
 
@@ -113,17 +111,16 @@ struct ColumnWidthTests {
             bookStyle: bookStyle,
             sheetStyle: sheet.style,
             styleRegister: styleRegister,
-            shareStringRegistor: shareStringRegister
-        )
+            shareStringRegistor: shareStringRegister)
 
         #expect(sheetXML != nil)
 
         // Verify that Column widths override SheetStyle widths
         let resultStyle = sheetXML!.style!
-        #expect(resultStyle.columnWidths[1]?.width == 5.0)   // From Column
-        #expect(resultStyle.columnWidths[2]?.width == 25.0)  // From SheetStyle (not overridden)
-        #expect(resultStyle.columnWidths[3]?.width == 15.0)  // From Column
-        #expect(resultStyle.columnWidths[4]?.width == 30.0)  // From SheetStyle (not overridden)
+        #expect(resultStyle.columnWidths[1]?.width == 5.0) // From Column
+        #expect(resultStyle.columnWidths[2]?.width == 25.0) // From SheetStyle (not overridden)
+        #expect(resultStyle.columnWidths[3]?.width == 15.0) // From Column
+        #expect(resultStyle.columnWidths[4]?.width == 30.0) // From SheetStyle (not overridden)
     }
 
     @Test("Row height customization")
@@ -131,21 +128,21 @@ struct ColumnWidthTests {
         let products = [
             TestProductWithDesc(id: 1, name: "Product A", price: 99.99, description: "Description A"),
             TestProductWithDesc(id: 2, name: "Product B", price: 149.99, description: "Description B"),
-            TestProductWithDesc(id: 3, name: "Product C", price: 199.99, description: "Description C")
+            TestProductWithDesc(id: 3, name: "Product C", price: 199.99, description: "Description C"),
         ]
 
         let columns: [AnyColumn<TestProductWithDesc>] = [
             Column<TestProductWithDesc, String, TextColumnType>(name: "Name", keyPath: \.name)
                 .eraseToAnyColumn(),
             Column<TestProductWithDesc, Double, DoubleColumnType>(name: "Price", keyPath: \.price)
-                .eraseToAnyColumn()
+                .eraseToAnyColumn(),
         ]
 
         var sheetStyle = SheetStyle()
         // Set custom row heights
-        sheetStyle.rowHeights[1] = 30.0  // Header row
-        sheetStyle.rowHeights[2] = 25.0  // First data row
-        sheetStyle.rowHeights[3] = 35.0  // Second data row
+        sheetStyle.rowHeights[1] = 30.0 // Header row
+        sheetStyle.rowHeights[2] = 25.0 // First data row
+        sheetStyle.rowHeights[3] = 35.0 // Second data row
         // Third data row will use default height
         sheetStyle.defaultRowHeight = 20.0
 
@@ -159,26 +156,25 @@ struct ColumnWidthTests {
             bookStyle: bookStyle,
             sheetStyle: sheet.style,
             styleRegister: styleRegister,
-            shareStringRegistor: shareStringRegister
-        )
+            shareStringRegistor: shareStringRegister)
 
         #expect(sheetXML != nil)
 
         let rows = sheetXML!.rows
-        #expect(rows.count == 4)  // 1 header + 3 data rows
+        #expect(rows.count == 4) // 1 header + 3 data rows
 
         // Check row heights
-        #expect(rows[0].height == 30.0)  // Header row
-        #expect(rows[1].height == 25.0)  // First data row
-        #expect(rows[2].height == 35.0)  // Second data row
-        #expect(rows[3].height == 20.0)  // Third data row (default)
+        #expect(rows[0].height == 30.0) // Header row
+        #expect(rows[1].height == 25.0) // First data row
+        #expect(rows[2].height == 35.0) // Second data row
+        #expect(rows[3].height == 20.0) // Third data row (default)
 
         // Verify XML output contains row height attributes
         let xmlContent = sheetXML!.generateXML()
-        #expect(xmlContent.contains("<row r=\"1\" ht=\"30.0\" customHeight=\"1\">"))  // Header
-        #expect(xmlContent.contains("<row r=\"2\" ht=\"25.0\" customHeight=\"1\">"))  // First data row
-        #expect(xmlContent.contains("<row r=\"3\" ht=\"35.0\" customHeight=\"1\">"))  // Second data row
-        #expect(xmlContent.contains("<row r=\"4\" ht=\"20.0\" customHeight=\"1\">"))  // Third data row
+        #expect(xmlContent.contains("<row r=\"1\" ht=\"30.0\" customHeight=\"1\">")) // Header
+        #expect(xmlContent.contains("<row r=\"2\" ht=\"25.0\" customHeight=\"1\">")) // First data row
+        #expect(xmlContent.contains("<row r=\"3\" ht=\"35.0\" customHeight=\"1\">")) // Second data row
+        #expect(xmlContent.contains("<row r=\"4\" ht=\"20.0\" customHeight=\"1\">")) // Third data row
 
         // Verify default row height in sheet format
         #expect(xmlContent.contains("defaultRowHeight=\"20.0\""))
@@ -190,8 +186,8 @@ struct ColumnWidthTests {
 
         let columns: [AnyColumn<TestProductWithDesc>] = [
             Column<TestProductWithDesc, String, TextColumnType>(name: "Name", keyPath: \.name)
-                .width(20)  // Default unit is characters
-                .eraseToAnyColumn()
+                .width(20) // Default unit is characters
+                .eraseToAnyColumn(),
         ]
 
         var sheetStyle = SheetStyle()
@@ -209,8 +205,7 @@ struct ColumnWidthTests {
             bookStyle: bookStyle,
             sheetStyle: sheet.style,
             styleRegister: styleRegister,
-            shareStringRegistor: shareStringRegister
-        )
+            shareStringRegistor: shareStringRegister)
 
         #expect(sheetXML != nil)
 
@@ -231,7 +226,7 @@ struct ColumnWidthTests {
                 .eraseToAnyColumn(),
             Column<TestProductWithDesc, Double, DoubleColumnType>(name: "Price", keyPath: \.price)
                 .width(15)
-                .eraseToAnyColumn()
+                .eraseToAnyColumn(),
         ]
 
         let sheet = Sheet(name: "Products", dataProvider: { products }, columns: { columns })
@@ -244,8 +239,7 @@ struct ColumnWidthTests {
             bookStyle: bookStyle,
             sheetStyle: sheet.style,
             styleRegister: styleRegister,
-            shareStringRegistor: shareStringRegister
-        )
+            shareStringRegistor: shareStringRegister)
 
         #expect(sheetXML != nil)
 

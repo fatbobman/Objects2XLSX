@@ -10,7 +10,6 @@ import Foundation
 
 /// Book 生成过程的进度状态
 public enum BookGenerationProgress: Sendable {
-
     // MARK: - 初始化阶段
 
     /// 开始创建 Book
@@ -77,125 +76,125 @@ public enum BookGenerationProgress: Sendable {
 }
 
 // MARK: - Progress Calculation
-extension BookGenerationProgress {
 
+extension BookGenerationProgress {
     /// 获取当前进度百分比 (0.0 - 1.0)
     public var progressPercentage: Double {
         switch self {
-        case .started:
-            return 0.0
+            case .started:
+                return 0.0
 
-        case .creatingDirectory:
-            return 0.05
+            case .creatingDirectory:
+                return 0.05
 
-        case .processingSheets(let totalCount):
-            return totalCount == 0 ? 0.3 : 0.1
+            case let .processingSheets(totalCount):
+                return totalCount == 0 ? 0.3 : 0.1
 
-        case .processingSheet(let current, let total, _):
-            // Sheet 处理占总进度的 20%，从 10% 到 30%
-            let sheetProgress = total > 0 ? Double(current - 1) / Double(total) : 0.0
-            return 0.1 + (sheetProgress * 0.2)
+            case let .processingSheet(current, total, _):
+                // Sheet 处理占总进度的 20%，从 10% 到 30%
+                let sheetProgress = total > 0 ? Double(current - 1) / Double(total) : 0.0
+                return 0.1 + (sheetProgress * 0.2)
 
-        case .sheetsCompleted:
-            return 0.3
+            case .sheetsCompleted:
+                return 0.3
 
-        case .generatingGlobalFiles:
-            return 0.35
+            case .generatingGlobalFiles:
+                return 0.35
 
-        case .generatingContentTypes:
-            return 0.4
+            case .generatingContentTypes:
+                return 0.4
 
-        case .generatingRootRelationships:
-            return 0.45
+            case .generatingRootRelationships:
+                return 0.45
 
-        case .generatingWorkbook:
-            return 0.5
+            case .generatingWorkbook:
+                return 0.5
 
-        case .generatingWorkbookRelationships:
-            return 0.55
+            case .generatingWorkbookRelationships:
+                return 0.55
 
-        case .generatingStyles:
-            return 0.65
+            case .generatingStyles:
+                return 0.65
 
-        case .generatingSharedStrings:
-            return 0.75
+            case .generatingSharedStrings:
+                return 0.75
 
-        case .generatingCoreProperties:
-            return 0.85
+            case .generatingCoreProperties:
+                return 0.85
 
-        case .generatingAppProperties:
-            return 0.9
+            case .generatingAppProperties:
+                return 0.9
 
-        case .preparingPackage:
-            return 0.95
+            case .preparingPackage:
+                return 0.95
 
-        case .cleaningUp:
-            return 0.98
+            case .cleaningUp:
+                return 0.98
 
-        case .completed:
-            return 1.0
+            case .completed:
+                return 1.0
 
-        case .failed:
-            return 0.0 // 错误状态不计算进度
+            case .failed:
+                return 0.0 // 错误状态不计算进度
         }
     }
 
     /// 获取当前阶段的描述
     public var description: String {
         switch self {
-        case .started:
-            return "Starting XLSX generation"
+            case .started:
+                "Starting XLSX generation"
 
-        case .creatingDirectory:
-            return "Creating temporary directory structure"
+            case .creatingDirectory:
+                "Creating temporary directory structure"
 
-        case .processingSheets(let totalCount):
-            return "Preparing to process \(totalCount) worksheet(s)"
+            case let .processingSheets(totalCount):
+                "Preparing to process \(totalCount) worksheet(s)"
 
-        case .processingSheet(let current, let total, let sheetName):
-            return "Processing worksheet (\(current)/\(total)): \(sheetName)"
+            case let .processingSheet(current, total, sheetName):
+                "Processing worksheet (\(current)/\(total)): \(sheetName)"
 
-        case .sheetsCompleted(let totalCount):
-            return "Completed processing \(totalCount) worksheet(s)"
+            case let .sheetsCompleted(totalCount):
+                "Completed processing \(totalCount) worksheet(s)"
 
-        case .generatingGlobalFiles:
-            return "Generating global files"
+            case .generatingGlobalFiles:
+                "Generating global files"
 
-        case .generatingContentTypes:
-            return "Generating content types"
+            case .generatingContentTypes:
+                "Generating content types"
 
-        case .generatingRootRelationships:
-            return "Generating root relationships"
+            case .generatingRootRelationships:
+                "Generating root relationships"
 
-        case .generatingWorkbook:
-            return "Generating workbook"
+            case .generatingWorkbook:
+                "Generating workbook"
 
-        case .generatingWorkbookRelationships:
-            return "Generating workbook relationships"
+            case .generatingWorkbookRelationships:
+                "Generating workbook relationships"
 
-        case .generatingStyles:
-            return "Generating styles"
+            case .generatingStyles:
+                "Generating styles"
 
-        case .generatingSharedStrings:
-            return "Generating shared strings"
+            case .generatingSharedStrings:
+                "Generating shared strings"
 
-        case .generatingCoreProperties:
-            return "Generating core properties"
+            case .generatingCoreProperties:
+                "Generating core properties"
 
-        case .generatingAppProperties:
-            return "Generating application properties"
+            case .generatingAppProperties:
+                "Generating application properties"
 
-        case .preparingPackage:
-            return "Preparing XLSX package"
+            case .preparingPackage:
+                "Preparing XLSX package"
 
-        case .cleaningUp:
-            return "Cleaning up temporary files"
+            case .cleaningUp:
+                "Cleaning up temporary files"
 
-        case .completed:
-            return "XLSX generation completed"
+            case .completed:
+                "XLSX generation completed"
 
-        case .failed(let error):
-            return "Generation failed: \(error.localizedDescription)"
+            case let .failed(error):
+                "Generation failed: \(error.localizedDescription)"
         }
     }
 
@@ -217,47 +216,49 @@ extension BookGenerationProgress {
 
     /// 判断是否为最终状态（完成或失败）
     public var isFinal: Bool {
-        return isCompleted || isFailed
+        isCompleted || isFailed
     }
 }
 
 // MARK: - Equatable Conformance
+
 extension BookGenerationProgress: Equatable {
     public static func == (lhs: BookGenerationProgress, rhs: BookGenerationProgress) -> Bool {
         switch (lhs, rhs) {
-        case (.started, .started),
-             (.creatingDirectory, .creatingDirectory),
-             (.generatingGlobalFiles, .generatingGlobalFiles),
-             (.generatingContentTypes, .generatingContentTypes),
-             (.generatingRootRelationships, .generatingRootRelationships),
-             (.generatingWorkbook, .generatingWorkbook),
-             (.generatingWorkbookRelationships, .generatingWorkbookRelationships),
-             (.generatingStyles, .generatingStyles),
-             (.generatingSharedStrings, .generatingSharedStrings),
-             (.generatingCoreProperties, .generatingCoreProperties),
-             (.generatingAppProperties, .generatingAppProperties),
-             (.preparingPackage, .preparingPackage),
-             (.cleaningUp, .cleaningUp),
-             (.completed, .completed):
-            return true
+            case (.started, .started),
+                 (.creatingDirectory, .creatingDirectory),
+                 (.generatingGlobalFiles, .generatingGlobalFiles),
+                 (.generatingContentTypes, .generatingContentTypes),
+                 (.generatingRootRelationships, .generatingRootRelationships),
+                 (.generatingWorkbook, .generatingWorkbook),
+                 (.generatingWorkbookRelationships, .generatingWorkbookRelationships),
+                 (.generatingStyles, .generatingStyles),
+                 (.generatingSharedStrings, .generatingSharedStrings),
+                 (.generatingCoreProperties, .generatingCoreProperties),
+                 (.generatingAppProperties, .generatingAppProperties),
+                 (.preparingPackage, .preparingPackage),
+                 (.cleaningUp, .cleaningUp),
+                 (.completed, .completed):
+                true
 
-        case (.processingSheets(let lhsTotal), .processingSheets(let rhsTotal)):
-            return lhsTotal == rhsTotal
+            case let (.processingSheets(lhsTotal), .processingSheets(rhsTotal)):
+                lhsTotal == rhsTotal
 
-        case (.processingSheet(let lhsCurrent, let lhsTotal, let lhsName),
-              .processingSheet(let rhsCurrent, let rhsTotal, let rhsName)):
-            return lhsCurrent == rhsCurrent && lhsTotal == rhsTotal && lhsName == rhsName
+            case let (
+            .processingSheet(lhsCurrent, lhsTotal, lhsName),
+            .processingSheet(rhsCurrent, rhsTotal, rhsName)):
+                lhsCurrent == rhsCurrent && lhsTotal == rhsTotal && lhsName == rhsName
 
-        case (.sheetsCompleted(let lhsTotal), .sheetsCompleted(let rhsTotal)):
-            return lhsTotal == rhsTotal
+            case let (.sheetsCompleted(lhsTotal), .sheetsCompleted(rhsTotal)):
+                lhsTotal == rhsTotal
 
-        case (.failed(let lhsError), .failed(let rhsError)):
-            // 比较错误类型和消息，因为 BookError 不是 Equatable
-            return type(of: lhsError) == type(of: rhsError) &&
-                   lhsError.localizedDescription == rhsError.localizedDescription
+            case let (.failed(lhsError), .failed(rhsError)):
+                // 比较错误类型和消息，因为 BookError 不是 Equatable
+                type(of: lhsError) == type(of: rhsError) &&
+                    lhsError.localizedDescription == rhsError.localizedDescription
 
-        default:
-            return false
+            default:
+                false
         }
     }
 }

@@ -30,16 +30,16 @@ protocol ColumnProtocol<ObjectType> {
 
     /// Display name for the column header in Excel
     var name: String { get }
-    
+
     /// Optional column width in Excel character units (nil = auto-width)
     var width: Int? { get }
-    
+
     /// Optional styling for data cells in this column (excluding header)
     var bodyStyle: CellStyle? { get }
-    
+
     /// Optional styling for the header cell of this column
     var headerStyle: CellStyle? { get }
-    
+
     /// Visibility predicate that determines if this column should appear for a given object.
     ///
     /// This closure enables conditional column display based on object state or properties.

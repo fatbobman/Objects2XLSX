@@ -83,7 +83,6 @@ import Foundation
    must be handled by the calling code if required.
  */
 public struct SheetNameSanitizer: Sendable {
-
     // MARK: - Character Strategy
 
     /**
@@ -93,7 +92,6 @@ public struct SheetNameSanitizer: Sendable {
      replaced with valid alternatives before final processing.
      */
     public enum CharacterStrategy: Sendable {
-
         /**
          Remove all special characters from the worksheet name.
 

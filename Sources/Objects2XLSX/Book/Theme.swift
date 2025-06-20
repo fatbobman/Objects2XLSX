@@ -37,7 +37,7 @@ struct Theme {
     struct ColorScheme {
         /// Colors extracted from fill styles used in the document
         var accentColors: [Color] // Extracted from Fill components
-        /// Colors extracted from font styles used in the document  
+        /// Colors extracted from font styles used in the document
         var textColors: [Color] // Extracted from Font components
         /// Colors extracted from border styles used in the document
         var borderColors: [Color] // Extracted from Border components

@@ -27,12 +27,12 @@ import Foundation
 /// var personColumns: [AnyColumn<Person>] {
 ///     Column<Person, String, TextColumnType>(name: "Name", keyPath: \.fullName)
 ///     Column<Person, Double, DoubleColumnType>(name: "Salary", keyPath: \.salary)
-///     
+///
 ///     if includeContactInfo {
 ///         Column<Person, String, TextColumnType>(name: "Email", keyPath: \.email)
 ///         Column<Person, String, TextColumnType>(name: "Phone", keyPath: \.phone)
 ///     }
-///     
+///
 ///     if isAdminView {
 ///         Column<Person, Date, DateColumnType>(name: "Hire Date", keyPath: \.hireDate)
 ///     } else {
@@ -54,7 +54,7 @@ public enum ColumnBuilder<ObjectType> {
     /// - Parameter components: Variable number of column arrays to combine
     /// - Returns: Flattened array containing all columns in declaration order
     public static func buildBlock(_ components: [AnyColumn<ObjectType>]...) -> [AnyColumn<ObjectType>] {
-        components.flatMap { $0 }
+        components.flatMap(\.self)
     }
 
     /// Converts a strongly-typed column to a type-erased column array.
@@ -159,7 +159,7 @@ public enum ColumnBuilder<ObjectType> {
     -> [AnyColumn<ObjectType>] {
         components.flatMap(\.self)
     }
-    
+
     /// Produces the final column array result from the builder expression.
     ///
     /// This method is called last in the builder pipeline, providing an opportunity
@@ -167,7 +167,7 @@ public enum ColumnBuilder<ObjectType> {
     ///
     /// - Parameter component: The combined column array from all builder expressions
     /// - Returns: The final column array ready for use
-    public static func buildFinalResult(_ component: [AnyColumn<ObjectType>]) 
+    public static func buildFinalResult(_ component: [AnyColumn<ObjectType>])
     -> [AnyColumn<ObjectType>] {
         component
     }

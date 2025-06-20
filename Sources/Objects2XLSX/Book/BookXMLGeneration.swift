@@ -12,54 +12,55 @@ import SimpleLogger
 /*
  XLSX XML Generation Overview
  ===========================
- 
+
  This file contains methods that generate all required XML files for a complete XLSX package.
  Each method transforms specific input data into standardized OOXML (Office Open XML) format:
- 
+
  1. WORKSHEET FILES (xl/worksheets/sheet*.xml)
     - Input: Sheet data, cell values, styles, formulas
     - Output: Individual worksheet XML with actual spreadsheet content
- 
- 2. WORKBOOK FILE (xl/workbook.xml)  
+
+ 2. WORKBOOK FILE (xl/workbook.xml)
     - Input: Sheet metadata (names, IDs, relationships)
     - Output: Main workbook structure defining all worksheets
- 
+
  3. STYLES FILE (xl/styles.xml)
     - Input: StyleRegister with fonts, fills, borders, cell formats
     - Output: Centralized style definitions for the entire workbook
- 
+
  4. SHARED STRINGS (xl/sharedStrings.xml)
     - Input: ShareStringRegister with deduplicated text values
     - Output: Optimized string storage referenced by worksheet cells
- 
+
  5. CONTENT TYPES ([Content_Types].xml)
     - Input: Sheet count and file structure information
     - Output: MIME type definitions for all package components
- 
+
  6. RELATIONSHIPS (xl/_rels/workbook.xml.rels, _rels/.rels)
     - Input: Sheet metadata and component references
     - Output: Relationship mappings between package components
- 
+
  7. DOCUMENT PROPERTIES (docProps/core.xml, docProps/app.xml)
     - Input: BookStyle properties, sheet metadata, timestamps
     - Output: Document metadata including author, title, creation date
- 
+
  All methods follow the OOXML specification to ensure Excel compatibility.
  */
 
 // MARK: - Sheet XML Generation
+
 // Generates individual worksheet XML files (xl/worksheets/sheet1.xml, sheet2.xml, etc.)
 // These files contain the actual cell data, formulas, and formatting for each worksheet
 
 extension Book {
     /// Generates and writes individual worksheet XML files (xl/worksheets/sheet*.xml)
-    /// 
+    ///
     /// Input data sources:
     /// - sheet: Contains actual data rows, column definitions, and sheet-level styling
     /// - meta: Provides sheet metadata including name, ID, file path, and data range
     /// - styleRegister: Collects and assigns style IDs for fonts, fills, borders, and cell formats
     /// - shareStringRegister: Registers text values for shared string optimization
-    /// 
+    ///
     /// Output: Creates worksheet XML file containing cell data, styling, and structure
     func generateAndWriteSheetXML(
         sheet: AnySheet,
@@ -137,6 +138,7 @@ extension Book {
 }
 
 // MARK: - Workbook XML Generation
+
 // Generates xl/workbook.xml - the main workbook file that defines the structure of the XLSX
 // Uses: Sheet metadata (names, IDs, relationship references) to create the workbook definition
 
@@ -188,6 +190,7 @@ extension Book {
 }
 
 // MARK: - Styles XML Writing
+
 // Generates xl/styles.xml - contains all formatting definitions used throughout the workbook
 // Uses: StyleRegister containing all collected fonts, fills, borders, and cell styles from all sheets
 
@@ -214,6 +217,7 @@ extension Book {
 }
 
 // MARK: - Shared Strings XML Writing
+
 // Generates xl/sharedStrings.xml - contains all unique text strings used in cells for optimization
 // Uses: ShareStringRegister containing deduplicated text values from all worksheets
 
@@ -238,6 +242,7 @@ extension Book {
 }
 
 // MARK: - Content Types XML Generation
+
 // Generates [Content_Types].xml - defines MIME types for all files in the XLSX package
 // Uses: Sheet count to register the correct number of worksheet content types
 
@@ -293,6 +298,7 @@ extension Book {
 }
 
 // MARK: - Workbook Relationships XML Generation
+
 // Generates xl/_rels/workbook.xml.rels - defines relationships between workbook and its components
 // Uses: Sheet metadata to create relationships to worksheets, plus fixed relationships to styles and shared strings
 
@@ -345,6 +351,7 @@ extension Book {
 }
 
 // MARK: - Root Relationships XML Generation
+
 // Generates _rels/.rels - the root relationships file that links to main document components
 // Uses: Fixed relationships to workbook.xml, core.xml, and app.xml (no dynamic data)
 
@@ -384,6 +391,7 @@ extension Book {
 }
 
 // MARK: - App Properties XML Generation
+
 // Generates docProps/app.xml - contains application-specific document properties
 // Uses: Sheet metadata (names) to create worksheet title lists and application information
 
@@ -455,6 +463,7 @@ extension Book {
 }
 
 // MARK: - Core Properties XML Generation
+
 // Generates docProps/core.xml - contains core document metadata like title, author, creation date
 // Uses: BookStyle properties (title, author) and current timestamp for document metadata
 
