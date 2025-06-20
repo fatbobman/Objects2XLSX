@@ -13,14 +13,9 @@ public final class Book {
     public var style: BookStyle
     public var sheets: [AnySheet]
 
-    let styleRegister: StyleRegister
-    let shareStringRegister: ShareStringRegister
-
     public init(style: BookStyle, sheets: [AnySheet] = []) {
         self.style = style
         self.sheets = sheets
-        styleRegister = StyleRegister()
-        shareStringRegister = ShareStringRegister()
     }
 
     public convenience init(style: BookStyle, @SheetBuilder sheets: () -> [AnySheet]) {
@@ -43,24 +38,34 @@ public final class Book {
         self.sheets.append(contentsOf: sheets())
     }
 
-
     public func write(to url: URL) throws(BookError) {
+        // 第一阶段：收集所有 sheet 的元数据（轻量级操作）
+        let sheetMetas = collectSheetMetas()
+        
+        // 创建注册器，传递下去
+        let styleRegister = StyleRegister()
+        let shareStringRegister = ShareStringRegister()
+        
+        // TODO: 基于 sheetMetas 生成全局 XML 文件
+        // let workbookXML = generateWorkbookXML(metas: sheetMetas)
+        // let contentTypesXML = generateContentTypesXML(sheetCount: sheetMetas.count)
+        // let relsXML = generateRelsXML(metas: sheetMetas)
+        
+        // TODO: 第二阶段：流式生成每个 sheet 的 XML
         for (index, sheet) in sheets.enumerated() {
-            try makeSheetXML(sheet: sheet, sheetIndex: index + 1) // 是否需要保存信息？
+            // try generateAndWriteSheet(sheet: sheet, index: index, to: package, ...)
         }
-
     }
-
-    /// 在对应的 url 中创建 sheetx.xml 文件, 或许应该返回一些用于生成其他 xml 的信息？
-    func makeSheetXML(sheet: AnySheet, sheetIndex: Int) throws(BookError)  {
-        guard let sheetXML = sheet.makeSheetXML(bookStyle: style, styleRegister: styleRegister, shareStringRegister: shareStringRegister) else {
-            throw BookError.dataProviderError("Sheet \(sheet.name) has no data provider")
+    
+    /// 收集所有 sheet 的元数据，用于生成全局 XML 文件
+    /// 注意：此方法会为每个 sheet 加载数据一次，然后生成元数据
+    private func collectSheetMetas() -> [SheetMeta] {
+        return sheets.enumerated().map { index, sheet in
+            let sheetId = index + 1
+            // 显式加载数据（只加载一次）
+            sheet.loadData()
+            return sheet.makeSheetMeta(sheetId: sheetId)
         }
-
-        // 生成 sheetx.xml 文件
-
-        // 返回需要的信息
-
     }
 }
 

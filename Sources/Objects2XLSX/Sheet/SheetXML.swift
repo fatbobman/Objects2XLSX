@@ -24,6 +24,14 @@ struct SheetXML {
         self.style = style
     }
 
+    var totalCellCount: Int {
+        rows.reduce(0) { $0 + $1.cells.count }
+    }
+
+    var maxColumnCount: Int {
+        rows.map(\.cells.count).max() ?? 0
+    }
+
     /// 生成完整的 sheet XML
     public func generateXML() -> String {
         var xml = """
