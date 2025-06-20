@@ -147,11 +147,13 @@ public final class Book {
             sendProgress(.generatingAppProperties)
             try writeAppPropsXML(to: tempDir, metas: collectedMetas)
             
-            // TODO: 打包为 ZIP 文件并重命名为 .xlsx
+            // 打包为 ZIP 文件并重命名为 .xlsx
             sendProgress(.preparingPackage)
+            try createZipArchive(from: tempDir, to: url)
             
-            // TODO: 清理临时目录
+            // 清理临时目录
             sendProgress(.cleaningUp)
+            try FileManager.default.removeItem(at: tempDir)
             
             // 完成所有操作
             sendProgress(.completed)
@@ -274,6 +276,23 @@ public final class Book {
             logger.info("Created XLSX directory structure at: \(tempDir.path)")
             
         } catch {
+            throw BookError.fileWriteError(error)
+        }
+    }
+    
+    /// 使用 SimpleZip 创建 XLSX 文件
+    func createZipArchive(from tempDir: URL, to outputURL: URL) throws(BookError) {
+        do {
+            try SimpleZip.createFromDirectory(directoryURL: tempDir, outputURL: outputURL)
+            
+            let fileSize = try FileManager.default.attributesOfItem(atPath: outputURL.path)[.size] as? Int ?? 0
+            logger.info("Created XLSX file: \(outputURL.path) - Size: \(fileSize) bytes")
+            
+        } catch let zipError as SimpleZip.ZipError {
+            logger.error("ZIP creation failed: \(zipError)")
+            throw BookError.fileWriteError(zipError)
+        } catch {
+            logger.error("Unexpected error during ZIP creation: \(error)")
             throw BookError.fileWriteError(error)
         }
     }
