@@ -35,4 +35,25 @@ final class ShareStringRegister {
     func stringIndex(for string: String) -> Int? {
         stringPool[string]
     }
+    
+    /// Generates the complete sharedStrings.xml content for the XLSX file
+    /// - Returns: XML string conforming to Office Open XML standards
+    func generateXML() -> String {
+        let sortedStrings = allStrings
+        let count = sortedStrings.count
+        
+        var xml = """
+        <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+        <sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="\(count)" uniqueCount="\(count)">
+        """
+        
+        for string in sortedStrings {
+            xml += "<si><t>"
+            xml += string.xmlEscaped
+            xml += "</t></si>"
+        }
+        
+        xml += "</sst>"
+        return xml
+    }
 }
