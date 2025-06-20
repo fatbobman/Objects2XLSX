@@ -230,7 +230,7 @@ extension SimpleZip {
         entry.append(contentsOf: [0x00, 0x00])
 
         // 外部文件属性 (regular file, 644 permissions)
-        entry.append(contentsOf: [0x00, 0x00, 0x81, 0x00])
+        entry.append(contentsOf: [0x00, 0x00, 0xA4, 0x81])
 
         // 本地文件头相对偏移
         entry.append(withUnsafeBytes(of: localHeaderOffset.littleEndian) { Data($0) })
