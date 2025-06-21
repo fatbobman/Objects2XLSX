@@ -237,24 +237,34 @@ public struct BoolColumnType: ColumnOutputTypeProtocol {
 
     /// Converts the Bool value to Excel's boolean cell type.
     ///
-    /// Returns a `.boolean()` cell type with the configured text representation
-    /// and case formatting that Excel will render as text.
+    /// Returns an appropriate boolean cell type that Excel will render as text.
+    /// Uses `.booleanValue()` for non-nil values and `.optionalBoolean()` for optional values.
     public var cellType: Cell.CellType {
-        .boolean(
-            config.value,
-            booleanExpressions: config.booleanExpressions,
-            caseStrategy: config.caseStrategy)
+        if let value = config.value {
+            .booleanValue(
+                value,
+                booleanExpressions: config.booleanExpressions,
+                caseStrategy: config.caseStrategy)
+        } else {
+            .optionalBoolean(
+                config.value,
+                booleanExpressions: config.booleanExpressions,
+                caseStrategy: config.caseStrategy)
+        }
     }
 
     /// Creates a BoolColumnType with a substituted default value for nil handling.
     ///
+    /// This method only substitutes the default value when the original config value is nil.
+    /// If the original config has a non-nil value, that value is preserved.
+    ///
     /// - Parameters:
     ///   - value: The default Bool value to use instead of nil
-    ///   - config: Original configuration providing formatting options
-    /// - Returns: New BoolColumnType with the default value and preserved formatting
+    ///   - config: Original configuration containing the actual value (may be nil)
+    /// - Returns: New BoolColumnType with original value if non-nil, otherwise default value
     public static func withDefaultValue(_ value: Bool, config: BoolColumnConfig) -> Self {
         BoolColumnType(BoolColumnConfig(
-            value: value,
+            value: config.value ?? value,
             booleanExpressions: config.booleanExpressions,
             caseStrategy: config.caseStrategy))
     }

@@ -145,7 +145,7 @@ final class StyleRegister {
                 return .percentage(precision: precision)
             case .date, .dateValue, .optionalDate:
                 return .dateTime
-            case .int, .intValue, .optionalInt, .string, .stringValue, .optionalString, .boolean, .url, .urlValue, .optionalURL, .double, .doubleValue, .optionalDouble, .empty:
+            case .int, .intValue, .optionalInt, .string, .stringValue, .optionalString, .boolean, .booleanValue, .optionalBoolean, .url, .urlValue, .optionalURL, .double, .doubleValue, .optionalDouble, .empty:
                 return .general
         }
     }

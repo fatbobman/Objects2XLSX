@@ -158,3 +158,35 @@ extension Column where InputType == URL?, OutputType == URLColumnType {
             nilHandling: .defaultValue(defaultValue))
     }
 }
+
+// MARK: - Chainable Configuration Methods for Optional Bool Columns
+
+extension Column where InputType == Bool?, OutputType == BoolColumnType {
+    /// Sets a default value to use when the source property is nil.
+    ///
+    /// This method transforms an optional Bool column into one that uses a specified
+    /// default value instead of empty cells for nil values.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Is Active", keyPath: \.isActive)
+    ///     .defaultValue(false)  // nil boolean values become false
+    ///     .bodyStyle(booleanStyle)
+    ///
+    /// Column(name: "Is Premium", keyPath: \.isPremium)
+    ///     .defaultValue(true)   // nil premium status becomes true
+    /// ```
+    ///
+    /// - Parameter defaultValue: The Bool value to use when the source is nil
+    /// - Returns: A new column that replaces nil values with the default value
+    public func defaultValue(_ defaultValue: Bool) -> Column<ObjectType, Bool?, BoolColumnType> {
+        Column<ObjectType, Bool?, BoolColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: mapping,
+            nilHandling: .defaultValue(defaultValue))
+    }
+}

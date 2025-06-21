@@ -128,7 +128,7 @@ extension Cell {
                 } else {
                     xml += " t=\"inlineStr\""
                 }
-            case .boolean:
+            case .boolean, .booleanValue, .optionalBoolean:
                 xml += " t=\"b\""
             case .empty:
                 // Empty cells don't need type attributes
@@ -195,6 +195,22 @@ extension Cell {
                 // Boolean values use numeric format (1 for true, 0 for false) with t="b"
                 let boolValue = value.valueString.lowercased() == "true" || value.valueString == "1" || value.valueString.lowercased() == "yes" ? "1" : "0"
                 xml += "<v>\(boolValue)</v>"
+            case let .booleanValue(boolean, booleanExpressions, caseStrategy):
+                // Non-optional boolean - guaranteed to have value, optimized path
+                let boolText = boolean ? booleanExpressions.trueString : booleanExpressions.falseString
+                let finalText = caseStrategy.apply(to: boolText)
+                let boolValue = finalText.lowercased() == "true" || finalText == "1" || finalText.lowercased() == "yes" ? "1" : "0"
+                xml += "<v>\(boolValue)</v>"
+            case let .optionalBoolean(boolean, booleanExpressions, caseStrategy):
+                // Optional boolean - handle nil case
+                if let boolean {
+                    let boolText = boolean ? booleanExpressions.trueString : booleanExpressions.falseString
+                    let finalText = caseStrategy.apply(to: boolText)
+                    let boolValue = finalText.lowercased() == "true" || finalText == "1" || finalText.lowercased() == "yes" ? "1" : "0"
+                    xml += "<v>\(boolValue)</v>"
+                } else {
+                    xml += "<v></v>"
+                }
             case let .doubleValue(double):
                 // Non-optional double - guaranteed to have value, optimized path
                 xml += "<v>\(String(double))</v>"
@@ -304,6 +320,24 @@ extension Cell {
             booleanExpressions: BooleanExpressions = .oneAndZero,
             caseStrategy: CaseStrategy = .upper)
 
+        /// Non-optional boolean value with customizable text representation.
+        /// - Parameter boolean: The guaranteed non-nil boolean value
+        /// - Parameter booleanExpressions: Text format for true/false values
+        /// - Parameter caseStrategy: Case transformation for the boolean text
+        case booleanValue(
+            Bool,
+            booleanExpressions: BooleanExpressions = .oneAndZero,
+            caseStrategy: CaseStrategy = .upper)
+
+        /// Optional boolean value with customizable text representation.
+        /// - Parameter boolean: The optional boolean value (nil represents empty cell)
+        /// - Parameter booleanExpressions: Text format for true/false values
+        /// - Parameter caseStrategy: Case transformation for the boolean text
+        case optionalBoolean(
+            Bool?,
+            booleanExpressions: BooleanExpressions = .oneAndZero,
+            caseStrategy: CaseStrategy = .upper)
+
         /// URL value stored as text with optional shared string optimization.
         /// - Parameter url: The URL value (nil represents empty cell)
         case url(URL?)
@@ -338,43 +372,50 @@ extension Cell {
         public var valueString: String {
             switch self {
                 case let .string(string):
-                    string.cellValueString
+                    return string.cellValueString
                 case let .stringValue(string):
-                    string
+                    return string
                 case let .optionalString(string):
-                    string.cellValueString
+                    return string.cellValueString
                 case let .double(double):
-                    double.cellValueString
+                    return double.cellValueString
                 case let .doubleValue(double):
-                    String(double)
+                    return String(double)
                 case let .optionalDouble(double):
-                    double.cellValueString
+                    return double.cellValueString
                 case let .intValue(int):
-                    String(int)
+                    return String(int)
                 case let .optionalInt(int):
-                    int.cellValueString
+                    return int.cellValueString
                 case let .int(int):
-                    int.cellValueString
+                    return int.cellValueString
                 case let .date(date, timeZone):
-                    date.cellValueString(timeZone: timeZone)
+                    return date.cellValueString(timeZone: timeZone)
                 case let .dateValue(date, timeZone):
-                    date.cellValueString(timeZone: timeZone)
+                    return date.cellValueString(timeZone: timeZone)
                 case let .optionalDate(date, timeZone):
-                    date.cellValueString(timeZone: timeZone)
+                    return date.cellValueString(timeZone: timeZone)
                 case let .boolean(boolean, booleanExpressions, caseStrategy):
-                    boolean.cellValueString(
+                    return boolean.cellValueString(
+                        booleanExpressions: booleanExpressions,
+                        caseStrategy: caseStrategy)
+                case let .booleanValue(boolean, booleanExpressions, caseStrategy):
+                    let boolText = boolean ? booleanExpressions.trueString : booleanExpressions.falseString
+                    return caseStrategy.apply(to: boolText)
+                case let .optionalBoolean(boolean, booleanExpressions, caseStrategy):
+                    return boolean.cellValueString(
                         booleanExpressions: booleanExpressions,
                         caseStrategy: caseStrategy)
                 case let .url(url):
-                    url.cellValueString
+                    return url.cellValueString
                 case let .urlValue(url):
-                    url.absoluteString
+                    return url.absoluteString
                 case let .optionalURL(url):
-                    url.cellValueString
+                    return url.cellValueString
                 case let .percentage(percentage, precision):
-                    percentage.cellValueString(precision: precision)
+                    return percentage.cellValueString(precision: precision)
                 case .empty:
-                    ""
+                    return ""
             }
         }
     }

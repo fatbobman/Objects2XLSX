@@ -834,3 +834,39 @@ extension Column where InputType == URL?, OutputType == URLColumnType {
             nilHandling: .keepEmpty)
     }
 }
+
+extension Column where InputType == Bool?, OutputType == BoolColumnType {
+    /// Creates a column for optional Bool values that will be displayed as boolean text.
+    ///
+    /// This is a convenience initializer that automatically maps optional Bool values
+    /// to BoolColumnType without requiring explicit column configuration.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Basic usage:
+    /// Column(name: "Is Active", keyPath: \.isActive)  // nil -> empty cell, true -> "1", false -> "0"
+    ///
+    /// // With default value:
+    /// Column(name: "Is Premium", keyPath: \.isPremium).defaultValue(false)  // nil -> false
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: Display name in the Excel header row
+    ///   - keyPath: KeyPath to an optional Bool property
+    /// - Returns: A configured column that automatically maps optional Bool values
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, Bool?>) where InputType == Bool?, OutputType == BoolColumnType
+    {
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: nil,
+            bodyStyle: nil,
+            headerStyle: nil,
+            mapping: { value in
+                BoolColumnType(BoolColumnConfig(value: value, booleanExpressions: .oneAndZero, caseStrategy: .upper))
+            },
+            nilHandling: .keepEmpty)
+    }
+}

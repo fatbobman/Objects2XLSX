@@ -663,4 +663,138 @@ extension Column {
             nilHandling: .keepEmpty // URL output may be nil
         )
     }
+
+    /// Transforms column values to Bool using a custom conversion closure.
+    ///
+    /// This method provides a way to convert any column output type to Boolean values.
+    /// The closure receives the processed value based on the column's nilHandling configuration:
+    /// - For columns with `.keepEmpty`: receives T? (may be nil)
+    /// - For columns with `.defaultValue`: receives T (never nil, default applied)
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Convert String to Bool
+    /// Column(name: "Status", keyPath: \.statusString)
+    ///     .toBoolean { (status: String) in
+    ///         status.lowercased() == "active"
+    ///     }
+    ///
+    /// // Convert number to Bool
+    /// Column(name: "Score", keyPath: \.score)
+    ///     .toBoolean { (score: Int) in
+    ///         score > 50
+    ///     }
+    ///
+    /// // Convert optional values with defaultValue
+    /// Column(name: "Priority", keyPath: \.priorityString)
+    ///     .defaultValue("low")
+    ///     .toBoolean { (priority: String) in  // Non-optional after defaultValue!
+    ///         priority.lowercased() == "high"
+    ///     }
+    /// ```
+    ///
+    /// - Parameter transform: A closure that converts the processed value to Bool
+    /// - Returns: A new column that outputs BoolColumnType with transformed values
+    public func toBoolean<T>(
+        _ transform: @escaping (T) -> Bool) -> Column<ObjectType, InputType, BoolColumnType> where OutputType.Config.ValueType == T
+    {
+        Column<ObjectType, InputType, BoolColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { input in
+                // First apply the original mapping
+                let originalOutput = self.mapping(input)
+
+                // Apply nilHandling logic to get the final processed output
+                let processedOutput = switch self.nilHandling {
+                    case .keepEmpty:
+                        originalOutput
+                    case let .defaultValue(defaultValue):
+                        OutputType.withDefaultValue(defaultValue, config: originalOutput.config)
+                }
+
+                // Extract the value from the processed output (now with defaults applied)
+                let finalValue = processedOutput.config.value
+
+                // Apply the transformation - when defaultValue is used, finalValue is guaranteed to be non-nil
+                let boolValue: Bool = switch self.nilHandling {
+                    case .keepEmpty:
+                        // For keepEmpty, we need to handle nil safely
+                        if let finalValue {
+                            transform(finalValue)
+                        } else {
+                            // This shouldn't happen with the current API, but handle gracefully
+                            transform(finalValue!)
+                        }
+                    case .defaultValue:
+                        // For defaultValue, finalValue is guaranteed to be non-nil
+                        transform(finalValue!)
+                }
+
+                // Return BoolColumnType with default settings
+                return BoolColumnType(BoolColumnConfig(value: boolValue, booleanExpressions: .oneAndZero, caseStrategy: .upper))
+            },
+            nilHandling: .keepEmpty // Bool output is never nil
+        )
+    }
+
+    /// Transforms column values to Bool using a custom conversion closure that handles optional values.
+    ///
+    /// This overload is for columns that may contain nil values (when nilHandling is .keepEmpty).
+    /// Use this when you need to explicitly handle nil cases in your transformation.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Convert optional String to optional Bool
+    /// Column(name: "Active", keyPath: \.activeString)
+    ///     .toBoolean { (status: String?) in
+    ///         guard let status else { return nil }
+    ///         return status.lowercased() == "yes"
+    ///     }
+    ///
+    /// // Convert with custom nil handling
+    /// Column(name: "Premium", keyPath: \.premiumFlag)
+    ///     .toBoolean { (flag: String?) in
+    ///         flag?.lowercased() == "true" ?? false
+    ///     }
+    /// ```
+    ///
+    /// - Parameter transform: A closure that converts the optional value to optional Bool
+    /// - Returns: A new column that outputs BoolColumnType with transformed values
+    public func toBoolean<T>(
+        _ transform: @escaping (T?) -> Bool?) -> Column<ObjectType, InputType, BoolColumnType> where OutputType.Config.ValueType == T
+    {
+        Column<ObjectType, InputType, BoolColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { input in
+                // First apply the original mapping
+                let originalOutput = self.mapping(input)
+
+                // Apply nilHandling logic to get the final processed output
+                let processedOutput = switch self.nilHandling {
+                    case .keepEmpty:
+                        originalOutput
+                    case let .defaultValue(defaultValue):
+                        OutputType.withDefaultValue(defaultValue, config: originalOutput.config)
+                }
+
+                // Extract the value from the processed output
+                let finalValue = processedOutput.config.value
+
+                // Apply the transformation with optional handling
+                let boolValue = transform(finalValue)
+
+                // Return BoolColumnType with default settings
+                return BoolColumnType(BoolColumnConfig(value: boolValue, booleanExpressions: .oneAndZero, caseStrategy: .upper))
+            },
+            nilHandling: .keepEmpty // Bool output may be nil
+        )
+    }
 }
