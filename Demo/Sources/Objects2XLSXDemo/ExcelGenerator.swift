@@ -148,15 +148,12 @@ struct ExcelGenerator {
                 .width(18)
             // .bodyStyle(CorporateStyle.createDataStyle())
 
-            // Salary column - optional with currency formatting
-            Column(
-                name: "Salary",
-                keyPath: \Employee.salary,
-                width: 12,
-                bodyStyle: CorporateStyle.createCurrencyStyle(),
-                mapping: { salary in
-                    DoubleColumnType(DoubleColumnConfig(value: salary ?? 0.0))
-                })
+            // Salary column - toString with proper nil handling
+            Column(name: "Salary Level", keyPath: \.salary)
+                .defaultValue(0.0)
+                .toString { (salary: Double) in salary < 50000 ? "Standard" : "Premium" }
+                .width(12)
+                .bodyStyle(CorporateStyle.createDataStyle())
 
             // Email column - URL type
             Column(name: "Email", keyPath: \.email)

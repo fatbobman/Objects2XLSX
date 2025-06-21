@@ -38,20 +38,28 @@ public struct DoubleColumnType: ColumnOutputTypeProtocol {
 
     /// Converts the Double value to Excel's numeric cell type.
     ///
-    /// Returns a `.double()` cell type that Excel will render as a number
+    /// Returns an appropriate double cell type that Excel will render as a number
     /// with appropriate precision and formatting.
+    /// Uses `.doubleValue()` for non-nil values and `.optionalDouble()` for optional values.
     public var cellType: Cell.CellType {
-        .double(config.value)
+        if let value = config.value {
+            return .doubleValue(value)
+        } else {
+            return .optionalDouble(config.value)
+        }
     }
 
     /// Creates a DoubleColumnType with a substituted default value for nil handling.
     ///
+    /// This method only substitutes the default value when the original config value is nil.
+    /// If the original config has a non-nil value, that value is preserved.
+    ///
     /// - Parameters:
     ///   - value: The default Double value to use instead of nil
-    ///   - config: Original configuration (ignored, new config created with default value)
-    /// - Returns: New DoubleColumnType with the default value
+    ///   - config: Original configuration containing the actual value (may be nil)
+    /// - Returns: New DoubleColumnType with original value if non-nil, otherwise default value
     public static func withDefaultValue(_ value: Double, config: DoubleColumnConfig) -> Self {
-        DoubleColumnType(DoubleColumnConfig(value: value))
+        DoubleColumnType(DoubleColumnConfig(value: config.value ?? value))
     }
 }
 

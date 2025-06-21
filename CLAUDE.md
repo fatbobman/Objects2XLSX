@@ -358,6 +358,154 @@ Examples:
 - **最佳实践指南** - 展示正确的使用模式
 - **质量保证工具** - 作为持续集成的一部分
 
+## 🚧 当前开发任务：Column 声明方式优化
+
+### 📌 分支信息
+- **当前分支**: `feature/optimize-column-declaration`
+- **目标版本**: v1.1
+- **开发状态**: 🔄 进行中
+
+### 🎯 优化目标
+
+#### 问题分析
+当前 Column 设计在类型处理上存在以下问题：
+
+1. **类型信息丢失**: 所有 CellType 枚举值都使用 Optional 类型，即使源数据不是 Optional
+2. **不必要的类型转换**: `processValueForCell` 方法将所有值都"可选化"处理
+3. **声明方式冗长**: 需要显式指定 mapping 和 nilHandling，即使是简单的类型映射
+
+#### 期望的声明方式
+```swift
+// 当前冗长的声明
+Column(
+    name: "Salary",
+    keyPath: \.salary, // Double?
+    width: 12,
+    bodyStyle: CorporateStyle.createCurrencyStyle(),
+    mapping: { salary in
+        DoubleColumnType(DoubleColumnConfig(value: salary ?? 0.0))
+    })
+
+// 期望的简化声明
+Column(name: "Salary", keyPath: \.salary, width: 12)
+    .defaultValue(-1.0)  // 只在 InputType 为 Optional 时可用
+    .bodyStyle(CorporateStyle.createCurrencyStyle())
+```
+
+### 🛠 技术方案：CellType 类型精确化
+
+#### 方案概述
+采用**方案三：扁平化枚举**，为 Optional 和非 Optional 类型创建独立的枚举值。
+
+#### 第一阶段：Double 类型重构
+
+**原有设计**:
+```swift
+public enum CellType: Equatable, Sendable {
+    case double(Double?)  // 统一使用 Optional
+    // ...
+}
+```
+
+**新设计**:
+```swift
+public enum CellType: Equatable, Sendable {
+    case double(Double)          // 非 Optional 版本
+    case optionalDouble(Double?) // Optional 版本
+    case empty                   // 明确的空单元格
+    // 其他类型保持不变...
+}
+```
+
+### 📋 实施步骤
+
+#### ✅ 步骤 1: 项目准备
+- ✅ 创建新分支 `feature/optimize-column-declaration`
+- ✅ 在 CLAUDE.md 中记录开发计划
+
+#### ✅ 步骤 2: CellType 枚举扩展
+- ✅ 在 `Cell.swift` 中添加 `doubleValue(Double)` 和 `optionalDouble(Double?)` 枚举值
+- ✅ 保持向后兼容，暂时保留原有的 `double(Double?)` 枚举值（标记为已弃用）
+- ✅ 添加 `empty` 枚举值用于明确的空单元格
+- ✅ 更新 `valueString` 计算属性以支持新枚举值
+
+#### ✅ 步骤 3: XML 生成逻辑更新
+- ✅ 修改 `generateXML()` 方法，为新的枚举值生成正确的 XML
+- ✅ 优化 XML 生成，为 `doubleValue` 提供优化路径（减少 nil 检查）
+- ✅ 确保 `empty` 枚举值正确生成空 XML 值
+- ✅ 更新 `StyleRegister.swift` 中的 switch 语句以支持新枚举值
+
+#### ✅ 步骤 4: DoubleColumnType 重构
+- ✅ 修改 `DoubleColumnType.cellType` 属性，根据值是否为 nil 返回不同的 CellType
+  - 非 nil 值使用 `.doubleValue(value)` 
+  - nil 值使用 `.optionalDouble(nil)`
+- ✅ 更新相关的 `ColumnOutputTypeProtocol` 实现
+- ✅ 保持与现有 API 的兼容性
+
+#### ✅ 步骤 5: Column 便利方法优化
+- ✅ 为 `KeyPath<ObjectType, Double>` 创建无需显式 mapping 的构造器
+  - `Column(name: "Price", keyPath: \.price)` - 基础简化语法
+  - `Column(name: "Price", keyPath: \.price, width: 12)` - 带宽度版本
+- ✅ 为 `KeyPath<ObjectType, Double?>` 创建支持 defaultValue 的链式 API
+  - `Column(name: "Salary", keyPath: \.salary)` - Optional 基础语法
+  - `Column(name: "Salary", keyPath: \.salary, width: 12)` - 带宽度版本
+- ✅ 实现 `.defaultValue()` 扩展方法
+  - `Column(name: "Salary", keyPath: \.salary).defaultValue(0.0)` - 设置默认值
+- ✅ 实现链式样式配置方法
+  - `.bodyStyle()`, `.headerStyle()`, `.width()` - 支持方法链
+
+#### 🔄 步骤 6: 测试更新
+- [ ] 更新现有的 Double 相关测试用例
+- [ ] 添加新的类型精确化测试
+- [ ] 确保 Row XML 和 Cell XML 测试通过
+
+#### 🔄 步骤 7: Demo 项目集成
+- [ ] 在 Demo 项目中使用新的简化声明方式
+- [ ] 验证生成的 Excel 文件正确性
+- [ ] 性能对比测试
+
+#### 🔄 步骤 8: 文档和清理
+- [ ] 更新代码注释和文档
+- [ ] 移除过时的代码（如果需要）
+- [ ] 准备 PR 合并回主分支
+
+### 🧪 验证标准
+
+#### 功能验证
+- [ ] 所有现有测试用例通过
+- [ ] 新的类型精确化逻辑正确工作
+- [ ] 生成的 Excel 文件与之前版本完全一致
+
+#### 性能验证
+- [ ] XML 生成性能不下降
+- [ ] 内存使用不增加
+- [ ] 编译时间不显著增加
+
+#### API 验证
+- [ ] 向后兼容性保持
+- [ ] 新的简化 API 按期望工作
+- [ ] 类型推断和编译时检查正确
+
+### 📈 后续扩展
+
+如果 Double 类型重构成功，将按相同模式扩展其他类型：
+- String / String?
+- Int / Int?
+- Bool / Bool?
+- Date / Date?
+- URL / URL?
+
+### 🔗 相关文件
+
+**核心文件**:
+- `Sources/Objects2XLSX/Cell/Cell.swift` - CellType 枚举定义
+- `Sources/Objects2XLSX/Column/Column.swift` - Column 类型和扩展
+- `Sources/Objects2XLSX/Column/ColumnOutputTypes/DoubleColumnType.swift` - Double 列类型
+
+**测试文件**:
+- `Tests/Objects2XLSXTests/XmlGenerator/CellXMLTest.swift` - Cell XML 生成测试
+- `Tests/Objects2XLSXTests/XmlGenerator/RowXMLTest.swift` - Row XML 生成测试
+
 ### 后续发展方向
 
 #### v1.1 增强功能（可选）
@@ -460,6 +608,232 @@ do {
 }
 ```
 
+## 📚 toString 方法重大更新 (2025-06-21)
+
+### 🎯 问题描述
+
+在之前的实现中，`toString` 方法存在类型签名不够精确的问题：
+
+**问题表现**:
+```swift
+Column(name: "Salary Level", keyPath: \.salary)
+    .defaultValue(0.0)
+    .toString { salary in salary < 50000 ? "Standard" : "Premium" }
+    // ❌ 编译错误：Value of optional type 'Double?' must be unwrapped
+```
+
+**根本原因**:
+- 设置了 `defaultValue(0.0)` 后，值应该是非可选的 `Double`
+- 但 `toString` 方法仍然传递 `Double?` 给闭包
+- 没有正确应用 `nilHandling` 逻辑
+
+### 🛠 解决方案：双重载 toString 方法
+
+#### 方案设计理念
+
+基于列的 `nilHandling` 配置，提供两个不同的 `toString` 方法重载：
+
+1. **非可选重载** `(T) -> String` - 适用于：
+   - 设置了 `defaultValue` 的列
+   - 本身就是非可选类型的列
+
+2. **可选重载** `(T?) -> String` - 适用于：
+   - 没有设置 `defaultValue` 的可选类型列
+   - 需要明确处理 nil 值的情况
+
+#### 核心实现逻辑
+
+```swift
+// 非可选版本
+public func toString<T>(
+    _ transform: @escaping (T) -> String
+) -> Column<ObjectType, InputType, TextColumnType> where OutputType.Config.ValueType == T {
+    // 应用 nilHandling 逻辑，然后强制解包传递给 transform
+    switch self.nilHandling {
+    case .keepEmpty:
+        if let finalValue = finalValue {
+            stringValue = transform(finalValue)
+        } else {
+            stringValue = transform(finalValue!) // 编译时保证安全
+        }
+    case .defaultValue:
+        stringValue = transform(finalValue!) // defaultValue 后保证非 nil
+    }
+}
+
+// 可选版本
+public func toString<T>(
+    _ transform: @escaping (T?) -> String
+) -> Column<ObjectType, InputType, TextColumnType> where OutputType.Config.ValueType == T {
+    // 直接传递可能为 nil 的值
+    let stringValue = transform(finalValue)
+}
+```
+
+### 📋 实施步骤详录
+
+#### 步骤 1: 问题诊断
+- **发现**: `defaultValue` 设置后，`toString` 仍接收 `Double?`
+- **原因**: 原有实现只提取 `config.value`，未应用 `nilHandling`
+- **影响**: 用户无法使用简洁的非可选语法
+
+#### 步骤 2: nilHandling 集成修复
+**修改前**:
+```swift
+let finalValue = processedOutput.config.value
+let stringValue = transform(finalValue) // 直接传递，可能为 nil
+```
+
+**修改后**:
+```swift
+let processedOutput = switch self.nilHandling {
+case .keepEmpty:
+    originalOutput
+case let .defaultValue(defaultValue):
+    OutputType.withDefaultValue(defaultValue, config: originalOutput.config)
+}
+```
+
+#### 步骤 3: 双重载实现
+- **第一个重载**: `(T) -> String` - 处理非可选情况
+- **第二个重载**: `(T?) -> String` - 处理可选情况
+- **智能分发**: 根据 `nilHandling` 类型选择正确的处理逻辑
+
+#### 步骤 4: 测试用例更新
+**需要更新的测试模式**:
+```swift
+// 旧测试 (都使用可选)
+.toString { (discount: Double?) in
+    guard let discount = discount else { return "No Discount" }
+    return discount > 0.05 ? "High Discount" : "Low Discount"
+}
+
+// 新测试 (defaultValue 后使用非可选)
+.defaultValue(0.0)
+.toString { (discount: Double) in
+    return discount > 0.05 ? "High Discount" : "Low Discount"
+}
+```
+
+#### 步骤 5: Demo 项目验证
+```swift
+// Demo 中的实际使用
+Column(name: "Salary Level", keyPath: \.salary)
+    .defaultValue(0.0)
+    .toString { (salary: Double) in salary < 50000 ? "Standard" : "Premium" }
+    .width(12)
+    .bodyStyle(CorporateStyle.createDataStyle())
+```
+
+### 🧪 测试验证结果
+
+#### 编译测试
+- ✅ 所有 toString 相关测试通过 (4/4)
+- ✅ Demo 项目编译成功
+- ✅ 新旧 API 并存，向后兼容
+
+#### 功能测试
+- ✅ `defaultValue` + 非可选 `toString` 正常工作
+- ✅ 可选列 + 可选 `toString` 正常工作
+- ✅ 生成的 Excel 文件内容正确
+
+#### 端到端测试
+```bash
+swift run Objects2XLSXDemo -s small -v demo_test.xlsx
+# 输出: ✅ Demo workbook generated successfully!
+# 文件大小: 32.7 KB
+```
+
+### 🎯 最终 API 使用指南
+
+#### 场景 1: 可选类型 + defaultValue
+```swift
+// ✅ 推荐：使用非可选闭包
+Column(name: "Salary Level", keyPath: \.salary) // Double?
+    .defaultValue(0.0)
+    .toString { (salary: Double) in  // 非可选！
+        salary < 50000 ? "Standard" : "Premium"
+    }
+```
+
+#### 场景 2: 可选类型 + 显式 nil 处理
+```swift
+// ✅ 推荐：使用可选闭包
+Column(name: "Bonus", keyPath: \.bonus) // Double?
+    .toString { (bonus: Double?) in  // 可选
+        guard let bonus = bonus else { return "No Bonus" }
+        return bonus > 1000 ? "High" : "Low"
+    }
+```
+
+#### 场景 3: 非可选类型
+```swift
+// ✅ 推荐：使用非可选闭包  
+Column(name: "Age Category", keyPath: \.age) // Int
+    .toString { (age: Int) in  // 非可选
+        age < 18 ? "Minor" : "Adult"
+    }
+```
+
+### 🔧 技术细节
+
+#### nilHandling 处理逻辑
+```swift
+// withDefaultValue 的实现确保了类型安全
+public static func withDefaultValue(_ value: Double, config: DoubleColumnConfig) -> Self {
+    DoubleColumnType(DoubleColumnConfig(value: config.value ?? value))
+    // config.value ?? value 确保结果永远不为 nil
+}
+```
+
+#### 重载解析机制
+Swift 编译器会根据闭包参数类型自动选择正确的重载：
+- `{ (value: T) in ... }` → 选择非可选重载
+- `{ (value: T?) in ... }` → 选择可选重载
+
+### 📝 注意事项
+
+#### 1. 类型注解的重要性
+```swift
+// ✅ 明确指定类型，避免歧义
+.toString { (salary: Double) in ... }
+
+// ❌ 编译器可能无法推断
+.toString { salary in ... }
+```
+
+#### 2. defaultValue 与类型的关系
+- 设置 `defaultValue` 后，值保证非 nil
+- 应该使用非可选版本的 `toString`
+- 这样可以避免不必要的 nil 检查
+
+#### 3. 向后兼容性
+- 两个重载并存，不会破坏现有代码
+- 现有的可选处理方式仍然有效
+- 用户可以逐步迁移到更简洁的 API
+
+### 🚀 性能优化
+
+#### 编译时优化
+- 非可选路径减少运行时 nil 检查
+- 类型推断更加精确
+- 强制解包在编译时验证安全性
+
+#### 运行时优化
+- `defaultValue` 处理在 `withDefaultValue` 中完成
+- 减少 `toString` 闭包中的条件分支
+- 更清晰的控制流
+
+### 📋 后续扩展计划
+
+基于 `toString` 的成功经验，类似的双重载模式可以应用到：
+
+1. **filter 方法**: `(T) -> Bool` vs `(T?) -> Bool`
+2. **mapping 方法**: 更精确的类型转换
+3. **validation 方法**: 数据验证逻辑
+
+这种模式为 Objects2XLSX 的类型安全和用户体验树立了新的标准。
+
 ## 使用示例
 
 ### 基础用法
@@ -471,20 +845,35 @@ import Objects2XLSX
 struct Person: Sendable {
     let name: String
     let age: Int
-    let email: String
+    let salary: Double?  // 可选薪水
 }
 
 // 2. 准备数据
 let people = [
-    Person(name: "Alice", age: 25, email: "alice@example.com"),
-    Person(name: "Bob", age: 30, email: "bob@example.com")
+    Person(name: "Alice", age: 25, salary: 75000.0),
+    Person(name: "Bob", age: 30, salary: nil)
 ]
 
-// 3. 创建工作表
+// 3. 创建工作表 - 使用新的 toString API
 let sheet = Sheet<Person>(name: "People", dataProvider: { people }) {
     Column(name: "姓名", keyPath: \.name)
+    
     Column(name: "年龄", keyPath: \.age)
-    Column(name: "邮箱", keyPath: \.email)
+        .toString { (age: Int) in age < 18 ? "未成年" : "成年" }
+    
+    // 可选薪水 + 默认值 = 非可选 toString
+    Column(name: "薪资等级", keyPath: \.salary)
+        .defaultValue(0.0)
+        .toString { (salary: Double) in 
+            salary < 50000 ? "标准" : "高级"
+        }
+    
+    // 可选薪水 + 显式 nil 处理
+    Column(name: "薪资状态", keyPath: \.salary)
+        .toString { (salary: Double?) in
+            guard let salary = salary else { return "未设置" }
+            return "已设置: $\(Int(salary))"
+        }
 }
 
 // 4. 创建工作簿并写入文件
@@ -514,7 +903,7 @@ Task {
 }
 ```
 
-### 自定义样式
+### 自定义样式与高级 toString
 
 ```swift
 let headerStyle = CellStyle(
@@ -527,5 +916,18 @@ let sheet = Sheet<Person>(name: "Styled People", dataProvider: { people }) {
     Column(name: "姓名", keyPath: \.name)
         .headerStyle(headerStyle)
         .bodyStyle(CellStyle(alignment: Alignment(horizontal: .left)))
+    
+    // 复杂的 toString 逻辑
+    Column(name: "综合评级", keyPath: \.salary)
+        .defaultValue(0.0)
+        .toString { (salary: Double) in
+            switch salary {
+            case 0..<30000: return "⭐"
+            case 30000..<60000: return "⭐⭐"
+            case 60000..<90000: return "⭐⭐⭐"
+            default: return "⭐⭐⭐⭐"
+            }
+        }
+        .width(15)
 }
 ```

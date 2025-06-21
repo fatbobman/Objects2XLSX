@@ -1090,3 +1090,344 @@ extension Column {
             nilHandling: nilHandling)
     }
 }
+
+// MARK: - Simplified Column Declaration for Double Types
+
+extension Column {
+    /// Creates a simplified column for non-optional Double values with automatic type mapping.
+    ///
+    /// This convenience initializer eliminates the need for explicit mapping when working with
+    /// non-optional Double properties, providing a cleaner syntax for common use cases.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Instead of verbose mapping:
+    /// Column(name: "Price", keyPath: \.price, mapping: { DoubleColumnType(DoubleColumnConfig(value: $0)) })
+    ///
+    /// // Use simplified syntax:
+    /// Column(name: "Price", keyPath: \.price)
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: Display name in the Excel header row
+    ///   - keyPath: KeyPath to a non-optional Double property
+    /// - Returns: A configured column that automatically maps Double values
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, Double>
+    ) where InputType == Double, OutputType == DoubleColumnType {
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: nil,
+            bodyStyle: nil,
+            headerStyle: nil,
+            mapping: { value in
+                DoubleColumnType(DoubleColumnConfig(value: value))
+            },
+            nilHandling: .keepEmpty
+        )
+    }
+    
+    /// Creates a simplified column for non-optional Double values with width specification.
+    ///
+    /// - Parameters:
+    ///   - name: Display name in the Excel header row
+    ///   - keyPath: KeyPath to a non-optional Double property
+    ///   - width: Column width in character units
+    /// - Returns: A configured column that automatically maps Double values
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, Double>,
+        width: Int
+    ) where InputType == Double, OutputType == DoubleColumnType {
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: nil,
+            headerStyle: nil,
+            mapping: { value in
+                DoubleColumnType(DoubleColumnConfig(value: value))
+            },
+            nilHandling: .keepEmpty
+        )
+    }
+    
+    /// Creates a simplified column for optional Double values with automatic type mapping.
+    ///
+    /// This convenience initializer provides simplified syntax for optional Double properties.
+    /// By default, nil values are kept as empty cells, but this can be modified using 
+    /// the `.defaultValue()` method.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Basic optional column:
+    /// Column(name: "Salary", keyPath: \.salary)  // nil -> empty cell
+    ///
+    /// // With default value:
+    /// Column(name: "Salary", keyPath: \.salary).defaultValue(0.0)  // nil -> 0.0
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: Display name in the Excel header row
+    ///   - keyPath: KeyPath to an optional Double property
+    /// - Returns: A configured column that automatically maps optional Double values
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, Double?>
+    ) where InputType == Double?, OutputType == DoubleColumnType {
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: nil,
+            bodyStyle: nil,
+            headerStyle: nil,
+            mapping: { value in
+                DoubleColumnType(DoubleColumnConfig(value: value))
+            },
+            nilHandling: .keepEmpty
+        )
+    }
+    
+    /// Creates a simplified column for optional Double values with width specification.
+    ///
+    /// - Parameters:
+    ///   - name: Display name in the Excel header row
+    ///   - keyPath: KeyPath to an optional Double property
+    ///   - width: Column width in character units
+    /// - Returns: A configured column that automatically maps optional Double values
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, Double?>,
+        width: Int
+    ) where InputType == Double?, OutputType == DoubleColumnType {
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: nil,
+            headerStyle: nil,
+            mapping: { value in
+                DoubleColumnType(DoubleColumnConfig(value: value))
+            },
+            nilHandling: .keepEmpty
+        )
+    }
+}
+
+// MARK: - Chainable Configuration Methods for Optional Double Columns
+
+extension Column where InputType == Double?, OutputType == DoubleColumnType {
+    /// Sets a default value to use when the source property is nil.
+    ///
+    /// This method transforms an optional Double column into one that uses a specified
+    /// default value instead of empty cells for nil values.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Salary", keyPath: \.salary)
+    ///     .defaultValue(0.0)  // nil salaries become 0.0
+    ///     .bodyStyle(currencyStyle)
+    /// ```
+    ///
+    /// - Parameter defaultValue: The Double value to use when the source is nil
+    /// - Returns: A new column that replaces nil values with the default value
+    public func defaultValue(_ defaultValue: Double) -> Column<ObjectType, Double?, DoubleColumnType> {
+        Column<ObjectType, Double?, DoubleColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: mapping,
+            nilHandling: .defaultValue(defaultValue)
+        )
+    }
+}
+
+// MARK: - Chainable Style Configuration for Simplified Double Columns
+
+extension Column where OutputType == DoubleColumnType {
+    /// Sets the body style for data cells in this column.
+    ///
+    /// - Parameter style: The CellStyle to apply to data cells
+    /// - Returns: A new column instance with the specified body style
+    public func bodyStyle(_ style: CellStyle) -> Column<ObjectType, InputType, DoubleColumnType> {
+        Column<ObjectType, InputType, DoubleColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: style,
+            headerStyle: headerStyle,
+            mapping: mapping,
+            nilHandling: nilHandling
+        )
+    }
+    
+    /// Sets the header style for the header cell in this column.
+    ///
+    /// - Parameter style: The CellStyle to apply to the header cell
+    /// - Returns: A new column instance with the specified header style
+    public func headerStyle(_ style: CellStyle) -> Column<ObjectType, InputType, DoubleColumnType> {
+        Column<ObjectType, InputType, DoubleColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: style,
+            mapping: mapping,
+            nilHandling: nilHandling
+        )
+    }
+    
+    /// Sets the column width.
+    ///
+    /// - Parameter width: The width in character units
+    /// - Returns: A new column instance with the specified width
+    public func width(_ width: Int) -> Column<ObjectType, InputType, DoubleColumnType> {
+        Column<ObjectType, InputType, DoubleColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: mapping,
+            nilHandling: nilHandling
+        )
+    }
+}
+
+// MARK: - Value Transformation Methods
+
+extension Column {
+    /// Transforms column values to String using a custom conversion closure.
+    ///
+    /// This method provides a universal way to convert any column output type to string representations.
+    /// The closure receives the processed value based on the column's nilHandling configuration:
+    /// - For columns with `.keepEmpty`: receives T? (may be nil)
+    /// - For columns with `.defaultValue`: receives T (never nil, default applied)
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // For optional values without defaultValue
+    /// Column(name: "Bonus", keyPath: \.bonus)
+    ///     .toString { (bonus: Double?) in 
+    ///         guard let bonus = bonus else { return "No Bonus" }
+    ///         return bonus > 1000 ? "High" : "Low"
+    ///     }
+    ///
+    /// // For optional values with defaultValue
+    /// Column(name: "Salary", keyPath: \.salary)
+    ///     .defaultValue(0.0)
+    ///     .toString { (salary: Double) in  // Non-optional after defaultValue!
+    ///         salary < 50000 ? "Standard" : "Premium"
+    ///     }
+    ///
+    /// // For non-optional values
+    /// Column(name: "Age", keyPath: \.age)
+    ///     .toString { (age: Int) in 
+    ///         age < 18 ? "Minor" : "Adult" 
+    ///     }
+    /// ```
+    ///
+    /// - Parameter transform: A closure that converts the processed value to String
+    /// - Returns: A new column that outputs TextColumnType with transformed values
+    public func toString<T>(
+        _ transform: @escaping (T) -> String
+    ) -> Column<ObjectType, InputType, TextColumnType> where OutputType.Config.ValueType == T {
+        Column<ObjectType, InputType, TextColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { input in
+                // First apply the original mapping
+                let originalOutput = self.mapping(input)
+                
+                // Apply nilHandling logic to get the final processed output
+                let processedOutput = switch self.nilHandling {
+                case .keepEmpty:
+                    originalOutput
+                case let .defaultValue(defaultValue):
+                    OutputType.withDefaultValue(defaultValue, config: originalOutput.config)
+                }
+                
+                // Extract the value from the processed output (now with defaults applied)
+                let finalValue = processedOutput.config.value
+                
+                // Apply the transformation - when defaultValue is used, finalValue is guaranteed to be non-nil
+                let stringValue: String
+                switch self.nilHandling {
+                case .keepEmpty:
+                    // For keepEmpty, we need to handle nil safely
+                    if let finalValue = finalValue {
+                        stringValue = transform(finalValue)
+                    } else {
+                        // This shouldn't happen with the current API, but handle gracefully
+                        stringValue = transform(finalValue!)
+                    }
+                case .defaultValue:
+                    // For defaultValue, finalValue is guaranteed to be non-nil
+                    stringValue = transform(finalValue!)
+                }
+                
+                // Return TextColumnType
+                return TextColumnType(TextColumnConfig(value: stringValue))
+            },
+            nilHandling: .keepEmpty // String output is never nil
+        )
+    }
+    
+    /// Transforms column values to String using a custom conversion closure that handles optional values.
+    ///
+    /// This overload is for columns that may contain nil values (when nilHandling is .keepEmpty).
+    /// Use this when you need to explicitly handle nil cases in your transformation.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // For handling optional values explicitly
+    /// Column(name: "Bonus", keyPath: \.bonus)
+    ///     .toString { (bonus: Double?) in 
+    ///         guard let bonus = bonus else { return "No Bonus" }
+    ///         return bonus > 1000 ? "High" : "Low"
+    ///     }
+    /// ```
+    ///
+    /// - Parameter transform: A closure that converts the optional value to String
+    /// - Returns: A new column that outputs TextColumnType with transformed values
+    public func toString<T>(
+        _ transform: @escaping (T?) -> String
+    ) -> Column<ObjectType, InputType, TextColumnType> where OutputType.Config.ValueType == T {
+        Column<ObjectType, InputType, TextColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { input in
+                // First apply the original mapping
+                let originalOutput = self.mapping(input)
+                
+                // Apply nilHandling logic to get the final processed output
+                let processedOutput = switch self.nilHandling {
+                case .keepEmpty:
+                    originalOutput
+                case let .defaultValue(defaultValue):
+                    OutputType.withDefaultValue(defaultValue, config: originalOutput.config)
+                }
+                
+                // Extract the value from the processed output
+                let finalValue = processedOutput.config.value
+                
+                // Apply the transformation with optional handling
+                let stringValue = transform(finalValue)
+                
+                // Return TextColumnType
+                return TextColumnType(TextColumnConfig(value: stringValue))
+            },
+            nilHandling: .keepEmpty // String output is never nil
+        )
+    }
+}
