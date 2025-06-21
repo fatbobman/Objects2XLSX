@@ -149,7 +149,7 @@ struct ExcelGenerator {
             // .bodyStyle(CorporateStyle.createDataStyle())
 
             // Salary column - toString with proper nil handling
-            Column(name: "Salary Level", keyPath: \.salary)
+            Column(name: "Salary Level", keyPath: \Employee.salary)
                 .defaultValue(0.0)
                 .toString { (salary: Double) in salary < 50000 ? "Standard" : "Premium" }
                 .width(12)
@@ -172,16 +172,6 @@ struct ExcelGenerator {
                 width: 10,
                 bodyStyle: CorporateStyle.createStatusStyle(),
                 booleanExpressions: .yesAndNo)
-
-            // Address column - optional string
-            Column(
-                name: "Address",
-                keyPath: \.address,
-                width: 30,
-                // bodyStyle: CorporateStyle.createDataStyle(),
-                mapping: { address in
-                    TextColumnType(TextColumnConfig(value: address ?? "Not Provided"))
-                })
         }
 
         return sheet.eraseToAnySheet()
@@ -218,26 +208,12 @@ struct ExcelGenerator {
             // Price column - optional with currency
             Column(
                 name: "Price",
-                keyPath: \Product.price,
-                width: 10,
-                bodyStyle: ModernStyle.createPriceStyle(),
-                mapping: { price in
-                    DoubleColumnType(DoubleColumnConfig(value: price ?? 0.0))
-                })
+                keyPath: \Product.price)
 
             // Stock column - with conditional formatting
             Column(
                 name: "Stock",
-                keyPath: \.stock,
-                width: 8,
-                bodyStyle: ModernStyle.createDataStyle(),
-                mapping: { stock in
-                    switch stock {
-                        case 0: TextColumnType(TextColumnConfig(value: "Out"))
-                        case 1 ... 10: TextColumnType(TextColumnConfig(value: "\(stock) ⚠️"))
-                        default: TextColumnType(TextColumnConfig(value: "`\(stock)`"))
-                    }
-                })
+                keyPath: \.stock)
 
             // Stock Level column - visual indicator
             Column(name: "Level", keyPath: \.stockLevel.displayColor)
@@ -252,12 +228,7 @@ struct ExcelGenerator {
             // Active Status column - boolean filter demo
             Column(
                 name: "Status",
-                keyPath: \.isActive,
-                width: 8,
-                bodyStyle: ModernStyle.createDataStyle(),
-                mapping: { active in
-                    TextColumnType(TextColumnConfig(value: active ? "Active" : "Inactive"))
-                })
+                keyPath: \.isActive)
 
             // Description column - text wrapping demo
             Column(name: "Description", keyPath: \.description)
@@ -308,7 +279,6 @@ struct ExcelGenerator {
 
             // Tax Rate column - percentage (simplified syntax)
             Column(name: "Tax Rate", keyPath: \.taxRate)
-                .percentage(precision: 1)
                 .width(10)
                 .bodyStyle(DefaultStyle.createNumericStyle())
 

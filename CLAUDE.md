@@ -834,6 +834,587 @@ Swift 编译器会根据闭包参数类型自动选择正确的重载：
 
 这种模式为 Objects2XLSX 的类型安全和用户体验树立了新的标准。
 
+## 🗓️ 其他数据类型扩展计划 (v1.1+)
+
+### 📋 总体策略
+
+基于 `Double/Double?` + `toString` 的成功经验，逐步为其他数据类型实现相同的类型精确化和转换方法支持。
+
+### 🎯 扩展目标
+
+#### 核心目标
+1. **类型精确化**: 为每种数据类型实现 optional/non-optional 枚举分离
+2. **简化语法**: 提供简洁的 Column 构造器和链式 API
+3. **通用转换**: 实现 `toXXX` 系列方法，支持跨类型转换
+4. **类型安全**: 确保编译时类型检查和运行时安全
+
+#### 设计原则
+- **渐进式**: 逐个类型实现，避免大规模重构
+- **一致性**: 所有类型使用相同的 API 模式
+- **兼容性**: 保持向后兼容，不破坏现有代码
+- **可测试**: 每个类型都有完整的测试覆盖
+
+### 📅 分阶段实施计划
+
+---
+
+## Phase 1: String 类型扩展 (优先级：高)
+
+### 🎯 目标
+String 是最常用的数据类型，优先实现可以最大化用户收益。
+
+### 📋 具体任务
+
+#### 1.1 CellType 枚举扩展
+```swift
+// 在 Cell.swift 中添加
+case stringValue(String)        // 非可选字符串
+case optionalString(String?)    // 可选字符串
+// 保留现有的 case string(String?) 并标记为 deprecated
+```
+
+#### 1.2 StringColumnType 重构
+```swift
+// 更新 ColumnOutputType.swift
+extension StringColumnType {
+    public var cellType: Cell.CellType {
+        if let value = config.value {
+            .stringValue(value)  // 非 nil 使用精确类型
+        } else {
+            .optionalString(config.value)  // nil 使用可选类型
+        }
+    }
+    
+    public static func withDefaultValue(_ value: String, config: StringColumnConfig) -> Self {
+        StringColumnType(StringColumnConfig(value: config.value ?? value))
+    }
+}
+```
+
+#### 1.3 Column 简化构造器
+```swift
+// 在 Column.swift 中添加
+extension Column {
+    // 非可选 String
+    public init(name: String, keyPath: KeyPath<ObjectType, String>) 
+        where InputType == String, OutputType == StringColumnType
+    
+    // 可选 String
+    public init(name: String, keyPath: KeyPath<ObjectType, String?>) 
+        where InputType == String?, OutputType == StringColumnType
+}
+```
+
+#### 1.4 链式配置方法
+```swift
+extension Column where InputType == String?, OutputType == StringColumnType {
+    public func defaultValue(_ defaultValue: String) -> Column<ObjectType, String?, StringColumnType>
+}
+
+extension Column where OutputType == StringColumnType {
+    public func bodyStyle(_ style: CellStyle) -> Column<ObjectType, InputType, StringColumnType>
+    public func headerStyle(_ style: CellStyle) -> Column<ObjectType, InputType, StringColumnType>
+    public func width(_ width: Int) -> Column<ObjectType, InputType, StringColumnType>
+}
+```
+
+#### 1.5 通用转换方法
+```swift
+extension Column {
+    // 通用转换方法 - 用户自定义转换逻辑
+    
+    // toString - 转换为字符串 (已实现)
+    public func toString<T>(_ transform: @escaping (T) -> String) -> Column<ObjectType, InputType, StringColumnType>
+    public func toString<T>(_ transform: @escaping (T?) -> String) -> Column<ObjectType, InputType, StringColumnType>
+    
+    // toDouble - 转换为 Double
+    public func toDouble<T>(_ transform: @escaping (T) -> Double) -> Column<ObjectType, InputType, DoubleColumnType>
+    public func toDouble<T>(_ transform: @escaping (T?) -> Double?) -> Column<ObjectType, InputType, DoubleColumnType>
+    
+    // toInt - 转换为 Int
+    public func toInt<T>(_ transform: @escaping (T) -> Int) -> Column<ObjectType, InputType, IntColumnType>
+    public func toInt<T>(_ transform: @escaping (T?) -> Int?) -> Column<ObjectType, InputType, IntColumnType>
+    
+    // toBool - 转换为 Bool
+    public func toBool<T>(_ transform: @escaping (T) -> Bool) -> Column<ObjectType, InputType, BoolColumnType>
+    public func toBool<T>(_ transform: @escaping (T?) -> Bool?) -> Column<ObjectType, InputType, BoolColumnType>
+    
+    // toDate - 转换为 Date
+    public func toDate<T>(_ transform: @escaping (T) -> Date) -> Column<ObjectType, InputType, DateColumnType>
+    public func toDate<T>(_ transform: @escaping (T?) -> Date?) -> Column<ObjectType, InputType, DateColumnType>
+    
+    // toURL - 转换为 URL
+    public func toURL<T>(_ transform: @escaping (T) -> URL) -> Column<ObjectType, InputType, URLColumnType>
+    public func toURL<T>(_ transform: @escaping (T?) -> URL?) -> Column<ObjectType, InputType, URLColumnType>
+}
+```
+
+#### 1.6 测试实现
+- `StringColumnSyntaxTests.swift`
+- 覆盖所有新增的构造器和方法
+- 验证类型精确化和转换功能
+
+### 📊 预期收益
+- 最常用的字符串类型获得完整的类型安全支持
+- 实现完整的通用转换方法系统 (toXXX 系列)
+- 为后续类型实现树立完整的模板
+
+---
+
+## Phase 2: Int 类型扩展 (优先级：高)
+
+### 🎯 目标
+整数类型在数据处理中使用频繁，且相对简单，适合作为第二个实现目标。
+
+### 📋 具体任务
+
+#### 2.1 CellType 枚举扩展
+```swift
+case intValue(Int)        // 非可选整数
+case optionalInt(Int?)    // 可选整数
+// 保留现有的 case int(Int?) 并标记为 deprecated
+```
+
+#### 2.2 IntColumnType 重构
+```swift
+extension IntColumnType {
+    public var cellType: Cell.CellType {
+        if let value = config.value {
+            .intValue(value)
+        } else {
+            .optionalInt(config.value)
+        }
+    }
+    
+    public static func withDefaultValue(_ value: Int, config: IntColumnConfig) -> Self {
+        IntColumnType(IntColumnConfig(value: config.value ?? value))
+    }
+}
+```
+
+#### 2.3 Column 简化构造器和链式方法
+```swift
+// 构造器
+public init(name: String, keyPath: KeyPath<ObjectType, Int>) where InputType == Int, OutputType == IntColumnType
+public init(name: String, keyPath: KeyPath<ObjectType, Int?>) where InputType == Int?, OutputType == IntColumnType
+
+// 链式配置
+extension Column where InputType == Int?, OutputType == IntColumnType {
+    public func defaultValue(_ defaultValue: Int) -> Column<ObjectType, Int?, IntColumnType>
+}
+```
+
+#### 2.4 通用转换方法 (继承自 Phase 1)
+```swift
+// 所有 toXXX 方法都是通用的，在 Phase 1 中已经定义
+// 用户可以使用自定义逻辑进行转换
+
+// 示例用法:
+Column(name: "Age Level", keyPath: \.age)
+    .toString { age in
+        age < 18 ? "Minor" : "Adult"
+    }
+
+Column(name: "Age as Double", keyPath: \.age)
+    .toDouble { age in
+        Double(age)
+    }
+
+Column(name: "Formatted Age", keyPath: \.age)
+    .toString { age in
+        "\(age) years old"
+    }
+```
+
+#### 2.5 测试实现
+- `IntColumnSyntaxTests.swift`
+- 验证数值转换和格式化功能
+
+### 📊 预期收益
+- 整数类型获得完整的类型安全支持
+- 验证通用转换方法在数值类型上的应用
+- 巩固数值类型的处理模式
+
+---
+
+## Phase 3: Bool 类型扩展 (优先级：中)
+
+### 🎯 目标
+布尔类型简单但使用频繁，特别是在状态和标志位表示方面。
+
+### 📋 具体任务
+
+#### 3.1 CellType 枚举扩展
+```swift
+case boolValue(Bool)        // 非可选布尔
+case optionalBool(Bool?)    // 可选布尔
+// 保留现有的 case boolean(Bool?) 并标记为 deprecated
+```
+
+#### 3.2 BoolColumnType 重构
+```swift
+extension BoolColumnType {
+    public var cellType: Cell.CellType {
+        if let value = config.value {
+            .boolValue(value)
+        } else {
+            .optionalBool(config.value)
+        }
+    }
+    
+    public static func withDefaultValue(_ value: Bool, config: BoolColumnConfig) -> Self {
+        BoolColumnType(BoolColumnConfig(value: config.value ?? value, 
+                                      booleanExpressions: config.booleanExpressions,
+                                      caseStrategy: config.caseStrategy))
+    }
+}
+```
+
+#### 3.3 通用转换方法 (继承自 Phase 1)
+```swift
+// 所有 toXXX 方法都是通用的，用户自定义转换逻辑
+
+// 示例用法:
+Column(name: "Status Text", keyPath: \.isActive)
+    .toString { isActive in
+        isActive ? "Active" : "Inactive"
+    }
+
+Column(name: "Yes/No", keyPath: \.isActive)
+    .toString { isActive in
+        isActive ? "Yes" : "No"
+    }
+
+Column(name: "Status Icons", keyPath: \.isActive)
+    .toString { isActive in
+        isActive ? "✅" : "❌"
+    }
+
+Column(name: "Binary", keyPath: \.isActive)
+    .toInt { isActive in
+        isActive ? 1 : 0
+    }
+```
+
+#### 3.4 测试实现
+- `BoolColumnSyntaxTests.swift`
+- 验证布尔值转换和表示功能
+
+### 📊 预期收益
+- 布尔类型获得完整的类型安全支持
+- 验证通用转换方法在布尔类型上的应用
+
+---
+
+## Phase 4: Date 类型扩展 (优先级：中)
+
+### 🎯 目标
+日期类型在业务数据中极其常用，需要丰富的格式化选项。
+
+### 📋 具体任务
+
+#### 4.1 CellType 枚举扩展
+```swift
+case dateValue(Date)        // 非可选日期
+case optionalDate(Date?)    // 可选日期
+// 保留现有的 case date(Date?) 并标记为 deprecated
+```
+
+#### 4.2 DateColumnType 重构
+```swift
+extension DateColumnType {
+    public var cellType: Cell.CellType {
+        if let value = config.value {
+            .dateValue(value)
+        } else {
+            .optionalDate(config.value)
+        }
+    }
+    
+    public static func withDefaultValue(_ value: Date, config: DateColumnConfig) -> Self {
+        DateColumnType(DateColumnConfig(value: config.value ?? value, timeZone: config.timeZone))
+    }
+}
+```
+
+#### 4.3 通用转换方法 (继承自 Phase 1)
+```swift
+// 所有 toXXX 方法都是通用的，用户自定义转换逻辑
+
+// 示例用法:
+Column(name: "Date String", keyPath: \.date)
+    .toString { date in
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd"
+        return formatter.string(from: date)
+    }
+
+Column(name: "Age", keyPath: \.birthDate)
+    .toInt { birthDate in
+        Calendar.current.dateComponents([.year], from: birthDate, to: Date()).year ?? 0
+    }
+
+Column(name: "Weekday", keyPath: \.date)
+    .toString { date in
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE"
+        return formatter.string(from: date)
+    }
+
+Column(name: "Timestamp", keyPath: \.date)
+    .toDouble { date in
+        date.timeIntervalSince1970
+    }
+```
+
+#### 4.4 测试实现
+- `DateColumnSyntaxTests.swift`
+- 验证日期格式化和计算功能
+
+### 📊 预期收益
+- 日期类型获得完整的类型安全支持
+- 验证通用转换方法在日期类型上的应用
+
+---
+
+## Phase 5: URL 类型扩展 (优先级：低)
+
+### 🎯 目标
+URL 类型使用相对较少，但在某些场景下很重要。
+
+### 📋 具体任务
+
+#### 5.1 CellType 枚举扩展
+```swift
+case urlValue(URL)        // 非可选 URL
+case optionalURL(URL?)    // 可选 URL
+// 保留现有的 case url(URL?) 并标记为 deprecated
+```
+
+#### 5.2 通用转换方法 (继承自 Phase 1)
+```swift
+// 所有 toXXX 方法都是通用的，用户自定义转换逻辑
+
+// 示例用法:
+Column(name: "URL String", keyPath: \.website)
+    .toString { url in
+        url.absoluteString
+    }
+
+Column(name: "Domain", keyPath: \.website)
+    .toString { url in
+        url.host ?? "Unknown"
+    }
+
+Column(name: "Path", keyPath: \.website)
+    .toString { url in
+        url.path
+    }
+
+Column(name: "Display Name", keyPath: \.website)
+    .toString { url in
+        "Visit \(url.host ?? "website")"
+    }
+```
+
+---
+
+## Phase 6: 跨类型转换方法 (优先级：中)
+
+### 🎯 目标
+实现通用的跨类型转换方法，提供最大的灵活性。
+
+### 📋 具体任务
+
+#### 6.1 完整的通用转换方法系统
+```swift
+extension Column {
+    // Phase 6 主要是确保所有类型都支持完整的 toXXX 方法集合
+    // 这些方法在 Phase 1 中定义，Phase 6 确保所有类型都能使用
+    
+    // 核心转换方法 (适用于所有类型)
+    public func toString<T>(_ transform: @escaping (T) -> String) -> Column<ObjectType, InputType, StringColumnType>
+    public func toString<T>(_ transform: @escaping (T?) -> String) -> Column<ObjectType, InputType, StringColumnType>
+    
+    public func toDouble<T>(_ transform: @escaping (T) -> Double) -> Column<ObjectType, InputType, DoubleColumnType>
+    public func toDouble<T>(_ transform: @escaping (T?) -> Double?) -> Column<ObjectType, InputType, DoubleColumnType>
+    
+    public func toInt<T>(_ transform: @escaping (T) -> Int) -> Column<ObjectType, InputType, IntColumnType>
+    public func toInt<T>(_ transform: @escaping (T?) -> Int?) -> Column<ObjectType, InputType, IntColumnType>
+    
+    public func toBool<T>(_ transform: @escaping (T) -> Bool) -> Column<ObjectType, InputType, BoolColumnType>
+    public func toBool<T>(_ transform: @escaping (T?) -> Bool?) -> Column<ObjectType, InputType, BoolColumnType>
+    
+    public func toDate<T>(_ transform: @escaping (T) -> Date) -> Column<ObjectType, InputType, DateColumnType>
+    public func toDate<T>(_ transform: @escaping (T?) -> Date?) -> Column<ObjectType, InputType, DateColumnType>
+    
+    public func toURL<T>(_ transform: @escaping (T) -> URL) -> Column<ObjectType, InputType, URLColumnType>
+    public func toURL<T>(_ transform: @escaping (T?) -> URL?) -> Column<ObjectType, InputType, URLColumnType>
+    
+    // 如果有 PercentageColumnType
+    public func toPercentage<T>(_ transform: @escaping (T) -> Double) -> Column<ObjectType, InputType, PercentageColumnType>
+    public func toPercentage<T>(_ transform: @escaping (T?) -> Double?) -> Column<ObjectType, InputType, PercentageColumnType>
+}
+```
+
+#### 6.2 跨类型转换示例
+```swift
+// 任意类型都可以转换为任意其他类型
+// 用户提供转换逻辑
+
+// String -> Int
+Column(name: "String to Number", keyPath: \.stringValue)
+    .toInt { stringValue in
+        Int(stringValue) ?? 0
+    }
+
+// Date -> String -> URL
+Column(name: "Date URL", keyPath: \.date)
+    .toString { date in
+        "https://calendar.com/\(date.timeIntervalSince1970)"
+    }
+    .toURL { urlString in
+        URL(string: urlString)!
+    }
+
+// Int -> Bool -> String
+Column(name: "Number Status", keyPath: \.count)
+    .toBool { count in
+        count > 0
+    }
+    .toString { hasItems in
+        hasItems ? "Has Items" : "Empty"
+    }
+```
+
+---
+
+## Phase 7: 清理和优化 (优先级：低)
+
+### 🎯 目标
+移除已弃用的代码，优化性能，完善文档。
+
+### 📋 具体任务
+
+#### 7.1 代码清理
+- 移除所有 `@available(*, deprecated)` 标记的代码
+- 统一代码风格和命名约定
+- 优化编译性能
+
+#### 7.2 文档完善
+- 更新所有类型的使用指南
+- 添加完整的 API 参考文档
+- 创建迁移指南
+
+#### 7.3 性能优化
+- 基准测试各种转换方法
+- 优化内存使用
+- 减少不必要的类型转换
+
+---
+
+## 🛠️ 实施指南
+
+### 📋 每个 Phase 的标准流程
+
+#### 步骤 1: 枚举扩展
+1. 在 `Cell.swift` 中添加新的 CellType 枚举值
+2. 更新所有 switch 语句以处理新枚举值
+3. 在 `CellValueStringTests.swift` 中添加测试
+
+#### 步骤 2: ColumnType 重构
+1. 更新相应的 `ColumnOutputType.swift` 文件
+2. 实现 `cellType` 属性的类型精确化
+3. 实现 `withDefaultValue` 方法
+4. 添加单元测试
+
+#### 步骤 3: Column 构造器
+1. 在 `Column.swift` 中添加简化构造器
+2. 实现链式配置方法
+3. 添加类型约束和文档
+4. 创建专门的测试文件
+
+#### 步骤 4: 转换方法
+1. 实现类型特有的转换方法
+2. 确保类型安全和性能
+3. 添加全面的测试覆盖
+4. 更新文档和示例
+
+#### 步骤 5: 集成测试
+1. 在 Demo 项目中使用新功能
+2. 验证生成的 Excel 文件
+3. 性能基准测试
+4. 更新 CLAUDE.md 文档
+
+### 📊 质量标准
+
+#### 代码质量
+- ✅ 所有新增代码通过 SwiftFormat 检查
+- ✅ 完整的文档注释和使用示例
+- ✅ 类型安全，无强制解包
+- ✅ 性能不低于现有实现
+
+#### 测试覆盖
+- ✅ 每个新方法都有对应测试
+- ✅ 边界情况和错误处理测试
+- ✅ 集成测试验证端到端功能
+- ✅ 性能基准测试
+
+#### 用户体验
+- ✅ 简洁直观的 API 设计
+- ✅ 一致的命名约定
+- ✅ 清晰的错误信息
+- ✅ 丰富的使用示例
+
+### 🔄 迭代策略
+
+#### 版本规划
+- **v1.1**: Phase 1 (String) + Phase 2 (Int)
+- **v1.2**: Phase 3 (Bool) + Phase 4 (Date)
+- **v1.3**: Phase 5 (URL) + Phase 6 (跨类型转换)
+- **v1.4**: Phase 7 (清理优化)
+
+#### 风险控制
+- 每个 Phase 完成后进行全面测试
+- 保持向后兼容，逐步迁移
+- 社区反馈和使用情况评估
+- 必要时调整后续 Phase 的优先级
+
+这个计划确保了系统性、渐进性的改进，同时最大化每个阶段的用户价值。
+
+### 🎯 简化后的核心价值
+
+#### 通用转换系统的优势
+1. **简洁性**: 只有 6 个核心转换方法 (toString, toDouble, toInt, toBool, toDate, toURL)
+2. **一致性**: 所有类型使用相同的 API 模式
+3. **灵活性**: 用户完全控制转换逻辑
+4. **类型安全**: 双重载保证 optional/non-optional 类型正确性
+
+#### 用户体验
+```swift
+// 简洁的语法
+Column(name: "Name", keyPath: \.name)           // String
+Column(name: "Age", keyPath: \.age)             // Int
+Column(name: "Salary", keyPath: \.salary)       // Double?
+    .defaultValue(0.0)
+
+// 通用的转换 - 用户自定义逻辑
+Column(name: "Age Level", keyPath: \.age)
+    .toString { age in age < 18 ? "Minor" : "Adult" }
+
+Column(name: "Salary Level", keyPath: \.salary)
+    .defaultValue(0.0)
+    .toString { salary in salary < 50000 ? "Standard" : "Premium" }
+
+Column(name: "Status", keyPath: \.isActive)
+    .toString { active in active ? "✅" : "❌" }
+
+// 链式转换
+Column(name: "Complex", keyPath: \.value)
+    .toDouble { value in Double(value) }
+    .toString { double in String(format: "%.2f", double) }
+```
+
 ## 使用示例
 
 ### 基础用法
