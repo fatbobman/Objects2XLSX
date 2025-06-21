@@ -261,4 +261,140 @@ extension Column {
             nilHandling: .keepEmpty // Int output is never nil
         )
     }
+    
+    /// Transforms column values to Double using a custom conversion closure.
+    ///
+    /// This method provides a way to convert any column output type to Double values.
+    /// The closure receives the processed value based on the column's nilHandling configuration:
+    /// - For columns with `.keepEmpty`: receives T? (may be nil)
+    /// - For columns with `.defaultValue`: receives T (never nil, default applied)
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Convert String to Double
+    /// Column(name: "Price String", keyPath: \.priceString)
+    ///     .toDouble { (priceStr: String) in
+    ///         Double(priceStr) ?? 0.0
+    ///     }
+    ///
+    /// // Convert Int to Double
+    /// Column(name: "Count", keyPath: \.count)
+    ///     .toDouble { (count: Int) in
+    ///         Double(count)
+    ///     }
+    ///
+    /// // Convert optional values with defaultValue
+    /// Column(name: "Score", keyPath: \.score)
+    ///     .defaultValue("0")
+    ///     .toDouble { (score: String) in  // Non-optional after defaultValue!
+    ///         Double(score) ?? 0.0
+    ///     }
+    /// ```
+    ///
+    /// - Parameter transform: A closure that converts the processed value to Double
+    /// - Returns: A new column that outputs DoubleColumnType with transformed values
+    public func toDouble<T>(
+        _ transform: @escaping (T) -> Double
+    ) -> Column<ObjectType, InputType, DoubleColumnType> where OutputType.Config.ValueType == T
+    {
+        Column<ObjectType, InputType, DoubleColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { input in
+                // First apply the original mapping
+                let originalOutput = self.mapping(input)
+
+                // Apply nilHandling logic to get the final processed output
+                let processedOutput = switch self.nilHandling {
+                    case .keepEmpty:
+                        originalOutput
+                    case let .defaultValue(defaultValue):
+                        OutputType.withDefaultValue(defaultValue, config: originalOutput.config)
+                }
+
+                // Extract the value from the processed output (now with defaults applied)
+                let finalValue = processedOutput.config.value
+
+                // Apply the transformation - when defaultValue is used, finalValue is guaranteed to be non-nil
+                let doubleValue: Double = switch self.nilHandling {
+                    case .keepEmpty:
+                        // For keepEmpty, we need to handle nil safely
+                        if let finalValue {
+                            transform(finalValue)
+                        } else {
+                            // This shouldn't happen with the current API, but handle gracefully
+                            transform(finalValue!)
+                        }
+                    case .defaultValue:
+                        // For defaultValue, finalValue is guaranteed to be non-nil
+                        transform(finalValue!)
+                }
+
+                // Return DoubleColumnType
+                return DoubleColumnType(DoubleColumnConfig(value: doubleValue))
+            },
+            nilHandling: .keepEmpty // Double output is never nil
+        )
+    }
+
+    /// Transforms column values to Double using a custom conversion closure that handles optional values.
+    ///
+    /// This overload is for columns that may contain nil values (when nilHandling is .keepEmpty).
+    /// Use this when you need to explicitly handle nil cases in your transformation.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Convert optional String to optional Double
+    /// Column(name: "Price", keyPath: \.priceString)
+    ///     .toDouble { (priceStr: String?) in
+    ///         guard let priceStr = priceStr else { return nil }
+    ///         return Double(priceStr)
+    ///     }
+    ///
+    /// // Convert with custom nil handling
+    /// Column(name: "Rating", keyPath: \.rating)
+    ///     .toDouble { (rating: String?) in
+    ///         rating.flatMap { Double($0) } ?? -1.0
+    ///     }
+    /// ```
+    ///
+    /// - Parameter transform: A closure that converts the optional value to optional Double
+    /// - Returns: A new column that outputs DoubleColumnType with transformed values
+    public func toDouble<T>(
+        _ transform: @escaping (T?) -> Double?
+    ) -> Column<ObjectType, InputType, DoubleColumnType> where OutputType.Config.ValueType == T
+    {
+        Column<ObjectType, InputType, DoubleColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { input in
+                // First apply the original mapping
+                let originalOutput = self.mapping(input)
+
+                // Apply nilHandling logic to get the final processed output
+                let processedOutput = switch self.nilHandling {
+                    case .keepEmpty:
+                        originalOutput
+                    case let .defaultValue(defaultValue):
+                        OutputType.withDefaultValue(defaultValue, config: originalOutput.config)
+                }
+
+                // Extract the value from the processed output
+                let finalValue = processedOutput.config.value
+
+                // Apply the transformation with optional handling
+                let doubleValue = transform(finalValue)
+
+                // Return DoubleColumnType
+                return DoubleColumnType(DoubleColumnConfig(value: doubleValue))
+            },
+            nilHandling: .keepEmpty // Double output may be nil
+        )
+    }
 }
