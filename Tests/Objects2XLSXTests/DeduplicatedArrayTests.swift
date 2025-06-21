@@ -280,9 +280,9 @@ struct DeduplicatedArrayStyleIntegrationTests {
         let cellStyle2 = CellStyle(font: font2)
         let cellStyle3 = CellStyle(font: font1Duplicate)
 
-        let styleId1 = styleRegister.registerCellStyle(cellStyle1, cellType: .string("test"))
-        let styleId2 = styleRegister.registerCellStyle(cellStyle2, cellType: .string("test"))
-        let styleId3 = styleRegister.registerCellStyle(cellStyle3, cellType: .string("test"))
+        let styleId1 = styleRegister.registerCellStyle(cellStyle1, cellType: .stringValue("test"))
+        let styleId2 = styleRegister.registerCellStyle(cellStyle2, cellType: .stringValue("test"))
+        let styleId3 = styleRegister.registerCellStyle(cellStyle3, cellType: .stringValue("test"))
 
         // Should have registered 2 unique fonts
         #expect(styleRegister.fontPool.count == 3) // default + 2 unique fonts

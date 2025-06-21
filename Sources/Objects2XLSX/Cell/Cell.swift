@@ -122,19 +122,19 @@ extension Cell {
 
         // Add cell type attribute based on value type and whether it uses shared strings
         switch value {
-            case .string, .stringValue, .optionalString, .url, .urlValue, .optionalURL:
+            case .stringValue, .optionalString, .urlValue, .optionalURL:
                 if sharedStringID != nil {
                     xml += " t=\"s\""
                 } else {
                     xml += " t=\"inlineStr\""
                 }
-            case .boolean, .booleanValue, .optionalBoolean:
+            case .booleanValue, .optionalBoolean:
                 xml += " t=\"b\""
             case .empty:
                 // Empty cells don't need type attributes
                 break
             default:
-                // Numeric types (.double, .doubleValue, .optionalDouble, .int, .intValue, .optionalInt, .date, .dateValue, .optionalDate, .percentage)
+                // Numeric types (.doubleValue, .optionalDouble, .intValue, .optionalInt, .dateValue, .optionalDate, .percentageValue, .optionalPercentage)
                 // don't need explicit type attributes as they default to numeric
                 break
         }
@@ -143,14 +143,6 @@ extension Cell {
 
         // Generate appropriate value format based on CellType
         switch value {
-            case let .string(stringValue):
-                if let sharedStringID {
-                    // Use shared string reference for memory efficiency
-                    xml += "<v>\(sharedStringID)</v>"
-                } else {
-                    // Use inline string value directly
-                    xml += "<is><t>\(stringValue ?? "")</t></is>"
-                }
             case let .stringValue(string):
                 if let sharedStringID {
                     // Use shared string reference for memory efficiency
@@ -166,14 +158,6 @@ extension Cell {
                 } else {
                     // Use inline string value directly
                     xml += "<is><t>\(stringValue ?? "")</t></is>"
-                }
-            case let .url(url):
-                if let sharedStringID {
-                    // Use shared string reference for URL
-                    xml += "<v>\(sharedStringID)</v>"
-                } else {
-                    // Use inline URL string value
-                    xml += "<is><t>\(url?.absoluteString ?? "")</t></is>"
                 }
             case let .urlValue(url):
                 if let sharedStringID {
@@ -191,10 +175,6 @@ extension Cell {
                     // Use inline URL string value
                     xml += "<is><t>\(url?.absoluteString ?? "")</t></is>"
                 }
-            case .boolean:
-                // Boolean values use numeric format (1 for true, 0 for false) with t="b"
-                let boolValue = value.valueString.lowercased() == "true" || value.valueString == "1" || value.valueString.lowercased() == "yes" ? "1" : "0"
-                xml += "<v>\(boolValue)</v>"
             case let .booleanValue(boolean, booleanExpressions, caseStrategy):
                 // Non-optional boolean - guaranteed to have value, optimized path
                 let boolText = boolean ? booleanExpressions.trueString : booleanExpressions.falseString
@@ -213,7 +193,11 @@ extension Cell {
                 }
             case let .doubleValue(double):
                 // Non-optional double - guaranteed to have value, optimized path
-                xml += "<v>\(String(double))</v>"
+                if double.isInfinite || double.isNaN {
+                    xml += "<v></v>"
+                } else {
+                    xml += "<v>\(String(double))</v>"
+                }
             case let .optionalDouble(double):
                 // Optional double - handle nil case
                 xml += "<v>\(double.cellValueString)</v>"
@@ -229,12 +213,22 @@ extension Cell {
             case let .optionalDate(date, timeZone):
                 // Optional date - handle nil case
                 xml += "<v>\(date.cellValueString(timeZone: timeZone))</v>"
+            case let .percentageValue(percentage, precision):
+                // Non-optional percentage - guaranteed to have value, optimized path
+                if percentage.isInfinite || percentage.isNaN {
+                    xml += "<v></v>"
+                } else {
+                    var decimal = Decimal(percentage)
+                    var rounded = Decimal()
+                    NSDecimalRound(&rounded, &decimal, precision + 2, .plain)
+                    xml += "<v>\(rounded)</v>"
+                }
+            case let .optionalPercentage(percentage, precision):
+                // Optional percentage - handle nil case
+                xml += "<v>\(percentage.cellValueString(precision: precision))</v>"
             case .empty:
                 // Explicitly empty cell
                 xml += "<v></v>"
-            default:
-                // All other types use numeric value format
-                xml += "<v>\(value.valueString)</v>"
         }
 
         xml += "</c>"
@@ -259,10 +253,6 @@ extension Cell {
     /// All cell types implement `valueString` which converts the Swift value to the
     /// string representation expected by Excel's XML format.
     public enum CellType: Equatable, Sendable {
-        /// Text string value with optional shared string optimization.
-        /// - Parameter string: The string content (nil represents empty cell)
-        case string(String?)
-
         /// Non-optional text string value.
         /// - Parameter string: The guaranteed non-nil string value
         case stringValue(String)
@@ -270,11 +260,6 @@ extension Cell {
         /// Optional text string value.
         /// - Parameter string: The optional string value (nil represents empty cell)
         case optionalString(String?)
-
-        /// Floating-point numeric value.
-        /// - Parameter double: The numeric value (nil represents empty cell)
-        @available(*, deprecated, message: "Use doubleValue(_) or optionalDouble(_) for better type safety")
-        case double(Double?)
 
         /// Non-optional floating-point numeric value.
         /// - Parameter double: The guaranteed non-nil numeric value
@@ -284,10 +269,6 @@ extension Cell {
         /// - Parameter double: The optional numeric value (nil represents empty cell)
         case optionalDouble(Double?)
 
-        /// Integer numeric value.
-        /// - Parameter int: The integer value (nil represents empty cell)
-        case int(Int?)
-
         /// Non-optional integer numeric value.
         /// - Parameter int: The guaranteed non-nil integer value
         case intValue(Int)
@@ -295,11 +276,6 @@ extension Cell {
         /// Optional integer numeric value.
         /// - Parameter int: The optional integer value (nil represents empty cell)
         case optionalInt(Int?)
-
-        /// Date and time value with timezone support.
-        /// - Parameter date: The date/time value (nil represents empty cell)
-        /// - Parameter timeZone: Timezone for date interpretation (defaults to current)
-        case date(Date?, timeZone: TimeZone = TimeZone.current)
 
         /// Non-optional date and time value with timezone support.
         /// - Parameter date: The guaranteed non-nil date/time value
@@ -310,15 +286,6 @@ extension Cell {
         /// - Parameter date: The optional date/time value (nil represents empty cell)
         /// - Parameter timeZone: Timezone for date interpretation (defaults to current)
         case optionalDate(Date?, timeZone: TimeZone = TimeZone.current)
-
-        /// Boolean value with customizable text representation.
-        /// - Parameter boolean: The boolean value (nil represents empty cell)
-        /// - Parameter booleanExpressions: Text format for true/false values
-        /// - Parameter caseStrategy: Case transformation for the boolean text
-        case boolean(
-            Bool?,
-            booleanExpressions: BooleanExpressions = .oneAndZero,
-            caseStrategy: CaseStrategy = .upper)
 
         /// Non-optional boolean value with customizable text representation.
         /// - Parameter boolean: The guaranteed non-nil boolean value
@@ -338,10 +305,6 @@ extension Cell {
             booleanExpressions: BooleanExpressions = .oneAndZero,
             caseStrategy: CaseStrategy = .upper)
 
-        /// URL value stored as text with optional shared string optimization.
-        /// - Parameter url: The URL value (nil represents empty cell)
-        case url(URL?)
-
         /// Non-optional URL value stored as text.
         /// - Parameter url: The guaranteed non-nil URL value
         case urlValue(URL)
@@ -349,11 +312,6 @@ extension Cell {
         /// Optional URL value stored as text.
         /// - Parameter url: The optional URL value (nil represents empty cell)
         case optionalURL(URL?)
-
-        /// Percentage value with configurable decimal precision.
-        /// - Parameter percentage: The percentage as decimal (0.5 = 50%)
-        /// - Parameter precision: Number of decimal places to preserve
-        case percentage(Double?, precision: Int = 2)
 
         /// Non-optional percentage value with configurable decimal precision.
         /// - Parameter percentage: The guaranteed non-nil percentage as decimal (0.5 = 50%)
@@ -381,15 +339,14 @@ extension Cell {
         /// - Returns: String representation suitable for Excel XML storage
         public var valueString: String {
             switch self {
-                case let .string(string):
-                    return string.cellValueString
                 case let .stringValue(string):
                     return string
                 case let .optionalString(string):
                     return string.cellValueString
-                case let .double(double):
-                    return double.cellValueString
                 case let .doubleValue(double):
+                    if double.isInfinite || double.isNaN {
+                        return ""
+                    }
                     return String(double)
                 case let .optionalDouble(double):
                     return double.cellValueString
@@ -397,18 +354,10 @@ extension Cell {
                     return String(int)
                 case let .optionalInt(int):
                     return int.cellValueString
-                case let .int(int):
-                    return int.cellValueString
-                case let .date(date, timeZone):
-                    return date.cellValueString(timeZone: timeZone)
                 case let .dateValue(date, timeZone):
                     return date.cellValueString(timeZone: timeZone)
                 case let .optionalDate(date, timeZone):
                     return date.cellValueString(timeZone: timeZone)
-                case let .boolean(boolean, booleanExpressions, caseStrategy):
-                    return boolean.cellValueString(
-                        booleanExpressions: booleanExpressions,
-                        caseStrategy: caseStrategy)
                 case let .booleanValue(boolean, booleanExpressions, caseStrategy):
                     let boolText = boolean ? booleanExpressions.trueString : booleanExpressions.falseString
                     return caseStrategy.apply(to: boolText)
@@ -416,16 +365,18 @@ extension Cell {
                     return boolean.cellValueString(
                         booleanExpressions: booleanExpressions,
                         caseStrategy: caseStrategy)
-                case let .url(url):
-                    return url.cellValueString
                 case let .urlValue(url):
                     return url.absoluteString
                 case let .optionalURL(url):
                     return url.cellValueString
-                case let .percentage(percentage, precision):
-                    return percentage.cellValueString(precision: precision)
-                case let .percentageValue(percentage, _):
-                    return String(percentage)
+                case let .percentageValue(percentage, precision):
+                    if percentage.isInfinite || percentage.isNaN {
+                        return ""
+                    }
+                    var decimal = Decimal(percentage)
+                    var rounded = Decimal()
+                    NSDecimalRound(&rounded, &decimal, precision + 2, .plain)
+                    return "\(rounded)"
                 case let .optionalPercentage(percentage, precision):
                     return percentage.cellValueString(precision: precision)
                 case .empty:

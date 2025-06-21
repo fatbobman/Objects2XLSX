@@ -17,7 +17,7 @@ struct CellXMLTest {
         let cell = Cell(
             row: 1,
             column: 1,
-            value: .string("Hello World"),
+            value: .stringValue("Hello World"),
             styleID: 1,
             sharedStringID: 0)
         print(cell.excelAddress) // @1
@@ -32,7 +32,7 @@ struct CellXMLTest {
         let cell = Cell(
             row: 1,
             column: 1,
-            value: .string("Hello World"),
+            value: .stringValue("Hello World"),
             styleID: 1)
 
         let xml = cell.generateXML()
@@ -47,7 +47,7 @@ struct CellXMLTest {
         let cell = Cell(
             row: 2,
             column: 1,
-            value: .url(url),
+            value: .urlValue(url),
             styleID: 2,
             sharedStringID: 1)
 
@@ -63,7 +63,7 @@ struct CellXMLTest {
         let cell = Cell(
             row: 2,
             column: 1,
-            value: .url(url),
+            value: .urlValue(url),
             styleID: 2)
 
         let xml = cell.generateXML()
@@ -77,7 +77,7 @@ struct CellXMLTest {
         let cell = Cell(
             row: 3,
             column: 1,
-            value: .boolean(true, booleanExpressions: .trueAndFalse),
+            value: .booleanValue(true, booleanExpressions: .trueAndFalse),
             styleID: 3)
 
         let xml = cell.generateXML()
@@ -91,7 +91,7 @@ struct CellXMLTest {
         let cell = Cell(
             row: 4,
             column: 1,
-            value: .int(42),
+            value: .intValue(42),
             styleID: 4)
 
         let xml = cell.generateXML()
@@ -105,7 +105,7 @@ struct CellXMLTest {
         let cell = Cell(
             row: 5,
             column: 1,
-            value: .double(3.14159),
+            value: .doubleValue(3.14159),
             styleID: 5)
 
         let xml = cell.generateXML()
@@ -176,7 +176,7 @@ struct CellXMLTest {
         let cell = Cell(
             row: 6,
             column: 1,
-            value: .date(date, timeZone: TimeZone(identifier: "UTC")!),
+            value: .dateValue(date, timeZone: TimeZone(identifier: "UTC")!),
             styleID: 6)
 
         let xml = cell.generateXML()
@@ -188,7 +188,7 @@ struct CellXMLTest {
         let cell = Cell(
             row: 7,
             column: 1,
-            value: .percentage(0.75, precision: 2),
+            value: .percentageValue(0.75, precision: 2),
             styleID: 7)
 
         let xml = cell.generateXML()
@@ -202,7 +202,7 @@ struct CellXMLTest {
         let cell = Cell(
             row: 8,
             column: 1,
-            value: .string("No Style"))
+            value: .stringValue("No Style"))
 
         let xml = cell.generateXML()
         let expected = "<c r=\"A8\" t=\"inlineStr\"><is><t>No Style</t></is></c>"
@@ -215,7 +215,7 @@ struct CellXMLTest {
         let cell = Cell(
             row: 9,
             column: 1,
-            value: .string(nil),
+            value: .optionalString(nil),
             styleID: 8)
 
         let xml = cell.generateXML()
@@ -227,19 +227,19 @@ struct CellXMLTest {
     @Test("All cell types with nil values")
     func allCellTypesWithNilValues() throws {
         // 字符串类型 - nil
-        let stringCell = Cell(row: 10, column: 1, value: .string(nil))
+        let stringCell = Cell(row: 10, column: 1, value: .optionalString(nil))
         let stringXML = stringCell.generateXML()
         let expectedString = "<c r=\"A10\" t=\"inlineStr\"><is><t></t></is></c>"
         #expect(stringXML == expectedString)
 
         // 整数类型 - nil
-        let intCell = Cell(row: 10, column: 2, value: .int(nil))
+        let intCell = Cell(row: 10, column: 2, value: .optionalInt(nil))
         let intXML = intCell.generateXML()
         let expectedInt = "<c r=\"B10\"><v></v></c>"
         #expect(intXML == expectedInt)
 
         // 浮点数类型 - nil (deprecated syntax)
-        let doubleCell = Cell(row: 10, column: 3, value: .double(nil))
+        let doubleCell = Cell(row: 10, column: 3, value: .optionalDouble(nil))
         let doubleXML = doubleCell.generateXML()
         let expectedDouble = "<c r=\"C10\"><v></v></c>"
         #expect(doubleXML == expectedDouble)
@@ -257,25 +257,25 @@ struct CellXMLTest {
         #expect(emptyXML == expectedEmpty)
 
         // 日期类型 - nil
-        let dateCell = Cell(row: 10, column: 4, value: .date(nil))
+        let dateCell = Cell(row: 10, column: 4, value: .optionalDate(nil))
         let dateXML = dateCell.generateXML()
         let expectedDate = "<c r=\"D10\"><v></v></c>"
         #expect(dateXML == expectedDate)
 
         // 布尔类型 - nil
-        let boolCell = Cell(row: 10, column: 5, value: .boolean(nil))
+        let boolCell = Cell(row: 10, column: 5, value: .optionalBoolean(nil))
         let boolXML = boolCell.generateXML()
-        let expectedBool = "<c r=\"E10\" t=\"b\"><v>0</v></c>"
+        let expectedBool = "<c r=\"E10\" t=\"b\"><v></v></c>"
         #expect(boolXML == expectedBool)
 
         // URL类型 - nil
-        let urlCell = Cell(row: 10, column: 6, value: .url(nil))
+        let urlCell = Cell(row: 10, column: 6, value: .optionalURL(nil))
         let urlXML = urlCell.generateXML()
         let expectedURL = "<c r=\"F10\" t=\"inlineStr\"><is><t></t></is></c>"
         #expect(urlXML == expectedURL)
 
         // 百分比类型 - nil
-        let percentageCell = Cell(row: 10, column: 7, value: .percentage(nil))
+        let percentageCell = Cell(row: 10, column: 7, value: .optionalPercentage(nil))
         let percentageXML = percentageCell.generateXML()
         let expectedPercentage = "<c r=\"G10\"><v></v></c>"
         #expect(percentageXML == expectedPercentage)
@@ -286,7 +286,7 @@ struct CellXMLTest {
         let cell = Cell(
             row: 11,
             column: 1,
-            value: .int(nil),
+            value: .optionalInt(nil),
             styleID: 5)
 
         let xml = cell.generateXML()
@@ -300,7 +300,7 @@ struct CellXMLTest {
         let cell = Cell(
             row: 12,
             column: 1,
-            value: .string(nil),
+            value: .optionalString(nil),
             styleID: 3,
             sharedStringID: 0)
 
@@ -313,12 +313,12 @@ struct CellXMLTest {
     @Test("Mixed nil and non-nil values in row")
     func mixedNilAndNonNilValues() throws {
         let cells = [
-            Cell(row: 13, column: 1, value: .string("Name")),
-            Cell(row: 13, column: 2, value: .string(nil)),
-            Cell(row: 13, column: 3, value: .int(25)),
-            Cell(row: 13, column: 4, value: .int(nil)),
-            Cell(row: 13, column: 5, value: .double(3.14)),
-            Cell(row: 13, column: 6, value: .double(nil)),
+            Cell(row: 13, column: 1, value: .stringValue("Name")),
+            Cell(row: 13, column: 2, value: .optionalString(nil)),
+            Cell(row: 13, column: 3, value: .intValue(25)),
+            Cell(row: 13, column: 4, value: .optionalInt(nil)),
+            Cell(row: 13, column: 5, value: .doubleValue(3.14)),
+            Cell(row: 13, column: 6, value: .optionalDouble(nil)),
             Cell(row: 13, column: 7, value: .doubleValue(1.618)),
             Cell(row: 13, column: 8, value: .optionalDouble(nil)),
             Cell(row: 13, column: 9, value: .empty),
@@ -338,13 +338,13 @@ struct CellXMLTest {
         let trueCell = Cell(
             row: 10,
             column: 1,
-            value: .boolean(true, booleanExpressions: .oneAndZero),
+            value: .booleanValue(true, booleanExpressions: .oneAndZero),
             styleID: 9)
 
         let falseCell = Cell(
             row: 10,
             column: 2,
-            value: .boolean(false, booleanExpressions: .yesAndNo),
+            value: .booleanValue(false, booleanExpressions: .yesAndNo),
             styleID: 9)
 
         let trueXML = trueCell.generateXML()
@@ -359,10 +359,10 @@ struct CellXMLTest {
 
     @Test("Cell address generation")
     func cellAddressGeneration() throws {
-        let cellA1 = Cell(row: 1, column: 1, value: .string("A1"))
-        let cellZ1 = Cell(row: 1, column: 26, value: .string("Z1"))
-        let cellAA1 = Cell(row: 1, column: 27, value: .string("AA1"))
-        let cellB2 = Cell(row: 2, column: 2, value: .string("B2"))
+        let cellA1 = Cell(row: 1, column: 1, value: .stringValue("A1"))
+        let cellZ1 = Cell(row: 1, column: 26, value: .stringValue("Z1"))
+        let cellAA1 = Cell(row: 1, column: 27, value: .stringValue("AA1"))
+        let cellB2 = Cell(row: 2, column: 2, value: .stringValue("B2"))
 
         #expect(cellA1.excelAddress == "A1")
         #expect(cellZ1.excelAddress == "Z1")

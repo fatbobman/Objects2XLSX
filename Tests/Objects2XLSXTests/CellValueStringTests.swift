@@ -14,25 +14,25 @@ import Testing
 struct CellValueStringTests {
     @Test("String cell value string")
     func stringCellValueString() throws {
-        let cell = Cell(row: 0, column: 0, value: .string("Hello"))
+        let cell = Cell(row: 0, column: 0, value: .stringValue("Hello"))
         #expect(cell.value.valueString == "Hello", "String cell value should match")
 
-        let nilCell = Cell(row: 0, column: 1, value: .string(nil))
+        let nilCell = Cell(row: 0, column: 1, value: .optionalString(nil))
         #expect(nilCell.value.valueString == "", "Nil string cell value should be empty")
     }
 
     @Test("Double cell value string")
     func doubleCellValueString() throws {
-        let cell = Cell(row: 0, column: 0, value: .double(123.456))
+        let cell = Cell(row: 0, column: 0, value: .doubleValue(123.456))
         #expect(cell.value.valueString == "123.456", "Double cell value should match")
 
-        let nilCell = Cell(row: 0, column: 1, value: .double(nil))
+        let nilCell = Cell(row: 0, column: 1, value: .optionalDouble(nil))
         #expect(nilCell.value.valueString == "", "Nil double cell value should be empty")
 
-        let infinityCell = Cell(row: 0, column: 2, value: .double(.infinity))
+        let infinityCell = Cell(row: 0, column: 2, value: .doubleValue(.infinity))
         #expect(infinityCell.value.valueString == "", "Double infinity cell value should match")
 
-        let isNanCell = Cell(row: 0, column: 3, value: .double(.nan))
+        let isNanCell = Cell(row: 0, column: 3, value: .doubleValue(.nan))
         #expect(isNanCell.value.valueString == "", "Double NaN cell value should match")
     }
 
@@ -64,49 +64,49 @@ struct CellValueStringTests {
 
     @Test("Int cell value string")
     func intCellValueString() throws {
-        let cell = Cell(row: 0, column: 0, value: .int(42))
+        let cell = Cell(row: 0, column: 0, value: .intValue(42))
         #expect(cell.value.valueString == "42", "Int cell value should match")
 
-        let nilCell = Cell(row: 0, column: 1, value: .int(nil))
+        let nilCell = Cell(row: 0, column: 1, value: .optionalInt(nil))
         #expect(nilCell.value.valueString == "", "Nil int cell value should be empty")
     }
 
     @Test("Date cell value string")
     func dateCellValueString() throws {
         let date = Date(timeIntervalSince1970: 1_622_505_600) // June 1, 2021
-        let cell = Cell(row: 0, column: 0, value: .date(date))
+        let cell = Cell(row: 0, column: 0, value: .dateValue(date))
         #expect(
             cell.value.valueString == date.excelDate(),
             "Date cell value should match Excel date format")
 
-        let nilCell = Cell(row: 0, column: 1, value: .date(nil))
+        let nilCell = Cell(row: 0, column: 1, value: .optionalDate(nil))
         #expect(nilCell.value.valueString == "", "Nil date cell value should be empty")
     }
 
     @Test("Bool cell value string")
     func boolCellValueString() throws {
-        let oneCell = Cell(row: 0, column: 0, value: .boolean(true))
+        let oneCell = Cell(row: 0, column: 0, value: .booleanValue(true))
         #expect(oneCell.value.valueString == "1", "True cell value should match")
 
-        let zeroCell = Cell(row: 0, column: 1, value: .boolean(false))
+        let zeroCell = Cell(row: 0, column: 1, value: .booleanValue(false))
         #expect(zeroCell.value.valueString == "0", "False cell value should match")
 
         let trueCell = Cell(
             row: 0,
             column: 0,
-            value: .boolean(true, booleanExpressions: .trueAndFalse, caseStrategy: .upper))
+            value: .booleanValue(true, booleanExpressions: .trueAndFalse, caseStrategy: .upper))
         #expect(trueCell.value.valueString == "TRUE", "True cell value should match")
 
         let falseCell = Cell(
             row: 0,
             column: 0,
-            value: .boolean(false, booleanExpressions: .trueAndFalse, caseStrategy: .lower))
+            value: .booleanValue(false, booleanExpressions: .trueAndFalse, caseStrategy: .lower))
         #expect(falseCell.value.valueString == "false", "False cell value should match")
 
         let falseFirstLetterUpperCell = Cell(
             row: 0,
             column: 0,
-            value: .boolean(
+            value: .booleanValue(
                 false,
                 booleanExpressions: .trueAndFalse,
                 caseStrategy: .firstLetterUpper))
@@ -115,43 +115,43 @@ struct CellValueStringTests {
         let tCell = Cell(
             row: 0,
             column: 0,
-            value: .boolean(true, booleanExpressions: .tAndF, caseStrategy: .lower))
+            value: .booleanValue(true, booleanExpressions: .tAndF, caseStrategy: .lower))
         #expect(tCell.value.valueString == "t", "True cell value should match")
 
-        let fCell = Cell(row: 0, column: 0, value: .boolean(false, booleanExpressions: .tAndF))
+        let fCell = Cell(row: 0, column: 0, value: .booleanValue(false, booleanExpressions: .tAndF))
         #expect(fCell.value.valueString == "F", "False cell value should match")
 
-        let nilCell = Cell(row: 0, column: 2, value: .boolean(nil))
+        let nilCell = Cell(row: 0, column: 2, value: .optionalBoolean(nil))
         #expect(nilCell.value.valueString == "", "Nil bool cell value should be empty")
     }
 
     @Test("Percentage cell value string")
     func percentageCellValueString() throws {
-        let cell = Cell(row: 0, column: 0, value: .percentage(0.25))
+        let cell = Cell(row: 0, column: 0, value: .percentageValue(0.25))
         #expect(cell.value.valueString == "0.25", "Percentage cell value should match")
 
-        let nilCell = Cell(row: 0, column: 1, value: .percentage(nil))
+        let nilCell = Cell(row: 0, column: 1, value: .optionalPercentage(nil))
         #expect(nilCell.value.valueString == "", "Nil percentage cell value should be empty")
 
-        let precisionCell = Cell(row: 0, column: 2, value: .percentage(0.25232, precision: 2))
+        let precisionCell = Cell(row: 0, column: 2, value: .percentageValue(0.25232, precision: 2))
         #expect(
             precisionCell.value.valueString == "0.2523",
             "Percentage cell value with precision should match")
 
-        let infinityCell = Cell(row: 0, column: 3, value: .percentage(.infinity))
+        let infinityCell = Cell(row: 0, column: 3, value: .percentageValue(.infinity))
         #expect(infinityCell.value.valueString == "", "Percentage infinity cell value should match")
 
-        let isNanCell = Cell(row: 0, column: 4, value: .percentage(.nan))
+        let isNanCell = Cell(row: 0, column: 4, value: .percentageValue(.nan))
         #expect(isNanCell.value.valueString == "", "Percentage NaN cell value should match")
     }
 
     @Test("URL cell value string")
     func urlCellValueString() throws {
         let url = URL(string: "https://example.com")!
-        let cell = Cell(row: 0, column: 0, value: .url(url))
+        let cell = Cell(row: 0, column: 0, value: .urlValue(url))
         #expect(cell.value.valueString == url.absoluteString, "URL cell value should match")
 
-        let nilCell = Cell(row: 0, column: 1, value: .url(nil))
+        let nilCell = Cell(row: 0, column: 1, value: .optionalURL(nil))
         #expect(nilCell.value.valueString == "", "Nil URL cell value should be empty")
     }
 }

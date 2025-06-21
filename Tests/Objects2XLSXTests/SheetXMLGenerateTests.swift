@@ -56,7 +56,7 @@ struct SheetXMLGenerateTests {
             #expect(cell?.column == index + 1)
 
             // 验证单元格值
-            if case let .string(cellName) = cell?.value {
+            if case let .stringValue(cellName) = cell?.value {
                 #expect(cellName == expectedName)
             } else {
                 #expect(Bool(false), "Header cell should contain string value")
@@ -127,7 +127,7 @@ struct SheetXMLGenerateTests {
                 let cell = cells[index]
 
                 // 验证单元格值
-                if case let .string(cellName) = cell.value {
+                if case let .stringValue(cellName) = cell.value {
                     #expect(cellName == expectedName)
                 }
 
@@ -265,7 +265,7 @@ struct SheetXMLGenerateTests {
             let nameCell = dataRow.cells[0]
             #expect(nameCell.row == index + 2)
             #expect(nameCell.column == 1)
-            if case let .string(name) = nameCell.value {
+            if case let .stringValue(name) = nameCell.value {
                 #expect(name == expectedNames[index])
             }
             #expect(nameCell.sharedStringID != nil)
@@ -274,20 +274,20 @@ struct SheetXMLGenerateTests {
             let ageCell = dataRow.cells[1]
             #expect(ageCell.row == index + 2)
             #expect(ageCell.column == 2)
-            if case let .int(age) = ageCell.value {
+            if case let .intValue(age) = ageCell.value {
                 #expect(age == expectedAges[index])
             }
             #expect(ageCell.sharedStringID == nil) // 数字不使用共享字符串
 
             // 验证性别列
             let genderCell = dataRow.cells[2]
-            if case let .boolean(gender, _, _) = genderCell.value {
+            if case let .booleanValue(gender, _, _) = genderCell.value {
                 #expect(gender == expectedGenders[index])
             }
 
             // 验证城市列
             let cityCell = dataRow.cells[3]
-            if case let .string(city) = cityCell.value {
+            if case let .stringValue(city) = cityCell.value {
                 #expect(city == expectedCities[index])
             }
 
@@ -471,7 +471,7 @@ struct SheetXMLGenerateTests {
         // 检查第一个数据行的邮箱单元格
         if let firstDataRow = dataRows.first {
             let emailCell = firstDataRow.cells[1]
-            if case .url = emailCell.value {
+            if case .urlValue = emailCell.value {
                 #expect(emailCell.sharedStringID != nil, "URL cell should use shared string")
             }
         }

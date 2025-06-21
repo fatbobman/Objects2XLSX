@@ -30,8 +30,8 @@ struct PercentageTypeEnhancementTests {
         // Test non-optional Percentage with different precision
         let precisePct = Cell(row: 1, column: 2, value: .percentageValue(0.123456, precision: 3))
         let preciseXML = precisePct.generateXML()
-        #expect(preciseXML.contains("<v>0.123456</v>"))
-        #expect(precisePct.value.valueString == "0.123456")
+        #expect(preciseXML.contains("<v>0.12346</v>"))  // precision 3 + 2 = 5 decimal places
+        #expect(precisePct.value.valueString == "0.12346")
 
         // Test optional Percentage with value
         let optionalPct = Cell(row: 1, column: 3, value: .optionalPercentage(0.5, precision: 1))
@@ -45,9 +45,9 @@ struct PercentageTypeEnhancementTests {
         #expect(nilXML.contains("<v></v>"))
         #expect(nilPct.value.valueString == "")
 
-        // Test legacy percentage (should still work)
-        let legacyPct = Cell(row: 1, column: 5, value: .percentage(0.25, precision: 2))
-        #expect(legacyPct.value.valueString == "0.25")
+        // Test legacy percentage (now use new type-safe enum)
+        let newPct = Cell(row: 1, column: 5, value: .percentageValue(0.25, precision: 2))
+        #expect(newPct.value.valueString == "0.25")
     }
 
     @Test("PercentageColumnType CellType Selection")
@@ -153,7 +153,7 @@ struct PercentageTypeEnhancementTests {
                 .defaultValue(defaultValue)
                 .toPercentage { (accuracy: Double) in // Non-optional after defaultValue
                     // Convert to decimal percentage
-                    accuracy * 0.9  // Apply 10% discount
+                    accuracy * 0.9 // Apply 10% discount
                 }
         }
 
@@ -223,7 +223,7 @@ struct PercentageTypeEnhancementTests {
             // Int to Percentage conversion
             Column(name: "Score %", keyPath: \.score)
                 .toPercentage { (score: Int) in
-                    Double(score) / 100.0  // Convert score to percentage decimal
+                    Double(score) / 100.0 // Convert score to percentage decimal
                 }
 
             // Optional Int to Percentage with nil handling
@@ -332,7 +332,7 @@ struct PercentageTypeEnhancementTests {
 
         for precision in precisions {
             let percentageCell = Cell(row: 1, column: 1, value: .percentageValue(testValue, precision: precision))
-            
+
             switch percentageCell.value {
                 case let .percentageValue(value, prec):
                     #expect(value == testValue)

@@ -155,7 +155,7 @@ struct BookXMLGenerationTests {
             font: Font(size: 12, name: "Arial"),
             fill: .solid(.blue),
             alignment: Alignment(horizontal: .center, vertical: .center))
-        _ = styleRegister.registerCellStyle(cellStyle, cellType: .string("test"))
+        _ = styleRegister.registerCellStyle(cellStyle, cellType: .stringValue("test"))
 
         // Write styles.xml
         #expect(throws: Never.self) {

@@ -25,7 +25,7 @@ struct StyleRegisterXMLTests {
             alignment: basicAlignment,
             border: basicBorder)
 
-        let styleID = styleRegister.registerCellStyle(cellStyle, cellType: .string("test"))
+        let styleID = styleRegister.registerCellStyle(cellStyle, cellType: .stringValue("test"))
 
         // Generate XML
         let xml = styleRegister.generateXML()
@@ -64,8 +64,8 @@ struct StyleRegisterXMLTests {
         let percentageStyle = CellStyle()
         let dateStyle = CellStyle()
 
-        _ = styleRegister.registerCellStyle(percentageStyle, cellType: .percentage(0.25, precision: 2))
-        _ = styleRegister.registerCellStyle(dateStyle, cellType: .date(Date(), timeZone: .current))
+        _ = styleRegister.registerCellStyle(percentageStyle, cellType: .percentageValue(0.25, precision: 2))
+        _ = styleRegister.registerCellStyle(dateStyle, cellType: .dateValue(Date(), timeZone: TimeZone.current))
 
         let xml = styleRegister.generateXML()
 
@@ -103,9 +103,9 @@ struct StyleRegisterXMLTests {
             alignment: Alignment(horizontal: .right))
 
         // Register styles
-        let headerID = styleRegister.registerCellStyle(headerStyle, cellType: .string("Header"))
-        let dataID = styleRegister.registerCellStyle(dataStyle, cellType: .string("Data"))
-        let numberID = styleRegister.registerCellStyle(numberStyle, cellType: .int(42))
+        let headerID = styleRegister.registerCellStyle(headerStyle, cellType: .stringValue("Header"))
+        let dataID = styleRegister.registerCellStyle(dataStyle, cellType: .stringValue("Data"))
+        let numberID = styleRegister.registerCellStyle(numberStyle, cellType: .intValue(42))
 
         let xml = styleRegister.generateXML()
 
@@ -139,7 +139,7 @@ struct StyleRegisterXMLTests {
         let font = Font(size: 12, name: "Times New Roman", bold: true)
         let style = CellStyle(font: font)
 
-        _ = styleRegister.registerCellStyle(style, cellType: .string("Test & <data>"))
+        _ = styleRegister.registerCellStyle(style, cellType: .stringValue("Test & <data>"))
 
         let xml = styleRegister.generateXML()
 
@@ -180,9 +180,9 @@ struct StyleRegisterXMLTests {
             alignment: Alignment(horizontal: .right))
 
         // Register styles with different cell types
-        _ = styleRegister.registerCellStyle(headerStyle, cellType: .string("Header"))
-        _ = styleRegister.registerCellStyle(numberStyle, cellType: .percentage(0.85, precision: 1))
-        _ = styleRegister.registerCellStyle(CellStyle(), cellType: .date(Date(), timeZone: .current))
+        _ = styleRegister.registerCellStyle(headerStyle, cellType: .stringValue("Header"))
+        _ = styleRegister.registerCellStyle(numberStyle, cellType: .percentageValue(0.85, precision: 1))
+        _ = styleRegister.registerCellStyle(CellStyle(), cellType: .dateValue(Date(), timeZone: TimeZone.current))
 
         let xml = styleRegister.generateXML()
 

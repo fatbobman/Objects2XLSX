@@ -379,7 +379,7 @@ extension Sheet {
         cellStyle = applyBordersToCell(cellStyle: cellStyle, row: rowIndex, column: columnIndex, borders: sheetStyle.dataBorder, sheetStyle: sheetStyle)
 
         // Prepare cell value using column name
-        let cellValue = Cell.CellType.string(column.name)
+        let cellValue = Cell.CellType.stringValue(column.name)
         let sharedStringID = shareStringRegistor.register(column.name)
 
         // Register the final style for reuse
@@ -550,11 +550,15 @@ extension Sheet {
         // Handle shared string registration for text-based values
         var sharedStringID: Int? = nil
         switch cellValue {
-            case let .string(stringValue):
+            case let .stringValue(stringValue):
+                sharedStringID = shareStringRegistor.register(stringValue)
+            case let .optionalString(stringValue):
                 if let actualString = stringValue {
                     sharedStringID = shareStringRegistor.register(actualString)
                 }
-            case let .url(urlValue):
+            case let .urlValue(urlValue):
+                sharedStringID = shareStringRegistor.register(urlValue.absoluteString)
+            case let .optionalURL(urlValue):
                 if let actualURL = urlValue {
                     sharedStringID = shareStringRegistor.register(actualURL.absoluteString)
                 }

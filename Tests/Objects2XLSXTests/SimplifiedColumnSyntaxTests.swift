@@ -68,21 +68,21 @@ struct SimplifiedColumnSyntaxTests {
 
         #expect(bonusColumn.name == "Bonus", "Column name should match")
 
-        // Test data extraction - should use optionalDouble enum case
+        // Test data extraction - follows optional pattern: non-nil becomes doubleValue, nil becomes optionalDouble
         let aliceCell = bonusColumn.generateCellValue(for: employees[0])
         switch aliceCell {
-            case let .optionalDouble(value):
-                #expect(value == 5000.0, "OptionalDouble should match Alice's bonus")
+            case let .doubleValue(value):
+                #expect(value == 5000.0, "Non-nil optional Double should become doubleValue")
             default:
-                Issue.record("Expected optionalDouble enum case for optional Double with value")
+                Issue.record("Expected doubleValue enum case for non-nil optional Double")
         }
 
         let bobCell = bonusColumn.generateCellValue(for: employees[1])
         switch bobCell {
             case let .optionalDouble(value):
-                #expect(value == nil, "OptionalDouble should be nil for Bob's bonus")
+                #expect(value == nil, "Nil optional Double should become optionalDouble")
             default:
-                Issue.record("Expected optionalDouble enum case for optional Double with nil")
+                Issue.record("Expected optionalDouble enum case for nil optional Double")
         }
     }
 
@@ -219,7 +219,7 @@ struct SimplifiedColumnSyntaxTests {
         // Test data extraction and transformation
         let laptopCell = priceColumn.generateCellValue(for: products[0])
         switch laptopCell {
-            case let .string(value):
+            case let .stringValue(value):
                 #expect(value == "Expensive", "Laptop should be categorized as Expensive")
             default:
                 Issue.record("Expected string enum case for toString result")
@@ -227,7 +227,7 @@ struct SimplifiedColumnSyntaxTests {
 
         let mouseCell = priceColumn.generateCellValue(for: products[1])
         switch mouseCell {
-            case let .string(value):
+            case let .stringValue(value):
                 #expect(value == "Cheap", "Mouse should be categorized as Cheap")
             default:
                 Issue.record("Expected string enum case for toString result")
@@ -257,7 +257,7 @@ struct SimplifiedColumnSyntaxTests {
         // Test laptop with actual discount
         let laptopCell = discountColumn.generateCellValue(for: products[0])
         switch laptopCell {
-            case let .string(value):
+            case let .stringValue(value):
                 #expect(value == "High Discount", "Laptop should have High Discount")
             default:
                 Issue.record("Expected string enum case for toString result")
@@ -266,7 +266,7 @@ struct SimplifiedColumnSyntaxTests {
         // Test monitor with nil discount (should use default 0.0)
         let monitorCell = discountColumn.generateCellValue(for: products[1])
         switch monitorCell {
-            case let .string(value):
+            case let .stringValue(value):
                 #expect(value == "Low Discount", "Monitor should have Low Discount (default)")
             default:
                 Issue.record("Expected string enum case for toString result")
@@ -293,7 +293,7 @@ struct SimplifiedColumnSyntaxTests {
         // Test data extraction and transformation
         let laptopCell = stockColumn.generateCellValue(for: products[0])
         switch laptopCell {
-            case let .string(value):
+            case let .stringValue(value):
                 #expect(value == "High Stock", "Laptop should have High Stock")
             default:
                 Issue.record("Expected string enum case for Int toString result")
@@ -301,7 +301,7 @@ struct SimplifiedColumnSyntaxTests {
 
         let mouseCell = stockColumn.generateCellValue(for: products[1])
         switch mouseCell {
-            case let .string(value):
+            case let .stringValue(value):
                 #expect(value == "High Stock", "Mouse should have High Stock")
             default:
                 Issue.record("Expected string enum case for Int toString result")
@@ -309,7 +309,7 @@ struct SimplifiedColumnSyntaxTests {
 
         let keyboardCell = stockColumn.generateCellValue(for: products[2])
         switch keyboardCell {
-            case let .string(value):
+            case let .stringValue(value):
                 #expect(value == "Low Stock", "Keyboard should have Low Stock")
             default:
                 Issue.record("Expected string enum case for Int toString result")
@@ -335,7 +335,7 @@ struct SimplifiedColumnSyntaxTests {
         // Test data extraction and transformation
         let laptopCell = statusColumn.generateCellValue(for: products[0])
         switch laptopCell {
-            case let .string(value):
+            case let .stringValue(value):
                 #expect(value == "Available for Purchase", "Laptop should be available")
             default:
                 Issue.record("Expected string enum case for Bool toString result")
@@ -343,7 +343,7 @@ struct SimplifiedColumnSyntaxTests {
 
         let monitorCell = statusColumn.generateCellValue(for: products[1])
         switch monitorCell {
-            case let .string(value):
+            case let .stringValue(value):
                 #expect(value == "Out of Stock", "Monitor should be out of stock")
             default:
                 Issue.record("Expected string enum case for Bool toString result")
@@ -437,15 +437,24 @@ struct SimplifiedColumnSyntaxTests {
 
         let xmlString = xml.generateXML()
         #expect(!xmlString.isEmpty, "Sheet should generate non-empty XML")
-        #expect(xmlString.contains("Name"), "XML should contain Name column")
-        #expect(xmlString.contains("Salary"), "XML should contain Salary column")
-        #expect(xmlString.contains("Bonus"), "XML should contain Bonus column")
-        #expect(xmlString.contains("Alice"), "XML should contain Alice's data")
-        #expect(xmlString.contains("50000"), "XML should contain Alice's salary")
-        #expect(xmlString.contains("5000"), "XML should contain Alice's bonus")
-        #expect(xmlString.contains("Bob"), "XML should contain Bob's data")
-        #expect(xmlString.contains("45000"), "XML should contain Bob's salary")
-        // Bob's bonus should show as 0 due to defaultValue
+        
+        // Check that the XML contains shared string references (not direct text)
+        #expect(xmlString.contains("t=\"s\""), "XML should use shared strings for text")
+        #expect(xmlString.contains("<v>0</v>"), "XML should reference shared string for Name column")
+        #expect(xmlString.contains("<v>1</v>"), "XML should reference shared string for Salary column")
+        #expect(xmlString.contains("<v>2</v>"), "XML should reference shared string for Bonus column")
+        #expect(xmlString.contains("50000.0"), "XML should contain Alice's salary")
+        #expect(xmlString.contains("5000.0"), "XML should contain Alice's bonus")
+        #expect(xmlString.contains("45000.0"), "XML should contain Bob's salary")
+        #expect(xmlString.contains("0.0"), "Bob's bonus should show as 0 due to defaultValue")
+        
+        // Verify shared strings were registered correctly
+        let sharedStrings = shareStringRegister.allStrings
+        #expect(sharedStrings.contains("Name"), "Name should be in shared strings")
+        #expect(sharedStrings.contains("Salary"), "Salary should be in shared strings")
+        #expect(sharedStrings.contains("Bonus"), "Bonus should be in shared strings")
+        #expect(sharedStrings.contains("Alice"), "Alice should be in shared strings")
+        #expect(sharedStrings.contains("Bob"), "Bob should be in shared strings")
     }
 
     @Test("Backward compatibility with old syntax")

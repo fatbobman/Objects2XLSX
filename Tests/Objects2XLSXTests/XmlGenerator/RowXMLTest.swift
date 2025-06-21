@@ -15,9 +15,9 @@ struct RowXMLTest {
     @Test("Row without height")
     func rowWithoutHeight() throws {
         let cells = [
-            Cell(row: 1, column: 1, value: .string("A1")),
-            Cell(row: 1, column: 2, value: .int(42)),
-            Cell(row: 1, column: 3, value: .double(3.14)),
+            Cell(row: 1, column: 1, value: .stringValue("A1")),
+            Cell(row: 1, column: 2, value: .intValue(42)),
+            Cell(row: 1, column: 3, value: .doubleValue(3.14)),
         ]
 
         let row = Row(index: 1, cells: cells)
@@ -32,8 +32,8 @@ struct RowXMLTest {
     @Test("Row with custom height")
     func rowWithCustomHeight() throws {
         let cells = [
-            Cell(row: 2, column: 1, value: .string("Header")),
-            Cell(row: 2, column: 2, value: .string("Value")),
+            Cell(row: 2, column: 1, value: .stringValue("Header")),
+            Cell(row: 2, column: 2, value: .stringValue("Value")),
         ]
 
         let row = Row(index: 2, cells: cells, height: 25.0)
@@ -58,9 +58,9 @@ struct RowXMLTest {
     @Test("Row with styled cells")
     func rowWithStyledCells() throws {
         let cells = [
-            Cell(row: 4, column: 1, value: .string("Name"), styleID: 1),
-            Cell(row: 4, column: 2, value: .string("Age"), styleID: 1),
-            Cell(row: 4, column: 3, value: .string("Email"), styleID: 1),
+            Cell(row: 4, column: 1, value: .stringValue("Name"), styleID: 1),
+            Cell(row: 4, column: 2, value: .stringValue("Age"), styleID: 1),
+            Cell(row: 4, column: 3, value: .stringValue("Email"), styleID: 1),
         ]
 
         let row = Row(index: 4, cells: cells, height: 20.0)
@@ -75,11 +75,11 @@ struct RowXMLTest {
     @Test("Row with mixed cell types")
     func rowWithMixedCellTypes() throws {
         let cells = [
-            Cell(row: 5, column: 1, value: .string("Product"), styleID: 1),
-            Cell(row: 5, column: 2, value: .int(100), styleID: 2),
-            Cell(row: 5, column: 3, value: .double(19.99), styleID: 2),
-            Cell(row: 5, column: 4, value: .boolean(true), styleID: 3),
-            Cell(row: 5, column: 5, value: .url(URL(string: "https://example.com")), styleID: 4),
+            Cell(row: 5, column: 1, value: .stringValue("Product"), styleID: 1),
+            Cell(row: 5, column: 2, value: .intValue(100), styleID: 2),
+            Cell(row: 5, column: 3, value: .doubleValue(19.99), styleID: 2),
+            Cell(row: 5, column: 4, value: .booleanValue(true), styleID: 3),
+            Cell(row: 5, column: 5, value: .urlValue(URL(string: "https://example.com")!), styleID: 4),
         ]
 
         let row = Row(index: 5, cells: cells)
@@ -94,11 +94,11 @@ struct RowXMLTest {
     @Test("Row with mixed cell types - realistic scenario")
     func rowWithMixedCellTypesRealistic() throws {
         let cells = [
-            Cell(row: 5, column: 1, value: .string("Product"), styleID: 1),
-            Cell(row: 5, column: 2, value: .int(100)),
-            Cell(row: 5, column: 3, value: .double(19.99)),
-            Cell(row: 5, column: 4, value: .boolean(true)),
-            Cell(row: 5, column: 5, value: .url(URL(string: "https://example.com"))),
+            Cell(row: 5, column: 1, value: .stringValue("Product"), styleID: 1),
+            Cell(row: 5, column: 2, value: .intValue(100)),
+            Cell(row: 5, column: 3, value: .doubleValue(19.99)),
+            Cell(row: 5, column: 4, value: .booleanValue(true)),
+            Cell(row: 5, column: 5, value: .urlValue(URL(string: "https://example.com")!)),
         ]
 
         let row = Row(index: 5, cells: cells)
@@ -113,8 +113,8 @@ struct RowXMLTest {
     @Test("Row with shared strings")
     func rowWithSharedStrings() throws {
         let cells = [
-            Cell(row: 6, column: 1, value: .string("Header"), styleID: 1, sharedStringID: 0),
-            Cell(row: 6, column: 2, value: .string("Data"), styleID: 1, sharedStringID: 1),
+            Cell(row: 6, column: 1, value: .stringValue("Header"), styleID: 1, sharedStringID: 0),
+            Cell(row: 6, column: 2, value: .stringValue("Data"), styleID: 1, sharedStringID: 1),
         ]
 
         let row = Row(index: 6, cells: cells, height: 18.0)
@@ -130,11 +130,11 @@ struct RowXMLTest {
     func rowWithDateCells() throws {
         let date = Date(timeIntervalSince1970: 0) // 1970-01-01 00:00:00 UTC
         let cells = [
-            Cell(row: 7, column: 1, value: .string("Date"), styleID: 1),
+            Cell(row: 7, column: 1, value: .stringValue("Date"), styleID: 1),
             Cell(
                 row: 7,
                 column: 2,
-                value: .date(date, timeZone: TimeZone(identifier: "UTC")!),
+                value: .dateValue(date, timeZone: TimeZone(identifier: "UTC")!),
                 styleID: 2),
         ]
 
@@ -168,9 +168,9 @@ struct RowXMLTest {
     @Test("Row with nil values")
     func rowWithNilValues() throws {
         let cells = [
-            Cell(row: 8, column: 1, value: .string(nil)),
-            Cell(row: 8, column: 2, value: .int(nil)),
-            Cell(row: 8, column: 3, value: .double(nil)),
+            Cell(row: 8, column: 1, value: .optionalString(nil)),
+            Cell(row: 8, column: 2, value: .optionalInt(nil)),
+            Cell(row: 8, column: 3, value: .optionalDouble(nil)),
         ]
 
         let row = Row(index: 8, cells: cells)
@@ -184,7 +184,7 @@ struct RowXMLTest {
 
     @Test("Row index validation")
     func rowIndexValidation() throws {
-        let cells = [Cell(row: 10, column: 1, value: .string("Test"))]
+        let cells = [Cell(row: 10, column: 1, value: .stringValue("Test"))]
 
         // 测试不同的行索引
         let row1 = Row(index: 1, cells: cells)
@@ -198,7 +198,7 @@ struct RowXMLTest {
 
     @Test("Row height precision")
     func rowHeightPrecision() throws {
-        let cells = [Cell(row: 9, column: 1, value: .string("Test"))]
+        let cells = [Cell(row: 9, column: 1, value: .stringValue("Test"))]
 
         let row = Row(index: 9, cells: cells, height: 15.75)
         let xml = row.generateXML()

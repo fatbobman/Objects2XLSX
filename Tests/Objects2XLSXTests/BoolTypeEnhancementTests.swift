@@ -291,7 +291,7 @@ struct BoolTypeEnhancementTests {
             .oneAndZero,
             .tAndF,
             .yesAndNo,
-            .custom(true: "On", false: "Off")
+            .custom(true: "On", false: "Off"),
         ]
 
         let expectedTrue = ["TRUE", "1", "T", "YES", "ON"]
