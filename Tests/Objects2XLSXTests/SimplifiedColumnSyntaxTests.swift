@@ -437,7 +437,7 @@ struct SimplifiedColumnSyntaxTests {
 
         let xmlString = xml.generateXML()
         #expect(!xmlString.isEmpty, "Sheet should generate non-empty XML")
-        
+
         // Check that the XML contains shared string references (not direct text)
         #expect(xmlString.contains("t=\"s\""), "XML should use shared strings for text")
         #expect(xmlString.contains("<v>0</v>"), "XML should reference shared string for Name column")
@@ -447,7 +447,7 @@ struct SimplifiedColumnSyntaxTests {
         #expect(xmlString.contains("5000.0"), "XML should contain Alice's bonus")
         #expect(xmlString.contains("45000.0"), "XML should contain Bob's salary")
         #expect(xmlString.contains("0.0"), "Bob's bonus should show as 0 due to defaultValue")
-        
+
         // Verify shared strings were registered correctly
         let sharedStrings = shareStringRegister.allStrings
         #expect(sharedStrings.contains("Name"), "Name should be in shared strings")

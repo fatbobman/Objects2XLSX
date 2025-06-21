@@ -30,7 +30,7 @@ struct PercentageTypeEnhancementTests {
         // Test non-optional Percentage with different precision
         let precisePct = Cell(row: 1, column: 2, value: .percentageValue(0.123456, precision: 3))
         let preciseXML = precisePct.generateXML()
-        #expect(preciseXML.contains("<v>0.12346</v>"))  // precision 3 + 2 = 5 decimal places
+        #expect(preciseXML.contains("<v>0.12346</v>")) // precision 3 + 2 = 5 decimal places
         #expect(precisePct.value.valueString == "0.12346")
 
         // Test optional Percentage with value
