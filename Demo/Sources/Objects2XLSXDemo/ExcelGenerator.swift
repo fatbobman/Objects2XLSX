@@ -136,17 +136,17 @@ struct ExcelGenerator {
             // Name column - basic string
             Column(name: "Name", keyPath: \.name)
                 .width(20)
-            // .bodyStyle(CorporateStyle.createDataStyle())
+                .bodyStyle(CorporateStyle.createDataStyle())
 
             // Age column - basic integer
             Column(name: "Age", keyPath: \.age)
                 .width(8)
-            // .bodyStyle(CorporateStyle.createDataStyle())
+                .bodyStyle(CorporateStyle.createDataStyle())
 
             // Department column - enum mapping
             Column(name: "Department", keyPath: \.department.displayName)
                 .width(18)
-            // .bodyStyle(CorporateStyle.createDataStyle())
+                .bodyStyle(CorporateStyle.createDataStyle())
 
             // Salary column - toString with proper nil handling
             Column(name: "Salary Level", keyPath: \Employee.salary)
@@ -158,20 +158,20 @@ struct ExcelGenerator {
             // Email column - URL type
             Column(name: "Email", keyPath: \.email)
                 .width(25)
-            // .bodyStyle(CorporateStyle.createDataStyle())
+                .bodyStyle(CorporateStyle.createDataStyle())
 
             // Hire Date column - date formatting
             Column(name: "Hire Date", keyPath: \.hireDate)
                 .width(20)
-            // .bodyStyle(CorporateStyle.createDateStyle())
+                .bodyStyle(CorporateStyle.createDateStyle())
 
             // Manager Status column - boolean mapping
             Column(
                 name: "Is Manager",
                 keyPath: \.isManager,
-                width: 10,
-                bodyStyle: CorporateStyle.createStatusStyle(),
                 booleanExpressions: .yesAndNo)
+                .width(10)
+                .bodyStyle(CorporateStyle.createDataStyle())
         }
 
         return sheet.eraseToAnySheet()

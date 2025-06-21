@@ -109,9 +109,9 @@ struct SheetMetaTests {
 
         // Create sheet with data provider
         let sheet = Sheet(name: "People", hasHeader: true, dataProvider: { testObjects }) {
-            Column(name: "Name", keyPath: \.name, nilHandling: .keepEmpty)
-            Column(name: "Age", keyPath: \.age, nilHandling: .keepEmpty)
-            Column(name: "Email", keyPath: \.email, nilHandling: .keepEmpty)
+            Column(name: "Name", keyPath: \.name)
+            Column(name: "Age", keyPath: \.age)
+            Column(name: "Email", keyPath: \.email)
         }
 
         // Load data first, then generate SheetMeta
@@ -151,8 +151,8 @@ struct SheetMetaTests {
 
         // Create sheet and convert to AnySheet
         let sheet = Sheet(name: "Team", hasHeader: true, dataProvider: { testObjects }) {
-            Column(name: "Full Name", keyPath: \.name, nilHandling: .keepEmpty)
-            Column(name: "Years", keyPath: \.age, nilHandling: .keepEmpty)
+            Column(name: "Full Name", keyPath: \.name)
+            Column(name: "Years", keyPath: \.age)
         }
 
         let anySheet = sheet.eraseToAnySheet()
@@ -198,13 +198,13 @@ struct SheetMetaTests {
 
         // Create sheets
         let peopleSheet = Sheet(name: "People", hasHeader: true, dataProvider: { people }) {
-            Column(name: "Name", keyPath: \.name, nilHandling: .keepEmpty)
-            Column(name: "Age", keyPath: \.age, nilHandling: .keepEmpty)
+            Column(name: "Name", keyPath: \.name)
+            Column(name: "Age", keyPath: \.age)
         }
 
         let productsSheet = Sheet(name: "Products", hasHeader: false, dataProvider: { products }) {
-            Column(name: "Product Name", keyPath: \.name, nilHandling: .keepEmpty)
-            Column(name: "Price", keyPath: \.price, nilHandling: .keepEmpty)
+            Column(name: "Product Name", keyPath: \.name)
+            Column(name: "Price", keyPath: \.price)
         }
 
         // Create book
@@ -248,7 +248,7 @@ struct SheetMetaTests {
     func emptySheetMeta() {
         // Create sheet with no data
         let emptySheet = Sheet<TestPerson>(name: "Empty", hasHeader: true, dataProvider: { [] }) {
-            Column(name: "Name", keyPath: \.name, nilHandling: .keepEmpty)
+            Column(name: "Name", keyPath: \.name)
         }
 
         // Load data first, then generate SheetMeta

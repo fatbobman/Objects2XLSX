@@ -24,6 +24,18 @@ import Foundation
 /// These extensions are primarily used by `Cell.CellType.valueString` to convert
 /// typed values into the string format required by Excel's XML structure.
 
+extension String {
+    /// Converts a string to Excel-compatible cell content.
+    ///
+    /// This method ensures that the string is properly escaped for XML compatibility,
+    /// allowing it to be safely included in Excel files without breaking the XML structure.
+    ///
+    /// - Returns: The escaped string value suitable for Excel
+    var cellValueString: String {
+        xmlEscaped
+    }
+}
+
 extension String? {
     /// Converts an optional string to Excel-compatible cell content.
     ///
@@ -32,7 +44,43 @@ extension String? {
     ///
     /// - Returns: The string value, or empty string if nil
     var cellValueString: String {
-        self ?? ""
+        self?.xmlEscaped ?? ""
+    }
+}
+
+extension Double {
+    // Converts an optional double to Excel-compatible numeric string.
+    ///
+    /// Handles edge cases that Excel cannot represent:
+    /// - `infinity` and `NaN` values become empty strings
+    /// - Normal values use standard string conversion
+    ///
+    /// - Returns: String representation suitable for Excel, or empty string for invalid values
+    var cellValueString: String {
+        if isInfinite || isNaN {
+            return ""
+        }
+        return String(self)
+    }
+
+    /// Converts an optional double to Excel-compatible percentage string with specified precision.
+    ///
+    /// Formats percentage values for Excel storage, handling precision and rounding
+    /// according to Excel's decimal handling requirements. Uses `NSDecimalRound`
+    /// for consistent precision control.
+    ///
+    /// - Parameter precision: Number of decimal places to preserve (default: 2)
+    /// - Returns: Decimal string representation for percentage formatting
+    func cellValueString(precision: Int = 2) -> String {
+        if isInfinite || isNaN {
+            return ""
+        }
+
+        var decimal = Decimal(self)
+        var rounded = Decimal()
+        NSDecimalRound(&rounded, &decimal, precision + 2, .plain)
+
+        return "\(rounded)"
     }
 }
 
@@ -72,6 +120,18 @@ extension Double? {
         NSDecimalRound(&rounded, &decimal, precision + 2, .plain)
 
         return "\(rounded)"
+    }
+}
+
+extension Int {
+    /// Converts an integer to Excel-compatible numeric string.
+    ///
+    /// Integers have no special edge cases, so this simply converts the value
+    /// to its string representation.
+    ///
+    /// - Returns: String representation of the integer
+    var cellValueString: String {
+        String(self)
     }
 }
 
@@ -116,6 +176,26 @@ extension Date? {
     }
 }
 
+extension Bool {
+    /// Converts a boolean to customizable text representation for Excel.
+    ///
+    /// Since Excel doesn't have a native boolean type, boolean values are stored
+    /// as text. This method provides flexible text formatting with various common
+    /// boolean representations and case transformations.
+    ///
+    /// - Parameters:
+    ///   - booleanExpressions: Text format for true/false values (default: oneAndZero)
+    ///   - caseStrategy: Case transformation to apply (default: upper)
+    /// - Returns: Formatted boolean text, or empty string if nil
+    func cellValueString(
+        booleanExpressions: Cell.BooleanExpressions = .oneAndZero,
+        caseStrategy: Cell.CaseStrategy = .upper) -> String
+    {
+        caseStrategy.apply(
+            to: self ? booleanExpressions.trueString : booleanExpressions.falseString).xmlEscaped
+    }
+}
+
 extension Bool? {
     /// Converts an optional boolean to customizable text representation for Excel.
     ///
@@ -140,7 +220,7 @@ extension Bool? {
     {
         guard let value = self else { return "" }
         return caseStrategy.apply(
-            to: value ? booleanExpressions.trueString : booleanExpressions.falseString)
+            to: value ? booleanExpressions.trueString : booleanExpressions.falseString).xmlEscaped
     }
 }
 
@@ -152,7 +232,7 @@ extension URL {
     ///
     /// - Returns: Absolute URL string
     var cellValueString: String {
-        absoluteString
+        absoluteString.xmlEscaped
     }
 }
 
@@ -164,7 +244,7 @@ extension URL? {
     ///
     /// - Returns: Absolute URL string, or empty string if nil
     var cellValueString: String {
-        self?.absoluteString ?? ""
+        self?.absoluteString.xmlEscaped ?? ""
     }
 }
 

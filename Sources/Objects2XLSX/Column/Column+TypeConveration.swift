@@ -407,7 +407,7 @@ extension Column {
     /// ```swift
     /// // Convert String to Date
     /// Column(name: "Date String", keyPath: \.dateString)
-    ///     .toDate { (dateStr: String) in
+    ///     .toDate(TimeZone.init(identifier: "UTC")!) { (dateStr: String) in
     ///         ISO8601DateFormatter().date(from: dateStr) ?? Date()
     ///     }
     ///
@@ -425,9 +425,12 @@ extension Column {
     ///     }
     /// ```
     ///
-    /// - Parameter transform: A closure that converts the processed value to Date
+    /// - Parameters:
+    ///   - timezone: The timezone to use for the date conversion. Defaults to the current timezone.
+    ///   - transform: A closure that converts the processed value to Date
     /// - Returns: A new column that outputs DateColumnType with transformed values
     public func toDate<T>(
+        _ timeZone: TimeZone = TimeZone.current,
         _ transform: @escaping (T) -> Date) -> Column<ObjectType, InputType, DateColumnType> where OutputType.Config.ValueType == T
     {
         Column<ObjectType, InputType, DateColumnType>(
@@ -467,7 +470,7 @@ extension Column {
                 }
 
                 // Return DateColumnType with current timezone
-                return DateColumnType(DateColumnConfig(value: dateValue, timeZone: TimeZone.current))
+                return DateColumnType(DateColumnConfig(value: dateValue, timeZone: timeZone))
             },
             nilHandling: .keepEmpty // Date output is never nil
         )
@@ -494,9 +497,12 @@ extension Column {
     ///     }
     /// ```
     ///
-    /// - Parameter transform: A closure that converts the optional value to optional Date
+    /// - Parameters:
+    ///   - timezone: The timezone to use for the date conversion. Defaults to the current timezone.
+    ///   - transform: A closure that converts the processed value to Date
     /// - Returns: A new column that outputs DateColumnType with transformed values
     public func toDate<T>(
+        _ timeZone: TimeZone = TimeZone.current,
         _ transform: @escaping (T?) -> Date?) -> Column<ObjectType, InputType, DateColumnType> where OutputType.Config.ValueType == T
     {
         Column<ObjectType, InputType, DateColumnType>(
@@ -524,7 +530,7 @@ extension Column {
                 let dateValue = transform(finalValue)
 
                 // Return DateColumnType with current timezone
-                return DateColumnType(DateColumnConfig(value: dateValue, timeZone: TimeZone.current))
+                return DateColumnType(DateColumnConfig(value: dateValue, timeZone: timeZone))
             },
             nilHandling: .keepEmpty // Date output may be nil
         )
@@ -693,9 +699,14 @@ extension Column {
     ///     }
     /// ```
     ///
-    /// - Parameter transform: A closure that converts the processed value to Bool
+    /// - Parameters:
+    ///   - booleanExpressions: The boolean expressions to use for the column (default: oneAndZero)
+    ///   - caseStrategy: The case strategy to use for the column (default: upper)
+    ///   - transform: A closure that converts the processed value to Bool
     /// - Returns: A new column that outputs BoolColumnType with transformed values
     public func toBoolean<T>(
+        booleanExpressions: Cell.BooleanExpressions = .oneAndZero,
+        caseStrategy: Cell.CaseStrategy = .upper,
         _ transform: @escaping (T) -> Bool) -> Column<ObjectType, InputType, BoolColumnType> where OutputType.Config.ValueType == T
     {
         Column<ObjectType, InputType, BoolColumnType>(
@@ -735,7 +746,7 @@ extension Column {
                 }
 
                 // Return BoolColumnType with default settings
-                return BoolColumnType(BoolColumnConfig(value: boolValue, booleanExpressions: .oneAndZero, caseStrategy: .upper))
+                return BoolColumnType(BoolColumnConfig(value: boolValue, booleanExpressions: booleanExpressions, caseStrategy: caseStrategy))
             },
             nilHandling: .keepEmpty // Bool output is never nil
         )
@@ -762,9 +773,14 @@ extension Column {
     ///     }
     /// ```
     ///
-    /// - Parameter transform: A closure that converts the optional value to optional Bool
+    /// - Parameters:
+    ///   - booleanExpressions: The boolean expressions to use for the column (default: oneAndZero)
+    ///   - caseStrategy: The case strategy to use for the column (default: upper)
+    ///   - transform: A closure that converts the processed value to Bool
     /// - Returns: A new column that outputs BoolColumnType with transformed values
     public func toBoolean<T>(
+        booleanExpressions: Cell.BooleanExpressions = .oneAndZero,
+        caseStrategy: Cell.CaseStrategy = .upper,
         _ transform: @escaping (T?) -> Bool?) -> Column<ObjectType, InputType, BoolColumnType> where OutputType.Config.ValueType == T
     {
         Column<ObjectType, InputType, BoolColumnType>(
@@ -792,7 +808,7 @@ extension Column {
                 let boolValue = transform(finalValue)
 
                 // Return BoolColumnType with default settings
-                return BoolColumnType(BoolColumnConfig(value: boolValue, booleanExpressions: .oneAndZero, caseStrategy: .upper))
+                return BoolColumnType(BoolColumnConfig(value: boolValue, booleanExpressions: booleanExpressions, caseStrategy: caseStrategy))
             },
             nilHandling: .keepEmpty // Bool output may be nil
         )
@@ -827,9 +843,12 @@ extension Column {
     ///     }
     /// ```
     ///
-    /// - Parameter transform: A closure that converts the processed value to Double (as decimal: 0.5 = 50%)
+    /// - Parameter
+    ///   - precision: The number of decimal places to use for the percentage (default: 2)
+    ///   - transform: A closure that converts the processed value to Double (as decimal: 0.5 = 50%)
     /// - Returns: A new column that outputs PercentageColumnType with transformed values
     public func toPercentage<T>(
+        _ precision: Int = 2,
         _ transform: @escaping (T) -> Double) -> Column<ObjectType, InputType, PercentageColumnType> where OutputType.Config.ValueType == T
     {
         Column<ObjectType, InputType, PercentageColumnType>(
@@ -869,7 +888,7 @@ extension Column {
                 }
 
                 // Return PercentageColumnType with default precision
-                return PercentageColumnType(PercentageColumnConfig(value: percentageValue, precision: 2))
+                return PercentageColumnType(PercentageColumnConfig(value: percentageValue, precision: precision))
             },
             nilHandling: .keepEmpty // Percentage output is never nil
         )
@@ -896,9 +915,13 @@ extension Column {
     ///     }
     /// ```
     ///
-    /// - Parameter transform: A closure that converts the optional value to optional Double (as decimal: 0.5 = 50%)
+    /// - Parameter
+    ///   - precision: The number of decimal places to use for the percentage (default: 2)
+    ///   - transform: A closure that converts the processed value to Double (as decimal: 0.5 = 50%)
+    /// - Returns: A new column that outputs PercentageColumnType with transformed values
     /// - Returns: A new column that outputs PercentageColumnType with transformed values
     public func toPercentage<T>(
+        _ precision: Int = 2,
         _ transform: @escaping (T?) -> Double?) -> Column<ObjectType, InputType, PercentageColumnType> where OutputType.Config.ValueType == T
     {
         Column<ObjectType, InputType, PercentageColumnType>(
@@ -926,7 +949,7 @@ extension Column {
                 let percentageValue = transform(finalValue)
 
                 // Return PercentageColumnType with default precision
-                return PercentageColumnType(PercentageColumnConfig(value: percentageValue, precision: 2))
+                return PercentageColumnType(PercentageColumnConfig(value: percentageValue, precision: precision))
             },
             nilHandling: .keepEmpty // Percentage output may be nil
         )

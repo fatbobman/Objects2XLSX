@@ -15,14 +15,14 @@ struct SheetXMLGenerateTests {
     @Test("test SheetHeader Generate")
     func sheetHeaderGenerate() {
         let sheet = Sheet(name: "People", dataProvider: { People.people }) {
-            Column(name: "Name", keyPath: \People.name, nilHandling: .keepEmpty)
-            Column(name: "Age", keyPath: \People.age, nilHandling: .keepEmpty)
-            Column(name: "Gender", keyPath: \People.gender, nilHandling: .keepEmpty)
-            Column(name: "City", keyPath: \People.city, nilHandling: .keepEmpty)
-            Column(name: "Country", keyPath: \People.country, nilHandling: .keepEmpty)
-            Column(name: "Weight", keyPath: \People.weight, nilHandling: .keepEmpty)
-            Column(name: "Email", keyPath: \People.email, nilHandling: .keepEmpty)
-            Column(name: "Birthday", keyPath: \People.birthday, nilHandling: .keepEmpty)
+            Column(name: "Name", keyPath: \People.name)
+            Column(name: "Age", keyPath: \People.age)
+            Column(name: "Gender", keyPath: \People.gender)
+            Column(name: "City", keyPath: \People.city)
+            Column(name: "Country", keyPath: \People.country)
+            Column(name: "Weight", keyPath: \People.weight)
+            Column(name: "Email", keyPath: \People.email)
+            Column(name: "Birthday", keyPath: \People.birthday)
         }
 
         let styleRegister = StyleRegister()
@@ -95,9 +95,9 @@ struct SheetXMLGenerateTests {
         sheetStyle.columnHeaderStyle = headerStyle
 
         let sheet = Sheet(name: "People", dataProvider: { People.people }) {
-            Column(name: "Name", keyPath: \People.name, nilHandling: .keepEmpty)
-            Column(name: "Age", keyPath: \People.age, nilHandling: .keepEmpty)
-            Column(name: "Gender", keyPath: \People.gender, nilHandling: .keepEmpty)
+            Column(name: "Name", keyPath: \People.name)
+            Column(name: "Age", keyPath: \People.age)
+            Column(name: "Gender", keyPath: \People.gender)
         }
 
         let styleRegister = StyleRegister()
@@ -161,8 +161,8 @@ struct SheetXMLGenerateTests {
     func dataBorderSettings() {
         // 创建带边框的 sheet
         let sheet = Sheet(name: "People", dataProvider: { People.people }) {
-            Column(name: "Name", keyPath: \People.name, nilHandling: .keepEmpty)
-            Column(name: "Age", keyPath: \People.age, nilHandling: .keepEmpty)
+            Column(name: "Name", keyPath: \People.name)
+            Column(name: "Age", keyPath: \People.age)
         }
 
         let styleRegister = StyleRegister()
@@ -209,10 +209,10 @@ struct SheetXMLGenerateTests {
     func completeDataGeneration() {
         // 创建带完整数据的 sheet
         let sheet = Sheet(name: "People", dataProvider: { People.people }) {
-            Column(name: "Name", keyPath: \People.name, nilHandling: .keepEmpty)
-            Column(name: "Age", keyPath: \People.age, nilHandling: .keepEmpty)
-            Column(name: "Gender", keyPath: \People.gender, nilHandling: .keepEmpty)
-            Column(name: "City", keyPath: \People.city, nilHandling: .keepEmpty)
+            Column(name: "Name", keyPath: \People.name)
+            Column(name: "Age", keyPath: \People.age)
+            Column(name: "Gender", keyPath: \People.gender)
+            Column(name: "City", keyPath: \People.city)
         }
 
         let styleRegister = StyleRegister()
@@ -335,9 +335,9 @@ struct SheetXMLGenerateTests {
     func dataRowBordersAndStyles() {
         // 创建带边框和样式的 sheet
         let sheet = Sheet(name: "People", dataProvider: { People.people }) {
-            Column(name: "Name", keyPath: \People.name, nilHandling: .keepEmpty)
+            Column(name: "Name", keyPath: \People.name)
                 .bodyStyle(CellStyle(fill: Fill.solid(Color.yellow)))
-            Column(name: "Age", keyPath: \People.age, nilHandling: .keepEmpty)
+            Column(name: "Age", keyPath: \People.age)
                 .bodyStyle(CellStyle(alignment: Alignment(horizontal: .center)))
         }
 
@@ -408,9 +408,9 @@ struct SheetXMLGenerateTests {
     func uRLAndStringSharedStringRegistration() {
         // 创建包含 URL 和字符串的 sheet
         let sheet = Sheet(name: "People", dataProvider: { People.people }) {
-            Column(name: "Name", keyPath: \People.name, nilHandling: .keepEmpty)
-            Column(name: "Email", keyPath: \People.email, nilHandling: .keepEmpty)
-            Column(name: "City", keyPath: \People.city, nilHandling: .keepEmpty)
+            Column(name: "Name", keyPath: \People.name)
+            Column(name: "Email", keyPath: \People.email)
+            Column(name: "City", keyPath: \People.city)
         }
 
         let styleRegister = StyleRegister()

@@ -19,9 +19,9 @@ struct BookWriteTests {
 
         // Create sheet
         let sheet = Sheet(name: "TestSheet", hasHeader: true, dataProvider: { testData }) {
-            Column(name: "Name", keyPath: \.name, nilHandling: .keepEmpty)
-            Column(name: "Age", keyPath: \.age, nilHandling: .keepEmpty)
-            Column(name: "Email", keyPath: \.email, nilHandling: .keepEmpty)
+            Column(name: "Name", keyPath: \.name)
+            Column(name: "Age", keyPath: \.age)
+            Column(name: "Email", keyPath: \.email)
         }
 
         // Create book
@@ -61,7 +61,7 @@ struct BookWriteTests {
     func generateAndWriteSheetXMLEmpty() throws {
         // Create empty sheet
         let emptySheet = Sheet<TestPerson>(name: "EmptySheet", hasHeader: true, dataProvider: { [] }) {
-            Column(name: "Name", keyPath: \.name, nilHandling: .keepEmpty)
+            Column(name: "Name", keyPath: \.name)
         }
 
         // Create book
@@ -113,14 +113,14 @@ struct BookWriteTests {
 
         // Create sheets
         let peopleSheet = Sheet(name: "People", hasHeader: true, dataProvider: { people }) {
-            Column(name: "Name", keyPath: \.name, nilHandling: .keepEmpty)
-            Column(name: "Age", keyPath: \.age, nilHandling: .keepEmpty)
-            Column(name: "Email", keyPath: \.email, nilHandling: .keepEmpty)
+            Column(name: "Name", keyPath: \.name)
+            Column(name: "Age", keyPath: \.age)
+            Column(name: "Email", keyPath: \.email)
         }
 
         let productsSheet = Sheet(name: "Products", hasHeader: true, dataProvider: { products }) {
-            Column(name: "Product", keyPath: \.name, nilHandling: .keepEmpty)
-            Column(name: "Price", keyPath: \.price, nilHandling: .keepEmpty)
+            Column(name: "Product", keyPath: \.name)
+            Column(name: "Price", keyPath: \.price)
         }
 
         // Create book
@@ -148,7 +148,7 @@ struct BookWriteTests {
     func generateAndWriteSheetXMLWithNilDataProvider() throws {
         // Create sheet without data provider (nil)
         let sheet = Sheet<TestPerson>(name: "NoDataSheet", hasHeader: true, dataProvider: nil) {
-            Column(name: "Name", keyPath: \.name, nilHandling: .keepEmpty)
+            Column(name: "Name", keyPath: \.name)
         }
 
         // Create book

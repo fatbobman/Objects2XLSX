@@ -308,240 +308,240 @@ extension Column {
 
 // MARK: - ColumnOutputType
 
-extension Column where InputType == Double, OutputType == DoubleColumnType {
-    /// Creates a column for Double values that will be displayed as numbers.
-    ///
-    /// - Parameters:
-    ///   - name: The name of the column
-    ///   - keyPath: The key path to extract the Double value
-    ///   - width: Optional width of the column
-    ///   - bodyStyle: Optional style for the column's cells
-    ///   - headerStyle: Optional style for the column's header
-    ///   - nilHandling: How to handle nil values
-    init(
-        name: String,
-        keyPath: KeyPath<ObjectType, InputType>,
-        width: Int? = nil,
-        bodyStyle: CellStyle? = nil,
-        headerStyle: CellStyle? = nil,
-        nilHandling: TypedNilHandling<OutputType> = .keepEmpty)
-    {
-        let mapping: (InputType) -> DoubleColumnType = {
-            DoubleColumnType(DoubleColumnConfig(value: $0))
-        }
-        self.init(
-            name: name,
-            keyPath: keyPath,
-            width: width,
-            bodyStyle: bodyStyle,
-            headerStyle: headerStyle,
-            mapping: mapping,
-            nilHandling: nilHandling)
-    }
-}
+// extension Column where InputType == Double, OutputType == DoubleColumnType {
+//     /// Creates a column for Double values that will be displayed as numbers.
+//     ///
+//     /// - Parameters:
+//     ///   - name: The name of the column
+//     ///   - keyPath: The key path to extract the Double value
+//     ///   - width: Optional width of the column
+//     ///   - bodyStyle: Optional style for the column's cells
+//     ///   - headerStyle: Optional style for the column's header
+//     ///   - nilHandling: How to handle nil values
+//     init(
+//         name: String,
+//         keyPath: KeyPath<ObjectType, InputType>,
+//         width: Int? = nil,
+//         bodyStyle: CellStyle? = nil,
+//         headerStyle: CellStyle? = nil,
+//         nilHandling: TypedNilHandling<OutputType> = .keepEmpty)
+//     {
+//         let mapping: (InputType) -> DoubleColumnType = {
+//             DoubleColumnType(DoubleColumnConfig(value: $0))
+//         }
+//         self.init(
+//             name: name,
+//             keyPath: keyPath,
+//             width: width,
+//             bodyStyle: bodyStyle,
+//             headerStyle: headerStyle,
+//             mapping: mapping,
+//             nilHandling: nilHandling)
+//     }
+// }
 
-extension Column where InputType == Int, OutputType == IntColumnType {
-    /// Creates a column for Int values that will be displayed as numbers.
-    ///
-    /// - Parameters:
-    ///   - name: The name of the column
-    ///   - keyPath: The key path to extract the Int value
-    ///   - width: Optional width of the column
-    ///   - bodyStyle: Optional style for the column's cells
-    ///   - headerStyle: Optional style for the column's header
-    ///   - nilHandling: How to handle nil values
-    init(
-        name: String,
-        keyPath: KeyPath<ObjectType, InputType>,
-        width: Int? = nil,
-        bodyStyle: CellStyle? = nil,
-        headerStyle: CellStyle? = nil,
-        nilHandling: TypedNilHandling<OutputType> = .keepEmpty)
-    {
-        let mapping: (InputType) -> IntColumnType = {
-            IntColumnType(IntColumnConfig(value: $0))
-        }
-        self.init(
-            name: name,
-            keyPath: keyPath,
-            width: width,
-            bodyStyle: bodyStyle,
-            headerStyle: headerStyle,
-            mapping: mapping,
-            nilHandling: nilHandling)
-    }
-}
+// extension Column where InputType == Int, OutputType == IntColumnType {
+//     /// Creates a column for Int values that will be displayed as numbers.
+//     ///
+//     /// - Parameters:
+//     ///   - name: The name of the column
+//     ///   - keyPath: The key path to extract the Int value
+//     ///   - width: Optional width of the column
+//     ///   - bodyStyle: Optional style for the column's cells
+//     ///   - headerStyle: Optional style for the column's header
+//     ///   - nilHandling: How to handle nil values
+//     init(
+//         name: String,
+//         keyPath: KeyPath<ObjectType, InputType>,
+//         width: Int? = nil,
+//         bodyStyle: CellStyle? = nil,
+//         headerStyle: CellStyle? = nil,
+//         nilHandling: TypedNilHandling<OutputType> = .keepEmpty)
+//     {
+//         let mapping: (InputType) -> IntColumnType = {
+//             IntColumnType(IntColumnConfig(value: $0))
+//         }
+//         self.init(
+//             name: name,
+//             keyPath: keyPath,
+//             width: width,
+//             bodyStyle: bodyStyle,
+//             headerStyle: headerStyle,
+//             mapping: mapping,
+//             nilHandling: nilHandling)
+//     }
+// }
 
-extension Column where InputType == String, OutputType == TextColumnType {
-    /// Creates a column for String values that will be displayed as text.
-    ///
-    /// - Parameters:
-    ///   - name: The name of the column
-    ///   - keyPath: The key path to extract the String value
-    ///   - width: Optional width of the column
-    ///   - bodyStyle: Optional style for the column's cells
-    ///   - headerStyle: Optional style for the column's header
-    ///   - nilHandling: How to handle nil values
-    init(
-        name: String,
-        keyPath: KeyPath<ObjectType, InputType>,
-        width: Int? = nil,
-        bodyStyle: CellStyle? = nil,
-        headerStyle: CellStyle? = nil,
-        nilHandling: TypedNilHandling<OutputType> = .keepEmpty)
-    {
-        let mapping: (InputType) -> TextColumnType = {
-            TextColumnType(TextColumnConfig(value: $0))
-        }
-        self.init(
-            name: name,
-            keyPath: keyPath,
-            width: width,
-            bodyStyle: bodyStyle,
-            headerStyle: headerStyle,
-            mapping: mapping,
-            nilHandling: nilHandling)
-    }
-}
+// extension Column where InputType == String, OutputType == TextColumnType {
+//     /// Creates a column for String values that will be displayed as text.
+//     ///
+//     /// - Parameters:
+//     ///   - name: The name of the column
+//     ///   - keyPath: The key path to extract the String value
+//     ///   - width: Optional width of the column
+//     ///   - bodyStyle: Optional style for the column's cells
+//     ///   - headerStyle: Optional style for the column's header
+//     ///   - nilHandling: How to handle nil values
+//     init(
+//         name: String,
+//         keyPath: KeyPath<ObjectType, InputType>,
+//         width: Int? = nil,
+//         bodyStyle: CellStyle? = nil,
+//         headerStyle: CellStyle? = nil,
+//         nilHandling: TypedNilHandling<OutputType> = .keepEmpty)
+//     {
+//         let mapping: (InputType) -> TextColumnType = {
+//             TextColumnType(TextColumnConfig(value: $0))
+//         }
+//         self.init(
+//             name: name,
+//             keyPath: keyPath,
+//             width: width,
+//             bodyStyle: bodyStyle,
+//             headerStyle: headerStyle,
+//             mapping: mapping,
+//             nilHandling: nilHandling)
+//     }
+// }
 
-extension Column where InputType == Date, OutputType == DateColumnType {
-    /// Creates a column for Date values that will be displayed as dates.
-    ///
-    /// - Parameters:
-    ///   - name: The name of the column
-    ///   - keyPath: The key path to extract the Date value
-    ///   - width: Optional width of the column
-    ///   - bodyStyle: Optional style for the column's cells
-    ///   - headerStyle: Optional style for the column's header
-    ///   - nilHandling: How to handle nil values
-    ///   - timeZone: The time zone to use for the date
-    init(
-        name: String,
-        keyPath: KeyPath<ObjectType, InputType>,
-        width: Int? = nil,
-        bodyStyle: CellStyle? = nil,
-        headerStyle: CellStyle? = nil,
-        nilHandling: TypedNilHandling<OutputType> = .keepEmpty,
-        timeZone: TimeZone = TimeZone.current)
-    {
-        let mapping: (InputType) -> DateColumnType = {
-            DateColumnType(DateColumnConfig(value: $0, timeZone: timeZone))
-        }
-        self.init(
-            name: name,
-            keyPath: keyPath,
-            width: width,
-            bodyStyle: bodyStyle,
-            headerStyle: headerStyle,
-            mapping: mapping,
-            nilHandling: nilHandling)
-    }
-}
+// extension Column where InputType == Date, OutputType == DateColumnType {
+//     /// Creates a column for Date values that will be displayed as dates.
+//     ///
+//     /// - Parameters:
+//     ///   - name: The name of the column
+//     ///   - keyPath: The key path to extract the Date value
+//     ///   - width: Optional width of the column
+//     ///   - bodyStyle: Optional style for the column's cells
+//     ///   - headerStyle: Optional style for the column's header
+//     ///   - nilHandling: How to handle nil values
+//     ///   - timeZone: The time zone to use for the date
+//     init(
+//         name: String,
+//         keyPath: KeyPath<ObjectType, InputType>,
+//         width: Int? = nil,
+//         bodyStyle: CellStyle? = nil,
+//         headerStyle: CellStyle? = nil,
+//         nilHandling: TypedNilHandling<OutputType> = .keepEmpty,
+//         timeZone: TimeZone = TimeZone.current)
+//     {
+//         let mapping: (InputType) -> DateColumnType = {
+//             DateColumnType(DateColumnConfig(value: $0, timeZone: timeZone))
+//         }
+//         self.init(
+//             name: name,
+//             keyPath: keyPath,
+//             width: width,
+//             bodyStyle: bodyStyle,
+//             headerStyle: headerStyle,
+//             mapping: mapping,
+//             nilHandling: nilHandling)
+//     }
+// }
 
-extension Column where InputType == Bool, OutputType == BoolColumnType {
-    /// Creates a column for Bool values that will be displayed as booleans.
-    ///
-    /// - Parameters:
-    ///   - name: The name of the column
-    ///   - keyPath: The key path to extract the Bool value
-    ///   - width: Optional width of the column
-    ///   - bodyStyle: Optional style for the column's cells
-    ///   - headerStyle: Optional style for the column's header
-    ///   - nilHandling: How to handle nil values
-    ///   - booleanExpressions: The boolean expressions to use for the column
-    ///   - caseStrategy: The case strategy to use for the column
-    init(
-        name: String,
-        keyPath: KeyPath<ObjectType, InputType>,
-        width: Int? = nil,
-        bodyStyle: CellStyle? = nil,
-        headerStyle: CellStyle? = nil,
-        nilHandling: TypedNilHandling<OutputType> = .keepEmpty,
-        booleanExpressions: Cell.BooleanExpressions = .oneAndZero,
-        caseStrategy: Cell.CaseStrategy = .upper)
-    {
-        let mapping: (InputType) -> BoolColumnType = {
-            BoolColumnType(BoolColumnConfig(
-                value: $0,
-                booleanExpressions: booleanExpressions,
-                caseStrategy: caseStrategy))
-        }
-        self.init(
-            name: name,
-            keyPath: keyPath,
-            width: width,
-            bodyStyle: bodyStyle,
-            headerStyle: headerStyle,
-            mapping: mapping,
-            nilHandling: nilHandling)
-    }
-}
+// extension Column where InputType == Bool, OutputType == BoolColumnType {
+//     /// Creates a column for Bool values that will be displayed as booleans.
+//     ///
+//     /// - Parameters:
+//     ///   - name: The name of the column
+//     ///   - keyPath: The key path to extract the Bool value
+//     ///   - width: Optional width of the column
+//     ///   - bodyStyle: Optional style for the column's cells
+//     ///   - headerStyle: Optional style for the column's header
+//     ///   - nilHandling: How to handle nil values
+//     ///   - booleanExpressions: The boolean expressions to use for the column
+//     ///   - caseStrategy: The case strategy to use for the column
+//     init(
+//         name: String,
+//         keyPath: KeyPath<ObjectType, InputType>,
+//         width: Int? = nil,
+//         bodyStyle: CellStyle? = nil,
+//         headerStyle: CellStyle? = nil,
+//         nilHandling: TypedNilHandling<OutputType> = .keepEmpty,
+//         booleanExpressions: Cell.BooleanExpressions = .oneAndZero,
+//         caseStrategy: Cell.CaseStrategy = .upper)
+//     {
+//         let mapping: (InputType) -> BoolColumnType = {
+//             BoolColumnType(BoolColumnConfig(
+//                 value: $0,
+//                 booleanExpressions: booleanExpressions,
+//                 caseStrategy: caseStrategy))
+//         }
+//         self.init(
+//             name: name,
+//             keyPath: keyPath,
+//             width: width,
+//             bodyStyle: bodyStyle,
+//             headerStyle: headerStyle,
+//             mapping: mapping,
+//             nilHandling: nilHandling)
+//     }
+// }
 
-extension Column where InputType == URL, OutputType == URLColumnType {
-    /// Creates a column for URL values that will be displayed as URLs.
-    ///
-    /// - Parameters:
-    ///   - name: The name of the column
-    ///   - keyPath: The key path to extract the URL value
-    ///   - width: Optional width of the column
-    ///   - bodyStyle: Optional style for the column's cells
-    ///   - headerStyle: Optional style for the column's header
-    ///   - nilHandling: How to handle nil values
-    init(
-        name: String,
-        keyPath: KeyPath<ObjectType, InputType>,
-        width: Int? = nil,
-        bodyStyle: CellStyle? = nil,
-        headerStyle: CellStyle? = nil,
-        nilHandling: TypedNilHandling<OutputType> = .keepEmpty)
-    {
-        let mapping: (InputType) -> URLColumnType = {
-            URLColumnType(URLColumnConfig(value: $0))
-        }
-        self.init(
-            name: name,
-            keyPath: keyPath,
-            width: width,
-            bodyStyle: bodyStyle,
-            headerStyle: headerStyle,
-            mapping: mapping,
-            nilHandling: nilHandling)
-    }
-}
+// extension Column where InputType == URL, OutputType == URLColumnType {
+//     /// Creates a column for URL values that will be displayed as URLs.
+//     ///
+//     /// - Parameters:
+//     ///   - name: The name of the column
+//     ///   - keyPath: The key path to extract the URL value
+//     ///   - width: Optional width of the column
+//     ///   - bodyStyle: Optional style for the column's cells
+//     ///   - headerStyle: Optional style for the column's header
+//     ///   - nilHandling: How to handle nil values
+//     init(
+//         name: String,
+//         keyPath: KeyPath<ObjectType, InputType>,
+//         width: Int? = nil,
+//         bodyStyle: CellStyle? = nil,
+//         headerStyle: CellStyle? = nil,
+//         nilHandling: TypedNilHandling<OutputType> = .keepEmpty)
+//     {
+//         let mapping: (InputType) -> URLColumnType = {
+//             URLColumnType(URLColumnConfig(value: $0))
+//         }
+//         self.init(
+//             name: name,
+//             keyPath: keyPath,
+//             width: width,
+//             bodyStyle: bodyStyle,
+//             headerStyle: headerStyle,
+//             mapping: mapping,
+//             nilHandling: nilHandling)
+//     }
+// }
 
-extension Column where InputType == Double, OutputType == PercentageColumnType {
-    /// Creates a column for Percentage values that will be displayed as percentages.
-    ///
-    /// - Parameters:
-    ///   - name: The name of the column
-    ///   - keyPath: The key path to extract the Percentage value
-    ///   - width: Optional width of the column
-    ///   - bodyStyle: Optional style for the column's cells
-    ///   - headerStyle: Optional style for the column's header
-    ///   - nilHandling: How to handle nil values
-    ///   - precision: The precision to use for the column
-    init(
-        name: String,
-        keyPath: KeyPath<ObjectType, InputType>,
-        width: Int? = nil,
-        bodyStyle: CellStyle? = nil,
-        headerStyle: CellStyle? = nil,
-        nilHandling: TypedNilHandling<OutputType> = .keepEmpty,
-        precision: Int = 2)
-    {
-        let mapping: (InputType) -> PercentageColumnType = {
-            PercentageColumnType(PercentageColumnConfig(value: $0, precision: precision))
-        }
-        self.init(
-            name: name,
-            keyPath: keyPath,
-            width: width,
-            bodyStyle: bodyStyle,
-            headerStyle: headerStyle,
-            mapping: mapping,
-            nilHandling: nilHandling)
-    }
-}
+// extension Column where InputType == Double, OutputType == PercentageColumnType {
+//     /// Creates a column for Percentage values that will be displayed as percentages.
+//     ///
+//     /// - Parameters:
+//     ///   - name: The name of the column
+//     ///   - keyPath: The key path to extract the Percentage value
+//     ///   - width: Optional width of the column
+//     ///   - bodyStyle: Optional style for the column's cells
+//     ///   - headerStyle: Optional style for the column's header
+//     ///   - nilHandling: How to handle nil values
+//     ///   - precision: The precision to use for the column
+//     init(
+//         name: String,
+//         keyPath: KeyPath<ObjectType, InputType>,
+//         width: Int? = nil,
+//         bodyStyle: CellStyle? = nil,
+//         headerStyle: CellStyle? = nil,
+//         nilHandling: TypedNilHandling<OutputType> = .keepEmpty,
+//         precision: Int = 2)
+//     {
+//         let mapping: (InputType) -> PercentageColumnType = {
+//             PercentageColumnType(PercentageColumnConfig(value: $0, precision: precision))
+//         }
+//         self.init(
+//             name: name,
+//             keyPath: keyPath,
+//             width: width,
+//             bodyStyle: bodyStyle,
+//             headerStyle: headerStyle,
+//             mapping: mapping,
+//             nilHandling: nilHandling)
+//     }
+// }
 
 // MARK: - Simplified Column Declaration for Double Types
 
@@ -762,7 +762,45 @@ extension Column {
     }
 }
 
-extension Column where InputType == Date?, OutputType == DateColumnType {
+// MARK: - Simplified Column Declaration for Date Types
+
+extension Column {
+    /// Creates a simplified column for non-optional Date values with automatic type mapping.
+    ///
+    /// This convenience initializer eliminates the need for explicit mapping when working with
+    /// non-optional Date properties. Uses the current system timezone by default.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Basic usage:
+    /// Column(name: "Created At", keyPath: \.createdAt)
+    ///
+    /// // With custom timezone:
+    /// Column(name: "Created At", keyPath: \.createdAt, timezone: TimeZone(identifier: "UTC")!)
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: Display name in the Excel header row
+    ///   - keyPath: KeyPath to a non-optional Date property
+    ///   - timeZone: Timezone for date interpretation (default: current system timezone)
+    /// - Returns: A configured column that automatically maps Date values
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, Date>,
+        timeZone: TimeZone = .current) where InputType == Date, OutputType == DateColumnType
+    {
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: nil,
+            bodyStyle: nil,
+            headerStyle: nil,
+            mapping: { value in
+                DateColumnType(DateColumnConfig(value: value, timeZone: timeZone))
+            },
+            nilHandling: .keepEmpty)
+    }
+
     /// Creates a column for optional Date values that will be displayed as dates.
     ///
     /// This is a convenience initializer that automatically maps optional Date values
@@ -781,10 +819,12 @@ extension Column where InputType == Date?, OutputType == DateColumnType {
     /// - Parameters:
     ///   - name: Display name in the Excel header row
     ///   - keyPath: KeyPath to an optional Date property
+    ///   - timeZone: Timezone for date interpretation (default: current system timezone)
     /// - Returns: A configured column that automatically maps optional Date values
     public init(
         name: String,
-        keyPath: KeyPath<ObjectType, Date?>) where InputType == Date?, OutputType == DateColumnType
+        keyPath: KeyPath<ObjectType, Date?>,
+        timeZone: TimeZone = .current) where InputType == Date?, OutputType == DateColumnType
     {
         self.init(
             name: name,
@@ -793,13 +833,43 @@ extension Column where InputType == Date?, OutputType == DateColumnType {
             bodyStyle: nil,
             headerStyle: nil,
             mapping: { value in
-                DateColumnType(DateColumnConfig(value: value, timeZone: TimeZone.current))
+                DateColumnType(DateColumnConfig(value: value, timeZone: timeZone))
             },
             nilHandling: .keepEmpty)
     }
 }
 
-extension Column where InputType == URL?, OutputType == URLColumnType {
+extension Column {
+    /// Creates a column for non-optional URL values that will be displayed as URLs.
+    ///
+    /// This is a convenience initializer that automatically maps non-optional URL values
+    /// to URLColumnType without requiring explicit column configuration.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Basic usage:
+    /// Column(name: "Website", keyPath: \.website)
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: Display name in the Excel header row
+    ///   - keyPath: KeyPath to a non-optional URL property
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, URL>) where InputType == URL, OutputType == URLColumnType
+    {
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: nil,
+            bodyStyle: nil,
+            headerStyle: nil,
+            mapping: { value in
+                URLColumnType(URLColumnConfig(value: value))
+            },
+            nilHandling: .keepEmpty)
+    }
+
     /// Creates a column for optional URL values that will be displayed as URLs.
     ///
     /// This is a convenience initializer that automatically maps optional URL values
@@ -835,7 +905,41 @@ extension Column where InputType == URL?, OutputType == URLColumnType {
     }
 }
 
-extension Column where InputType == Bool?, OutputType == BoolColumnType {
+extension Column {
+    /// Creates a column for non-optional Bool values that will be displayed as boolean text.
+    ///
+    /// This is a convenience initializer that automatically maps non-optional Bool values
+    /// to BoolColumnType without requiring explicit column configuration.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Basic usage:
+    /// Column(name: "Is Active", keyPath: \.isActive)  // true -> "1", false -> "0"
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: Display name in the Excel header row
+    ///   - keyPath: KeyPath to a non-optional Bool property
+    ///   - booleanExpressions: The boolean expressions to use for the column (default: oneAndZero)
+    ///   - caseStrategy: The case strategy to use for the column (default: upper)
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, Bool>,
+        booleanExpressions: Cell.BooleanExpressions = .oneAndZero,
+        caseStrategy: Cell.CaseStrategy = .upper) where InputType == Bool, OutputType == BoolColumnType
+    {
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: nil,
+            bodyStyle: nil,
+            headerStyle: nil,
+            mapping: { value in
+                BoolColumnType(BoolColumnConfig(value: value, booleanExpressions: booleanExpressions, caseStrategy: caseStrategy))
+            },
+            nilHandling: .keepEmpty)
+    }
+
     /// Creates a column for optional Bool values that will be displayed as boolean text.
     ///
     /// This is a convenience initializer that automatically maps optional Bool values
@@ -853,10 +957,14 @@ extension Column where InputType == Bool?, OutputType == BoolColumnType {
     /// - Parameters:
     ///   - name: Display name in the Excel header row
     ///   - keyPath: KeyPath to an optional Bool property
+    ///   - booleanExpressions: The boolean expressions to use for the column (default: oneAndZero)
+    ///   - caseStrategy: The case strategy to use for the column (default: upper)
     /// - Returns: A configured column that automatically maps optional Bool values
     public init(
         name: String,
-        keyPath: KeyPath<ObjectType, Bool?>) where InputType == Bool?, OutputType == BoolColumnType
+        keyPath: KeyPath<ObjectType, Bool?>,
+        booleanExpressions: Cell.BooleanExpressions = .oneAndZero,
+        caseStrategy: Cell.CaseStrategy = .upper) where InputType == Bool?, OutputType == BoolColumnType
     {
         self.init(
             name: name,
@@ -865,13 +973,46 @@ extension Column where InputType == Bool?, OutputType == BoolColumnType {
             bodyStyle: nil,
             headerStyle: nil,
             mapping: { value in
-                BoolColumnType(BoolColumnConfig(value: value, booleanExpressions: .oneAndZero, caseStrategy: .upper))
+                BoolColumnType(BoolColumnConfig(value: value, booleanExpressions: booleanExpressions, caseStrategy: caseStrategy))
             },
             nilHandling: .keepEmpty)
     }
 }
 
-extension Column where InputType == Double?, OutputType == PercentageColumnType {
+extension Column {
+    /// Creates a column for non-optional Percentage values that will be displayed as percentages.
+    ///
+    /// This is a convenience initializer that automatically maps non-optional Double values
+    /// to PercentageColumnType without requiring explicit column configuration.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Basic usage:
+    /// Column(name: "Growth Rate", keyPath: \.growthRate)  // 0.5 -> 50%
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: Display name in the Excel header row
+    ///   - keyPath: KeyPath to a non-optional Double property (as decimal: 0.5 = 50%)
+    ///   - precision: Number of decimal places to display in percentage format (default: 2)
+    /// - Returns: A configured column that automatically maps non-optional percentage values
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, Double>,
+        precision: Int = 2) where InputType == Double, OutputType == PercentageColumnType
+    {
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: nil,
+            bodyStyle: nil,
+            headerStyle: nil,
+            mapping: { value in
+                PercentageColumnType(PercentageColumnConfig(value: value, precision: precision))
+            },
+            nilHandling: .keepEmpty)
+    }
+
     /// Creates a column for optional Percentage values that will be displayed as percentages.
     ///
     /// This is a convenience initializer that automatically maps optional Double values

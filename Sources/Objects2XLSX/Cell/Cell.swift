@@ -340,47 +340,39 @@ extension Cell {
         public var valueString: String {
             switch self {
                 case let .stringValue(string):
-                    return string
+                    string.cellValueString
                 case let .optionalString(string):
-                    return string.cellValueString
+                    string.cellValueString
                 case let .doubleValue(double):
-                    if double.isInfinite || double.isNaN {
-                        return ""
-                    }
-                    return String(double)
+                    double.cellValueString
                 case let .optionalDouble(double):
-                    return double.cellValueString
+                    double.cellValueString
                 case let .intValue(int):
-                    return String(int)
+                    int.cellValueString
                 case let .optionalInt(int):
-                    return int.cellValueString
+                    int.cellValueString
                 case let .dateValue(date, timeZone):
-                    return date.cellValueString(timeZone: timeZone)
+                    date.cellValueString(timeZone: timeZone)
                 case let .optionalDate(date, timeZone):
-                    return date.cellValueString(timeZone: timeZone)
+                    date.cellValueString(timeZone: timeZone)
                 case let .booleanValue(boolean, booleanExpressions, caseStrategy):
-                    let boolText = boolean ? booleanExpressions.trueString : booleanExpressions.falseString
-                    return caseStrategy.apply(to: boolText)
+                    boolean.cellValueString(
+                        booleanExpressions: booleanExpressions,
+                        caseStrategy: caseStrategy)
                 case let .optionalBoolean(boolean, booleanExpressions, caseStrategy):
-                    return boolean.cellValueString(
+                    boolean.cellValueString(
                         booleanExpressions: booleanExpressions,
                         caseStrategy: caseStrategy)
                 case let .urlValue(url):
-                    return url.absoluteString
+                    url.cellValueString
                 case let .optionalURL(url):
-                    return url.cellValueString
+                    url.cellValueString
                 case let .percentageValue(percentage, precision):
-                    if percentage.isInfinite || percentage.isNaN {
-                        return ""
-                    }
-                    var decimal = Decimal(percentage)
-                    var rounded = Decimal()
-                    NSDecimalRound(&rounded, &decimal, precision + 2, .plain)
-                    return "\(rounded)"
+                    percentage.cellValueString(precision: precision)
                 case let .optionalPercentage(percentage, precision):
-                    return percentage.cellValueString(precision: precision)
+                    percentage.cellValueString(precision: precision)
                 case .empty:
-                    return ""
+                    ""
             }
         }
     }
