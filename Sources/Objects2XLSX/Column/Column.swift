@@ -543,8 +543,6 @@ extension Column where InputType == Double, OutputType == PercentageColumnType {
     }
 }
 
-
-
 // MARK: - Simplified Column Declaration for Double Types
 
 extension Column {
@@ -665,8 +663,3 @@ extension Column {
             nilHandling: .keepEmpty)
     }
 }
-
-
-
-
-
