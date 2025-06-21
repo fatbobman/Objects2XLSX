@@ -190,3 +190,35 @@ extension Column where InputType == Bool?, OutputType == BoolColumnType {
             nilHandling: .defaultValue(defaultValue))
     }
 }
+
+// MARK: - Chainable Configuration Methods for Optional Percentage Columns
+
+extension Column where InputType == Double?, OutputType == PercentageColumnType {
+    /// Sets a default value to use when the source property is nil.
+    ///
+    /// This method transforms an optional Double column into one that uses a specified
+    /// default value instead of empty cells for nil values.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Growth Rate", keyPath: \.growthRate)
+    ///     .defaultValue(0.0)  // nil percentages become 0%
+    ///     .bodyStyle(percentageStyle)
+    ///
+    /// Column(name: "Accuracy", keyPath: \.accuracy)
+    ///     .defaultValue(1.0)   // nil accuracy becomes 100%
+    /// ```
+    ///
+    /// - Parameter defaultValue: The Double value to use when the source is nil (as decimal: 0.5 = 50%)
+    /// - Returns: A new column that replaces nil values with the default value
+    public func defaultValue(_ defaultValue: Double) -> Column<ObjectType, Double?, PercentageColumnType> {
+        Column<ObjectType, Double?, PercentageColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: mapping,
+            nilHandling: .defaultValue(defaultValue))
+    }
+}

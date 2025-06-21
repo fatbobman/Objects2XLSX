@@ -342,19 +342,26 @@ public struct PercentageColumnType: ColumnOutputTypeProtocol {
 
     /// Converts the percentage value to Excel's percentage cell type.
     ///
-    /// Returns a `.percentage()` cell type with the configured precision
-    /// that Excel will render with percentage formatting.
+    /// Returns an appropriate percentage cell type that Excel will render with percentage formatting.
+    /// Uses `.percentageValue()` for non-nil values and `.optionalPercentage()` for optional values.
     public var cellType: Cell.CellType {
-        .percentage(config.value, precision: config.precision)
+        if let value = config.value {
+            .percentageValue(value, precision: config.precision)
+        } else {
+            .optionalPercentage(config.value, precision: config.precision)
+        }
     }
 
     /// Creates a PercentageColumnType with a substituted default value for nil handling.
     ///
+    /// This method only substitutes the default value when the original config value is nil.
+    /// If the original config has a non-nil value, that value is preserved.
+    ///
     /// - Parameters:
     ///   - value: The default percentage value to use instead of nil (as decimal)
-    ///   - config: Original configuration providing precision settings
-    /// - Returns: New PercentageColumnType with the default value and preserved precision
+    ///   - config: Original configuration containing the actual value (may be nil)
+    /// - Returns: New PercentageColumnType with original value if non-nil, otherwise default value
     public static func withDefaultValue(_ value: Double, config: PercentageColumnConfig) -> Self {
-        PercentageColumnType(PercentageColumnConfig(value: value, precision: config.precision))
+        PercentageColumnType(PercentageColumnConfig(value: config.value ?? value, precision: config.precision))
     }
 }

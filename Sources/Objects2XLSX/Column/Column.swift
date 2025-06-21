@@ -870,3 +870,44 @@ extension Column where InputType == Bool?, OutputType == BoolColumnType {
             nilHandling: .keepEmpty)
     }
 }
+
+extension Column where InputType == Double?, OutputType == PercentageColumnType {
+    /// Creates a column for optional Percentage values that will be displayed as percentages.
+    ///
+    /// This is a convenience initializer that automatically maps optional Double values
+    /// to PercentageColumnType without requiring explicit column configuration.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Basic usage:
+    /// Column(name: "Growth Rate", keyPath: \.growthRate)  // nil -> empty cell, 0.5 -> 50%
+    ///
+    /// // With default value:
+    /// Column(name: "Accuracy", keyPath: \.accuracy).defaultValue(0.0)  // nil -> 0%
+    ///
+    /// // With custom precision:
+    /// Column(name: "Success Rate", keyPath: \.successRate, precision: 1)  // 0.567 -> 56.7%
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: Display name in the Excel header row
+    ///   - keyPath: KeyPath to an optional Double property (as decimal: 0.5 = 50%)
+    ///   - precision: Number of decimal places to display in percentage format (default: 2)
+    /// - Returns: A configured column that automatically maps optional percentage values
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, Double?>,
+        precision: Int = 2) where InputType == Double?, OutputType == PercentageColumnType
+    {
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: nil,
+            bodyStyle: nil,
+            headerStyle: nil,
+            mapping: { value in
+                PercentageColumnType(PercentageColumnConfig(value: value, precision: precision))
+            },
+            nilHandling: .keepEmpty)
+    }
+}

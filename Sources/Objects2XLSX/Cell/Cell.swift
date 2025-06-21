@@ -355,6 +355,16 @@ extension Cell {
         /// - Parameter precision: Number of decimal places to preserve
         case percentage(Double?, precision: Int = 2)
 
+        /// Non-optional percentage value with configurable decimal precision.
+        /// - Parameter percentage: The guaranteed non-nil percentage as decimal (0.5 = 50%)
+        /// - Parameter precision: Number of decimal places to preserve
+        case percentageValue(Double, precision: Int = 2)
+
+        /// Optional percentage value with configurable decimal precision.
+        /// - Parameter percentage: The optional percentage as decimal (0.5 = 50%, nil represents empty cell)
+        /// - Parameter precision: Number of decimal places to preserve
+        case optionalPercentage(Double?, precision: Int = 2)
+
         /// Explicitly empty cell with no value.
         /// Used when we want to represent a cell that should be completely empty.
         case empty
@@ -413,6 +423,10 @@ extension Cell {
                 case let .optionalURL(url):
                     return url.cellValueString
                 case let .percentage(percentage, precision):
+                    return percentage.cellValueString(precision: precision)
+                case let .percentageValue(percentage, _):
+                    return String(percentage)
+                case let .optionalPercentage(percentage, precision):
                     return percentage.cellValueString(precision: precision)
                 case .empty:
                     return ""
