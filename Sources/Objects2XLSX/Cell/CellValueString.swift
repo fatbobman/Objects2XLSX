@@ -144,6 +144,18 @@ extension Bool? {
     }
 }
 
+extension URL {
+    /// Converts a URL to its absolute string representation for Excel.
+    ///
+    /// URLs are stored as text in Excel cells, using their complete absolute string
+    /// representation including scheme, host, path, and query parameters.
+    ///
+    /// - Returns: Absolute URL string
+    var cellValueString: String {
+        absoluteString
+    }
+}
+
 extension URL? {
     /// Converts an optional URL to its absolute string representation for Excel.
     ///

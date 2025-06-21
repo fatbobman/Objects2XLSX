@@ -529,4 +529,138 @@ extension Column {
             nilHandling: .keepEmpty // Date output may be nil
         )
     }
+
+    /// Transforms column values to URL using a custom conversion closure.
+    ///
+    /// This method provides a way to convert any column output type to URL values.
+    /// The closure receives the processed value based on the column's nilHandling configuration:
+    /// - For columns with `.keepEmpty`: receives T? (may be nil)
+    /// - For columns with `.defaultValue`: receives T (never nil, default applied)
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Convert String to URL
+    /// Column(name: "Website", keyPath: \.websiteString)
+    ///     .toURL { (urlStr: String) in
+    ///         URL(string: urlStr) ?? URL(string: "https://example.com")!
+    ///     }
+    ///
+    /// // Convert domain to full URL
+    /// Column(name: "Domain", keyPath: \.domain)
+    ///     .toURL { (domain: String) in
+    ///         URL(string: "https://\(domain)")!
+    ///     }
+    ///
+    /// // Convert optional values with defaultValue
+    /// Column(name: "Link", keyPath: \.linkString)
+    ///     .defaultValue("https://default.com")
+    ///     .toURL { (urlStr: String) in  // Non-optional after defaultValue!
+    ///         URL(string: urlStr) ?? URL(string: "https://fallback.com")!
+    ///     }
+    /// ```
+    ///
+    /// - Parameter transform: A closure that converts the processed value to URL
+    /// - Returns: A new column that outputs URLColumnType with transformed values
+    public func toURL<T>(
+        _ transform: @escaping (T) -> URL) -> Column<ObjectType, InputType, URLColumnType> where OutputType.Config.ValueType == T
+    {
+        Column<ObjectType, InputType, URLColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { input in
+                // First apply the original mapping
+                let originalOutput = self.mapping(input)
+
+                // Apply nilHandling logic to get the final processed output
+                let processedOutput = switch self.nilHandling {
+                    case .keepEmpty:
+                        originalOutput
+                    case let .defaultValue(defaultValue):
+                        OutputType.withDefaultValue(defaultValue, config: originalOutput.config)
+                }
+
+                // Extract the value from the processed output (now with defaults applied)
+                let finalValue = processedOutput.config.value
+
+                // Apply the transformation - when defaultValue is used, finalValue is guaranteed to be non-nil
+                let urlValue: URL = switch self.nilHandling {
+                    case .keepEmpty:
+                        // For keepEmpty, we need to handle nil safely
+                        if let finalValue {
+                            transform(finalValue)
+                        } else {
+                            // This shouldn't happen with the current API, but handle gracefully
+                            transform(finalValue!)
+                        }
+                    case .defaultValue:
+                        // For defaultValue, finalValue is guaranteed to be non-nil
+                        transform(finalValue!)
+                }
+
+                // Return URLColumnType
+                return URLColumnType(URLColumnConfig(value: urlValue))
+            },
+            nilHandling: .keepEmpty // URL output is never nil
+        )
+    }
+
+    /// Transforms column values to URL using a custom conversion closure that handles optional values.
+    ///
+    /// This overload is for columns that may contain nil values (when nilHandling is .keepEmpty).
+    /// Use this when you need to explicitly handle nil cases in your transformation.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Convert optional String to optional URL
+    /// Column(name: "Website", keyPath: \.websiteString)
+    ///     .toURL { (urlStr: String?) in
+    ///         guard let urlStr else { return nil }
+    ///         return URL(string: urlStr)
+    ///     }
+    ///
+    /// // Convert with custom nil handling
+    /// Column(name: "Link", keyPath: \.link)
+    ///     .toURL { (urlStr: String?) in
+    ///         urlStr.flatMap { URL(string: $0) } ?? URL(string: "https://default.com")!
+    ///     }
+    /// ```
+    ///
+    /// - Parameter transform: A closure that converts the optional value to optional URL
+    /// - Returns: A new column that outputs URLColumnType with transformed values
+    public func toURL<T>(
+        _ transform: @escaping (T?) -> URL?) -> Column<ObjectType, InputType, URLColumnType> where OutputType.Config.ValueType == T
+    {
+        Column<ObjectType, InputType, URLColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { input in
+                // First apply the original mapping
+                let originalOutput = self.mapping(input)
+
+                // Apply nilHandling logic to get the final processed output
+                let processedOutput = switch self.nilHandling {
+                    case .keepEmpty:
+                        originalOutput
+                    case let .defaultValue(defaultValue):
+                        OutputType.withDefaultValue(defaultValue, config: originalOutput.config)
+                }
+
+                // Extract the value from the processed output
+                let finalValue = processedOutput.config.value
+
+                // Apply the transformation with optional handling
+                let urlValue = transform(finalValue)
+
+                // Return URLColumnType
+                return URLColumnType(URLColumnConfig(value: urlValue))
+            },
+            nilHandling: .keepEmpty // URL output may be nil
+        )
+    }
 }

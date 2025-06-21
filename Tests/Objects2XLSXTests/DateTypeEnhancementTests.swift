@@ -21,7 +21,7 @@ struct DateTypeEnhancementTests {
 
     @Test("Date CellType Cases")
     func dateCellTypeCases() throws {
-        let testDate = Date(timeIntervalSince1970: 1640995200) // 2022-01-01 00:00:00 UTC
+        let testDate = Date(timeIntervalSince1970: 1_640_995_200) // 2022-01-01 00:00:00 UTC
         let testTimeZone = TimeZone(secondsFromGMT: 0)!
 
         // Test non-optional date
@@ -45,7 +45,7 @@ struct DateTypeEnhancementTests {
 
     @Test("DateColumnType CellType Selection")
     func dateColumnTypeCellType() throws {
-        let testDate = Date(timeIntervalSince1970: 1640995200) // 2022-01-01 00:00:00 UTC
+        let testDate = Date(timeIntervalSince1970: 1_640_995_200) // 2022-01-01 00:00:00 UTC
         let testTimeZone = TimeZone(secondsFromGMT: 0)!
 
         // Non-nil value should use dateValue
@@ -75,7 +75,7 @@ struct DateTypeEnhancementTests {
 
     @Test("DateColumnType withDefaultValue")
     func dateColumnTypeDefaultValue() throws {
-        let defaultDate = Date(timeIntervalSince1970: 1640995200) // 2022-01-01 00:00:00 UTC
+        let defaultDate = Date(timeIntervalSince1970: 1_640_995_200) // 2022-01-01 00:00:00 UTC
         let testTimeZone = TimeZone(secondsFromGMT: 0)!
 
         // Test with nil value
@@ -85,7 +85,7 @@ struct DateTypeEnhancementTests {
         #expect(withDefault.config.timeZone == testTimeZone)
 
         // Test with non-nil value (should preserve original)
-        let originalDate = Date(timeIntervalSince1970: 1672531200) // 2023-01-01 00:00:00 UTC
+        let originalDate = Date(timeIntervalSince1970: 1_672_531_200) // 2023-01-01 00:00:00 UTC
         let nonNilConfig = DateColumnConfig(value: originalDate, timeZone: testTimeZone)
         let preserveOriginal = DateColumnType.withDefaultValue(defaultDate, config: nonNilConfig)
         #expect(preserveOriginal.config.value == originalDate)
@@ -94,8 +94,8 @@ struct DateTypeEnhancementTests {
 
     @Test("Date Column Optional Support")
     func dateColumnOptionalSupport() throws {
-        let testDate = Date(timeIntervalSince1970: 1640995200) // 2022-01-01 00:00:00 UTC
-        let defaultDate = Date(timeIntervalSince1970: 1609459200) // 2021-01-01 00:00:00 UTC
+        let testDate = Date(timeIntervalSince1970: 1_640_995_200) // 2022-01-01 00:00:00 UTC
+        let defaultDate = Date(timeIntervalSince1970: 1_609_459_200) // 2021-01-01 00:00:00 UTC
 
         let data = [
             TestModel(name: "Item A", createdDate: testDate, modifiedDate: testDate, expiryDate: testDate),
@@ -131,8 +131,8 @@ struct DateTypeEnhancementTests {
 
     @Test("Date Column toDate with defaultValue")
     func dateColumnToDateWithDefault() throws {
-        let testDate = Date(timeIntervalSince1970: 1640995200) // 2022-01-01 00:00:00 UTC
-        let defaultDate = Date(timeIntervalSince1970: 1609459200) // 2021-01-01 00:00:00 UTC
+        let testDate = Date(timeIntervalSince1970: 1_640_995_200) // 2022-01-01 00:00:00 UTC
+        let defaultDate = Date(timeIntervalSince1970: 1_609_459_200) // 2021-01-01 00:00:00 UTC
 
         let data = [
             TestModel(name: "Item", createdDate: testDate, modifiedDate: nil, expiryDate: nil),
@@ -166,7 +166,7 @@ struct DateTypeEnhancementTests {
 
     @Test("Date Column toString transformation")
     func dateColumnToStringTransformation() throws {
-        let testDate = Date(timeIntervalSince1970: 1640995200) // 2022-01-01 00:00:00 UTC
+        let testDate = Date(timeIntervalSince1970: 1_640_995_200) // 2022-01-01 00:00:00 UTC
 
         let data = [
             TestModel(name: "Item", createdDate: testDate, modifiedDate: testDate, expiryDate: nil),

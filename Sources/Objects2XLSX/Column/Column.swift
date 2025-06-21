@@ -798,3 +798,39 @@ extension Column where InputType == Date?, OutputType == DateColumnType {
             nilHandling: .keepEmpty)
     }
 }
+
+extension Column where InputType == URL?, OutputType == URLColumnType {
+    /// Creates a column for optional URL values that will be displayed as URLs.
+    ///
+    /// This is a convenience initializer that automatically maps optional URL values
+    /// to URLColumnType without requiring explicit column configuration.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Basic usage:
+    /// Column(name: "Website", keyPath: \.website)  // nil -> empty cell
+    ///
+    /// // With default value:
+    /// Column(name: "Homepage", keyPath: \.homepage).defaultValue(URL(string: "https://example.com")!)  // nil -> default URL
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: Display name in the Excel header row
+    ///   - keyPath: KeyPath to an optional URL property
+    /// - Returns: A configured column that automatically maps optional URL values
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, URL?>) where InputType == URL?, OutputType == URLColumnType
+    {
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: nil,
+            bodyStyle: nil,
+            headerStyle: nil,
+            mapping: { value in
+                URLColumnType(URLColumnConfig(value: value))
+            },
+            nilHandling: .keepEmpty)
+    }
+}

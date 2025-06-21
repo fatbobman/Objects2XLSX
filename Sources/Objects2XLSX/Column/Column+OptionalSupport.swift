@@ -126,3 +126,35 @@ extension Column where InputType == Date?, OutputType == DateColumnType {
             nilHandling: .defaultValue(defaultValue))
     }
 }
+
+// MARK: - Chainable Configuration Methods for Optional URL Columns
+
+extension Column where InputType == URL?, OutputType == URLColumnType {
+    /// Sets a default value to use when the source property is nil.
+    ///
+    /// This method transforms an optional URL column into one that uses a specified
+    /// default value instead of empty cells for nil values.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Website", keyPath: \.website)
+    ///     .defaultValue(URL(string: "https://example.com")!)  // nil URLs become default URL
+    ///     .bodyStyle(linkStyle)
+    ///
+    /// Column(name: "Homepage", keyPath: \.homepage)
+    ///     .defaultValue(URL(string: "https://company.com")!)
+    /// ```
+    ///
+    /// - Parameter defaultValue: The URL value to use when the source is nil
+    /// - Returns: A new column that replaces nil values with the default value
+    public func defaultValue(_ defaultValue: URL) -> Column<ObjectType, URL?, URLColumnType> {
+        Column<ObjectType, URL?, URLColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: mapping,
+            nilHandling: .defaultValue(defaultValue))
+    }
+}

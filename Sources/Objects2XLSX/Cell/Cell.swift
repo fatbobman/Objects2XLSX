@@ -122,7 +122,7 @@ extension Cell {
 
         // Add cell type attribute based on value type and whether it uses shared strings
         switch value {
-            case .string, .stringValue, .optionalString, .url:
+            case .string, .stringValue, .optionalString, .url, .urlValue, .optionalURL:
                 if sharedStringID != nil {
                     xml += " t=\"s\""
                 } else {
@@ -168,6 +168,22 @@ extension Cell {
                     xml += "<is><t>\(stringValue ?? "")</t></is>"
                 }
             case let .url(url):
+                if let sharedStringID {
+                    // Use shared string reference for URL
+                    xml += "<v>\(sharedStringID)</v>"
+                } else {
+                    // Use inline URL string value
+                    xml += "<is><t>\(url?.absoluteString ?? "")</t></is>"
+                }
+            case let .urlValue(url):
+                if let sharedStringID {
+                    // Use shared string reference for URL
+                    xml += "<v>\(sharedStringID)</v>"
+                } else {
+                    // Use inline URL string value - non-optional, optimized path
+                    xml += "<is><t>\(url.absoluteString)</t></is>"
+                }
+            case let .optionalURL(url):
                 if let sharedStringID {
                     // Use shared string reference for URL
                     xml += "<v>\(sharedStringID)</v>"
@@ -268,12 +284,12 @@ extension Cell {
         /// - Parameter date: The date/time value (nil represents empty cell)
         /// - Parameter timeZone: Timezone for date interpretation (defaults to current)
         case date(Date?, timeZone: TimeZone = TimeZone.current)
-        
+
         /// Non-optional date and time value with timezone support.
         /// - Parameter date: The guaranteed non-nil date/time value
         /// - Parameter timeZone: Timezone for date interpretation (defaults to current)
         case dateValue(Date, timeZone: TimeZone = TimeZone.current)
-        
+
         /// Optional date and time value with timezone support.
         /// - Parameter date: The optional date/time value (nil represents empty cell)
         /// - Parameter timeZone: Timezone for date interpretation (defaults to current)
@@ -291,6 +307,14 @@ extension Cell {
         /// URL value stored as text with optional shared string optimization.
         /// - Parameter url: The URL value (nil represents empty cell)
         case url(URL?)
+
+        /// Non-optional URL value stored as text.
+        /// - Parameter url: The guaranteed non-nil URL value
+        case urlValue(URL)
+
+        /// Optional URL value stored as text.
+        /// - Parameter url: The optional URL value (nil represents empty cell)
+        case optionalURL(URL?)
 
         /// Percentage value with configurable decimal precision.
         /// - Parameter percentage: The percentage as decimal (0.5 = 50%)
@@ -342,6 +366,10 @@ extension Cell {
                         booleanExpressions: booleanExpressions,
                         caseStrategy: caseStrategy)
                 case let .url(url):
+                    url.cellValueString
+                case let .urlValue(url):
+                    url.absoluteString
+                case let .optionalURL(url):
                     url.cellValueString
                 case let .percentage(percentage, precision):
                     percentage.cellValueString(precision: precision)

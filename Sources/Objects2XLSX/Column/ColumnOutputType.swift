@@ -284,20 +284,27 @@ public struct URLColumnType: ColumnOutputTypeProtocol {
 
     /// Converts the URL value to Excel's URL cell type.
     ///
-    /// Returns a `.url()` cell type that Excel will render as text using
-    /// the URL's absolute string representation.
+    /// Returns an appropriate URL cell type that Excel will render as text.
+    /// Uses `.urlValue()` for non-nil values and `.optionalURL()` for optional values.
     public var cellType: Cell.CellType {
-        .url(config.value)
+        if let value = config.value {
+            .urlValue(value)
+        } else {
+            .optionalURL(config.value)
+        }
     }
 
     /// Creates a URLColumnType with a substituted default value for nil handling.
     ///
+    /// This method only substitutes the default value when the original config value is nil.
+    /// If the original config has a non-nil value, that value is preserved.
+    ///
     /// - Parameters:
     ///   - value: The default URL value to use instead of nil
-    ///   - config: Original configuration (ignored, new config created with default value)
-    /// - Returns: New URLColumnType with the default value
+    ///   - config: Original configuration containing the actual value (may be nil)
+    /// - Returns: New URLColumnType with original value if non-nil, otherwise default value
     public static func withDefaultValue(_ value: URL, config: URLColumnConfig) -> Self {
-        URLColumnType(URLColumnConfig(value: value))
+        URLColumnType(URLColumnConfig(value: config.value ?? value))
     }
 }
 
