@@ -135,23 +135,27 @@ public struct TextColumnType: ColumnOutputTypeProtocol {
 
     /// Converts the String value to Excel's text cell type.
     ///
-    /// Returns a `.string()` cell type that Excel will render as text.
-    /// The framework automatically handles shared string optimization when beneficial.
+    /// Returns an appropriate string cell type that Excel will render as text.
+    /// Uses `.stringValue()` for non-nil values and `.optionalString()` for optional values.
     public var cellType: Cell.CellType {
-        .string(config.value)
+        if let value = config.value {
+            .stringValue(value)
+        } else {
+            .optionalString(config.value)
+        }
     }
 
     /// Creates a TextColumnType with a substituted default value for nil handling.
     ///
-    /// Note: User should not use this method to create a TextColumnType with a default value.
-    /// Instead, they should use the `.defaultValue` method to set the default value.
+    /// This method only substitutes the default value when the original config value is nil.
+    /// If the original config has a non-nil value, that value is preserved.
     ///
     /// - Parameters:
     ///   - value: The default String value to use instead of nil
-    ///   - config: Original configuration (ignored, new config created with default value)
-    /// - Returns: New TextColumnType with the default value
+    ///   - config: Original configuration containing the actual value (may be nil)
+    /// - Returns: New TextColumnType with original value if non-nil, otherwise default value
     public static func withDefaultValue(_ value: String, config: TextColumnConfig) -> Self {
-        TextColumnType(TextColumnConfig(value: value))
+        TextColumnType(TextColumnConfig(value: config.value ?? value))
     }
 }
 

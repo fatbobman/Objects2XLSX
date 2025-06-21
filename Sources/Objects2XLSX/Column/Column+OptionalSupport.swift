@@ -37,6 +37,35 @@ extension Column where InputType == Double?, OutputType == DoubleColumnType {
     }
 }
 
+// MARK: - Chainable Configuration Methods for Optional String Columns
+
+extension Column where InputType == String?, OutputType == TextColumnType {
+    /// Sets a default value to use when the source property is nil.
+    ///
+    /// This method transforms an optional String column into one that uses a specified
+    /// default value instead of empty cells for nil values.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Description", keyPath: \.description)
+    ///     .defaultValue("N/A")  // nil descriptions become "N/A"
+    ///     .bodyStyle(textStyle)
+    /// ```
+    ///
+    /// - Parameter defaultValue: The String value to use when the source is nil
+    /// - Returns: A new column that replaces nil values with the default value
+    public func defaultValue(_ defaultValue: String) -> Column<ObjectType, String?, TextColumnType> {
+        Column<ObjectType, String?, TextColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: mapping,
+            nilHandling: .defaultValue(defaultValue))
+    }
+}
+
 // MARK: - Chainable Configuration Methods for Optional Int Columns
 
 extension Column where InputType == Int?, OutputType == IntColumnType {

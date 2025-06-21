@@ -122,7 +122,7 @@ extension Cell {
 
         // Add cell type attribute based on value type and whether it uses shared strings
         switch value {
-            case .string, .url:
+            case .string, .stringValue, .optionalString, .url:
                 if sharedStringID != nil {
                     xml += " t=\"s\""
                 } else {
@@ -144,6 +144,22 @@ extension Cell {
         // Generate appropriate value format based on CellType
         switch value {
             case let .string(stringValue):
+                if let sharedStringID {
+                    // Use shared string reference for memory efficiency
+                    xml += "<v>\(sharedStringID)</v>"
+                } else {
+                    // Use inline string value directly
+                    xml += "<is><t>\(stringValue ?? "")</t></is>"
+                }
+            case let .stringValue(string):
+                if let sharedStringID {
+                    // Use shared string reference for memory efficiency
+                    xml += "<v>\(sharedStringID)</v>"
+                } else {
+                    // Use inline string value directly - non-optional, optimized path
+                    xml += "<is><t>\(string)</t></is>"
+                }
+            case let .optionalString(stringValue):
                 if let sharedStringID {
                     // Use shared string reference for memory efficiency
                     xml += "<v>\(sharedStringID)</v>"
@@ -208,6 +224,14 @@ extension Cell {
         /// Text string value with optional shared string optimization.
         /// - Parameter string: The string content (nil represents empty cell)
         case string(String?)
+        
+        /// Non-optional text string value.
+        /// - Parameter string: The guaranteed non-nil string value
+        case stringValue(String)
+        
+        /// Optional text string value.
+        /// - Parameter string: The optional string value (nil represents empty cell)
+        case optionalString(String?)
 
         /// Floating-point numeric value.
         /// - Parameter double: The numeric value (nil represents empty cell)
@@ -274,6 +298,10 @@ extension Cell {
         public var valueString: String {
             switch self {
                 case let .string(string):
+                    string.cellValueString
+                case let .stringValue(string):
+                    string
+                case let .optionalString(string):
                     string.cellValueString
                 case let .double(double):
                     double.cellValueString
