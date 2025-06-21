@@ -16,10 +16,13 @@ A powerful, type-safe Swift library for converting Swift objects to Excel (.xlsx
 
 ### 📊 **Comprehensive Excel Support**
 
-- **Multiple Data Types**: String, Int, Double, Bool, Date, URL, and custom types
+- **Enhanced Column API**: Simplified, type-safe column declarations with automatic type inference
+- **Smart Nil Handling**: `.defaultValue()` method for elegant optional value management
+- **Type Conversions**: Powerful `.toString()` method for custom data transformations
+- **Multiple Data Types**: String, Int, Double, Bool, Date, URL, and Percentage with full optional support
 - **Full Styling System**: Fonts, colors, borders, fills, alignment, and number formatting
 - **Multiple Worksheets**: Create workbooks with unlimited sheets
-- **Auto-sizing**: Automatic column width and row height adjustment
+- **Method Chaining**: Fluent API for combining width, styling, and data transformations
 
 ### 🎨 **Advanced Styling**
 
@@ -37,9 +40,11 @@ A powerful, type-safe Swift library for converting Swift objects to Excel (.xlsx
 
 ### 🛠 **Developer Experience**
 
-- **Builder Pattern**: Intuitive DSL for creating sheets and columns
-- **Comprehensive Documentation**: Detailed API documentation with examples
-- **Extensive Testing**: 200+ tests ensuring reliability
+- **Simplified API**: Intuitive, chainable column declarations with automatic type inference
+- **Live Demo Project**: Comprehensive example showcasing all library features
+- **Builder Pattern**: Declarative DSL for creating sheets and columns
+- **Comprehensive Documentation**: Detailed API documentation with real-world examples
+- **Extensive Testing**: 340+ tests ensuring reliability across all features
 - **SwiftFormat Integration**: Consistent code formatting with Git hooks
 
 ## 📦 Installation
@@ -100,18 +105,46 @@ let outputURL = URL(fileURLWithPath: "/path/to/employees.xlsx")
 try book.write(to: outputURL)
 ```
 
-### Multiple Data Types
+### Try the Live Demo
 
-Objects2XLSX automatically handles various Swift data types:
+Experience all features with our comprehensive demo project:
+
+```bash
+# Clone the repository
+git clone https://github.com/fatbobman/Objects2XLSX.git
+cd Objects2XLSX
+
+# Run the demo with different options
+swift run Objects2XLSXDemo --help
+swift run Objects2XLSXDemo -s medium -v demo.xlsx
+swift run Objects2XLSXDemo -s large -t mixed -v -b output.xlsx
+```
+
+The demo generates a professional Excel workbook with three worksheets showcasing:
+- **Employee data** with corporate styling and data transformations
+- **Product catalog** with modern styling and conditional formatting  
+- **Order history** with default styling and calculated fields
+
+**Demo Features:**
+- 🎨 Three professional styling themes (Corporate, Modern, Default)
+- 📊 Multiple data sizes (small: 30, medium: 150, large: 600 records)
+- 🔧 All column types and advanced features demonstrated
+- ⚡ Real-time progress tracking and performance benchmarks
+- 📁 Ready-to-open Excel files showcasing library capabilities
+
+### Multiple Data Types & Enhanced Column API
+
+Objects2XLSX features a simplified, type-safe column API that automatically handles various Swift data types:
 
 ```swift
 struct Employee: Sendable {
     let name: String
     let age: Int
-    let salary: Double
+    let salary: Double?        // Optional salary
+    let bonus: Double?         // Optional bonus
     let isManager: Bool
     let hireDate: Date
-    let profileURL: URL
+    let profileURL: URL?       // Optional profile URL
 }
 
 let employees = [
@@ -119,19 +152,141 @@ let employees = [
         name: "John Doe",
         age: 30,
         salary: 75000.50,
+        bonus: nil,           // No bonus this period
         isManager: true,
         hireDate: Date(),
-        profileURL: URL(string: "https://company.com/profiles/john")!
+        profileURL: URL(string: "https://company.com/profiles/john")
     )
 ]
 
 let sheet = Sheet<Employee>(name: "Staff", dataProvider: { employees }) {
+    // Simple non-optional columns
     Column(name: "Name", keyPath: \.name)
     Column(name: "Age", keyPath: \.age)
+    
+    // Optional columns with default values
     Column(name: "Salary", keyPath: \.salary)
-    Column(name: "Manager", keyPath: \.isManager)
-    Column(name: "Hire Date", keyPath: \.hireDate)
+        .defaultValue(0.0)
+        .width(12)
+    
+    Column(name: "Bonus", keyPath: \.bonus)
+        .defaultValue(0.0)
+        .width(10)
+    
+    // Boolean and date columns
+    Column(name: "Manager", keyPath: \.isManager, booleanExpressions: .yesAndNo)
+    Column(name: "Hire Date", keyPath: \.hireDate, timeZone: .current)
+    
+    // Optional URL with default
     Column(name: "Profile", keyPath: \.profileURL)
+        .defaultValue(URL(string: "https://company.com/default")!)
+}
+```
+
+## 🔧 Enhanced Column Features
+
+### Simplified Column Declarations
+
+The new API provides intuitive, type-safe column creation with automatic type inference:
+
+```swift
+struct Product: Sendable {
+    let id: Int
+    let name: String
+    let price: Double?
+    let discount: Double?
+    let stock: Int?
+    let isActive: Bool?
+}
+
+let sheet = Sheet<Product>(name: "Products", dataProvider: { products }) {
+    // Non-optional columns (simple syntax)
+    Column(name: "ID", keyPath: \.id)
+    Column(name: "Product Name", keyPath: \.name)
+    
+    // Optional columns with default values
+    Column(name: "Price", keyPath: \.price)
+        .defaultValue(0.0)
+    
+    Column(name: "Stock", keyPath: \.stock)
+        .defaultValue(0)
+    
+    Column(name: "Active", keyPath: \.isActive)
+        .defaultValue(true)
+}
+```
+
+### Advanced Type Conversions
+
+Transform column data using the powerful `toString` method:
+
+```swift
+let sheet = Sheet<Product>(name: "Products", dataProvider: { products }) {
+    // Convert price ranges to categories
+    Column(name: "Price Category", keyPath: \.price)
+        .defaultValue(0.0)
+        .toString { (price: Double) in
+            switch price {
+            case 0..<50: "Budget"
+            case 50..<200: "Mid-Range"
+            default: "Premium"
+            }
+        }
+    
+    // Convert stock levels to status
+    Column(name: "Stock Status", keyPath: \.stock)
+        .defaultValue(0)
+        .toString { (stock: Int) in
+            stock == 0 ? "Out of Stock" : 
+            stock < 10 ? "Low Stock" : "In Stock"
+        }
+    
+    // Convert optional discount to display format
+    Column(name: "Discount Info", keyPath: \.discount)
+        .toString { (discount: Double?) in
+            guard let discount = discount else { return "No Discount" }
+            return String(format: "%.0f%% Off", discount * 100)
+        }
+}
+```
+
+### Flexible Nil Handling
+
+Control how optional values are handled:
+
+```swift
+let sheet = Sheet<Employee>(name: "Employees", dataProvider: { employees }) {
+    // Option 1: Use default values
+    Column(name: "Salary", keyPath: \.salary)
+        .defaultValue(0.0)  // nil becomes 0.0
+    
+    // Option 2: Keep empty cells (default behavior)
+    Column(name: "Bonus", keyPath: \.bonus)
+        // nil values remain as empty cells
+    
+    // Option 3: Transform with custom nil handling
+    Column(name: "Salary Range", keyPath: \.salary)
+        .toString { (salary: Double?) in
+            guard let salary = salary else { return "Not Specified" }
+            return salary > 50000 ? "High" : "Standard"
+        }
+}
+```
+
+### Method Chaining
+
+Combine multiple configurations elegantly:
+
+```swift
+let sheet = Sheet<Employee>(name: "Employees", dataProvider: { employees }) {
+    Column(name: "Salary Level", keyPath: \.salary)
+        .defaultValue(0.0)                    // Handle nil values
+        .toString { $0 > 50000 ? "Senior" : "Junior" }  // Transform to categories
+        .width(15)                            // Set column width
+        .bodyStyle(CellStyle(                 // Apply styling
+            font: Font(bold: true),
+            fill: Fill.solid(.lightBlue)
+        ))
 }
 ```
 
@@ -155,13 +310,15 @@ let dataStyle = CellStyle(
     border: Border.outline(style: .thin, color: .gray)
 )
 
-// Apply styles to sheet
+// Apply styles to sheet using enhanced API
 let styledSheet = Sheet<Person>(name: "Styled Employees", dataProvider: { people }) {
     Column(name: "Name", keyPath: \.name)
+        .width(20)
         .headerStyle(headerStyle)
         .bodyStyle(dataStyle)
     
     Column(name: "Age", keyPath: \.age)
+        .width(8)
         .headerStyle(headerStyle)
         .bodyStyle(CellStyle(alignment: Alignment(horizontal: .center)))
 }
@@ -213,29 +370,50 @@ Create workbooks with multiple sheets for different data types:
 ```swift
 struct Product: Sendable {
     let name: String
-    let price: Double
+    let price: Double?
     let category: String
-    let inStock: Bool
+    let inStock: Bool?
 }
 
 struct Customer: Sendable {
     let name: String
-    let email: String
+    let email: String?
     let registrationDate: Date
+    let isPremium: Bool?
 }
 
-// Create multiple sheets
+// Create multiple sheets with enhanced API
 let productsSheet = Sheet<Product>(name: "Products", dataProvider: { products }) {
     Column(name: "Product Name", keyPath: \.name)
+        .width(25)
+    
     Column(name: "Price", keyPath: \.price)
+        .defaultValue(0.0)
+        .width(12)
+    
     Column(name: "Category", keyPath: \.category)
+        .width(15)
+    
     Column(name: "In Stock", keyPath: \.inStock)
+        .defaultValue(false)
+        .width(10)
 }
 
 let customersSheet = Sheet<Customer>(name: "Customers", dataProvider: { customers }) {
     Column(name: "Customer Name", keyPath: \.name)
+        .width(20)
+    
     Column(name: "Email", keyPath: \.email)
+        .defaultValue("no-email@company.com")
+        .width(25)
+    
     Column(name: "Registration", keyPath: \.registrationDate)
+        .width(15)
+    
+    Column(name: "Premium", keyPath: \.isPremium)
+        .defaultValue(false)
+        .toString { $0 ? "Premium Member" : "Standard Member" }
+        .width(15)
 }
 
 // Combine sheets in workbook
@@ -371,10 +549,10 @@ swift test --filter BookAPITests
 
 The library includes:
 
-- **200+ Unit Tests** covering all components
-- **Integration Tests** for complete workflows
-- **Performance Tests** for large dataset handling
-- **Cross-Platform Tests** ensuring compatibility
+- **340+ Unit Tests** covering all components including enhanced column API
+- **Integration Tests** for complete workflows and demo scenarios
+- **Performance Tests** for large dataset handling and memory optimization
+- **Cross-Platform Tests** ensuring compatibility across all supported platforms
 
 ## 🛠 Development
 
