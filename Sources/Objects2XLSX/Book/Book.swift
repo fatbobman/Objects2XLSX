@@ -431,10 +431,17 @@ public final class Book {
     /// - Throws: BookError.fileWriteError if ZIP creation fails
     func createZipArchive(from tempDir: URL, to outputURL: URL) throws(BookError) {
         do {
-            try SimpleZip.createFromDirectory(directoryURL: tempDir, outputURL: outputURL)
+            let stats = try SimpleZip.createFromDirectoryWithStats(directoryURL: tempDir, outputURL: outputURL)
 
             let fileSize = try FileManager.default.attributesOfItem(atPath: outputURL.path)[.size] as? Int ?? 0
             logger.info("Created XLSX file: \(outputURL.path) - Size: \(fileSize) bytes")
+
+            // Log compression statistics
+            if stats.originalSize > 0 {
+                logger
+                    .info(
+                        "Compression stats: \(ByteCountFormatter.string(fromByteCount: Int64(stats.originalSize), countStyle: .file)) → \(ByteCountFormatter.string(fromByteCount: Int64(stats.compressedSize), countStyle: .file)) (\(String(format: "%.1f", stats.compressionPercentage))% compression)")
+            }
 
         } catch let zipError as SimpleZip.ZipError {
             logger.error("ZIP creation failed: \(zipError)")

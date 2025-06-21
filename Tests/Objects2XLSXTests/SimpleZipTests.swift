@@ -78,9 +78,13 @@ struct SimpleZipTests {
 
         let zipData = try SimpleZip.create(entries: [entry])
 
-        #expect(zipData.count > largeData.count, "ZIP should be larger than original due to headers")
-
-        print("Large file ZIP created: \(zipData.count) bytes")
+        // 在压缩启用的情况下，重复数据会被高度压缩
+        // 所以我们只验证 ZIP 文件被成功创建且不为空
+        #expect(zipData.count > 0, "ZIP file should not be empty")
+        
+        // 打印压缩比信息
+        let compressionRatio = Double(zipData.count) / Double(largeData.count) * 100
+        print("Large file ZIP created: \(zipData.count) bytes (compression ratio: \(String(format: "%.2f", compressionRatio))%)")
     }
 
     @Test func invalidPath() {
@@ -207,5 +211,48 @@ extension SimpleZipTests {
         }
 
         return count
+    }
+    
+    @Test func compressionStats() throws {
+        // 创建测试数据 - 重复内容便于压缩
+        let testContent = String(repeating: "This is test content for compression testing. ", count: 100)
+        let testData = testContent.data(using: .utf8)!
+        
+        let entry1 = SimpleZip.Entry(path: "test1.txt", data: testData)
+        let entry2 = SimpleZip.Entry(path: "small.txt", data: "small".data(using: .utf8)!)
+        
+        // 使用新的统计功能
+        let (_, stats) = try SimpleZip.createWithStats(entries: [entry1, entry2])
+        
+        // 验证统计信息
+        #expect(stats.originalSize > 0, "Original size should be greater than 0")
+        #expect(stats.compressedSize > 0, "Compressed size should be greater than 0")
+        #expect(stats.fileStats.count == 2, "Should have stats for 2 files")
+        
+        // 验证文件统计
+        let file1Stats = stats.fileStats.first { $0.path == "test1.txt" }
+        let file2Stats = stats.fileStats.first { $0.path == "small.txt" }
+        
+        #expect(file1Stats != nil, "Should have stats for test1.txt")
+        #expect(file2Stats != nil, "Should have stats for small.txt")
+        
+        // 大文件应该被压缩 (DEFLATE)，小文件可能不被压缩 (STORE)
+        #if canImport(Compression)
+        if let file1Stats = file1Stats {
+            #expect(file1Stats.compressionMethod == "DEFLATE", "Large file should use DEFLATE compression")
+            #expect(file1Stats.compressedSize < file1Stats.originalSize, "Compressed size should be smaller")
+        }
+        
+        if let file2Stats = file2Stats {
+            #expect(file2Stats.compressionMethod == "STORE", "Small file should use STORE method")
+            #expect(file2Stats.compressedSize == file2Stats.originalSize, "STORE method means no compression")
+        }
+        #else
+        // 在非苹果平台，都应该使用 STORE
+        #expect(file1Stats?.compressionMethod == "STORE", "Should use STORE on non-Apple platforms")
+        #expect(file2Stats?.compressionMethod == "STORE", "Should use STORE on non-Apple platforms")
+        #endif
+        
+        print("Compression stats test - Original: \(stats.originalSize) bytes, Compressed: \(stats.compressedSize) bytes, Ratio: \(String(format: "%.1f", stats.compressionPercentage))%")
     }
 }
