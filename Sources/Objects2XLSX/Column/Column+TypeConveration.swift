@@ -261,7 +261,7 @@ extension Column {
             nilHandling: .keepEmpty // Int output is never nil
         )
     }
-    
+
     /// Transforms column values to Double using a custom conversion closure.
     ///
     /// This method provides a way to convert any column output type to Double values.
@@ -294,8 +294,7 @@ extension Column {
     /// - Parameter transform: A closure that converts the processed value to Double
     /// - Returns: A new column that outputs DoubleColumnType with transformed values
     public func toDouble<T>(
-        _ transform: @escaping (T) -> Double
-    ) -> Column<ObjectType, InputType, DoubleColumnType> where OutputType.Config.ValueType == T
+        _ transform: @escaping (T) -> Double) -> Column<ObjectType, InputType, DoubleColumnType> where OutputType.Config.ValueType == T
     {
         Column<ObjectType, InputType, DoubleColumnType>(
             name: name,
@@ -364,8 +363,7 @@ extension Column {
     /// - Parameter transform: A closure that converts the optional value to optional Double
     /// - Returns: A new column that outputs DoubleColumnType with transformed values
     public func toDouble<T>(
-        _ transform: @escaping (T?) -> Double?
-    ) -> Column<ObjectType, InputType, DoubleColumnType> where OutputType.Config.ValueType == T
+        _ transform: @escaping (T?) -> Double?) -> Column<ObjectType, InputType, DoubleColumnType> where OutputType.Config.ValueType == T
     {
         Column<ObjectType, InputType, DoubleColumnType>(
             name: name,
