@@ -43,9 +43,9 @@ public struct DoubleColumnType: ColumnOutputTypeProtocol {
     /// Uses `.doubleValue()` for non-nil values and `.optionalDouble()` for optional values.
     public var cellType: Cell.CellType {
         if let value = config.value {
-            return .doubleValue(value)
+            .doubleValue(value)
         } else {
-            return .optionalDouble(config.value)
+            .optionalDouble(config.value)
         }
     }
 

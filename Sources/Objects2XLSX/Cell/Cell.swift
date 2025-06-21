@@ -134,7 +134,7 @@ extension Cell {
                 // Empty cells don't need type attributes
                 break
             default:
-                // Numeric types (.double, .doubleValue, .optionalDouble, .int, .date, .percentage) 
+                // Numeric types (.double, .doubleValue, .optionalDouble, .int, .date, .percentage)
                 // don't need explicit type attributes as they default to numeric
                 break
         }
@@ -207,11 +207,11 @@ extension Cell {
         /// - Parameter double: The numeric value (nil represents empty cell)
         @available(*, deprecated, message: "Use doubleValue(_) or optionalDouble(_) for better type safety")
         case double(Double?)
-        
+
         /// Non-optional floating-point numeric value.
         /// - Parameter double: The guaranteed non-nil numeric value
         case doubleValue(Double)
-        
+
         /// Optional floating-point numeric value.
         /// - Parameter double: The optional numeric value (nil represents empty cell)
         case optionalDouble(Double?)
@@ -242,7 +242,7 @@ extension Cell {
         /// - Parameter percentage: The percentage as decimal (0.5 = 50%)
         /// - Parameter precision: Number of decimal places to preserve
         case percentage(Double?, precision: Int = 2)
-        
+
         /// Explicitly empty cell with no value.
         /// Used when we want to represent a cell that should be completely empty.
         case empty
