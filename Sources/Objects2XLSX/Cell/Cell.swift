@@ -134,7 +134,7 @@ extension Cell {
                 // Empty cells don't need type attributes
                 break
             default:
-                // Numeric types (.double, .doubleValue, .optionalDouble, .int, .intValue, .optionalInt, .date, .percentage)
+                // Numeric types (.double, .doubleValue, .optionalDouble, .int, .intValue, .optionalInt, .date, .dateValue, .optionalDate, .percentage)
                 // don't need explicit type attributes as they default to numeric
                 break
         }
@@ -191,6 +191,12 @@ extension Cell {
             case let .optionalInt(int):
                 // Optional int - handle nil case
                 xml += "<v>\(int.cellValueString)</v>"
+            case let .dateValue(date, timeZone):
+                // Non-optional date - guaranteed to have value, optimized path
+                xml += "<v>\(date.cellValueString(timeZone: timeZone))</v>"
+            case let .optionalDate(date, timeZone):
+                // Optional date - handle nil case
+                xml += "<v>\(date.cellValueString(timeZone: timeZone))</v>"
             case .empty:
                 // Explicitly empty cell
                 xml += "<v></v>"
@@ -262,6 +268,16 @@ extension Cell {
         /// - Parameter date: The date/time value (nil represents empty cell)
         /// - Parameter timeZone: Timezone for date interpretation (defaults to current)
         case date(Date?, timeZone: TimeZone = TimeZone.current)
+        
+        /// Non-optional date and time value with timezone support.
+        /// - Parameter date: The guaranteed non-nil date/time value
+        /// - Parameter timeZone: Timezone for date interpretation (defaults to current)
+        case dateValue(Date, timeZone: TimeZone = TimeZone.current)
+        
+        /// Optional date and time value with timezone support.
+        /// - Parameter date: The optional date/time value (nil represents empty cell)
+        /// - Parameter timeZone: Timezone for date interpretation (defaults to current)
+        case optionalDate(Date?, timeZone: TimeZone = TimeZone.current)
 
         /// Boolean value with customizable text representation.
         /// - Parameter boolean: The boolean value (nil represents empty cell)
@@ -316,6 +332,10 @@ extension Cell {
                 case let .int(int):
                     int.cellValueString
                 case let .date(date, timeZone):
+                    date.cellValueString(timeZone: timeZone)
+                case let .dateValue(date, timeZone):
+                    date.cellValueString(timeZone: timeZone)
+                case let .optionalDate(date, timeZone):
                     date.cellValueString(timeZone: timeZone)
                 case let .boolean(boolean, booleanExpressions, caseStrategy):
                     boolean.cellValueString(

@@ -143,7 +143,7 @@ final class StyleRegister {
         switch cellType {
             case let .percentage(_, precision):
                 return .percentage(precision: precision)
-            case .date:
+            case .date, .dateValue, .optionalDate:
                 return .dateTime
             case .int, .intValue, .optionalInt, .string, .stringValue, .optionalString, .boolean, .url, .double, .doubleValue, .optionalDouble, .empty:
                 return .general

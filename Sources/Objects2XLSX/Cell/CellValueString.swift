@@ -88,6 +88,20 @@ extension Int? {
     }
 }
 
+extension Date {
+    /// Converts a date to Excel's numeric date format.
+    ///
+    /// Uses Excel's date numbering system where dates are represented as the number
+    /// of days since January 1, 1900. The conversion includes timezone handling
+    /// and matches Excel's specific date calculation requirements.
+    ///
+    /// - Parameter timeZone: Timezone for date interpretation (defaults to system timezone)
+    /// - Returns: Excel date number as string
+    func cellValueString(timeZone: TimeZone = TimeZone.current) -> String {
+        excelDate(timeZone: timeZone)
+    }
+}
+
 extension Date? {
     /// Converts an optional date to Excel's numeric date format.
     ///

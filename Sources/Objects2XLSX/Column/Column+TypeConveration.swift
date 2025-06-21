@@ -395,4 +395,138 @@ extension Column {
             nilHandling: .keepEmpty // Double output may be nil
         )
     }
+
+    /// Transforms column values to Date using a custom conversion closure.
+    ///
+    /// This method provides a way to convert any column output type to Date values.
+    /// The closure receives the processed value based on the column's nilHandling configuration:
+    /// - For columns with `.keepEmpty`: receives T? (may be nil)
+    /// - For columns with `.defaultValue`: receives T (never nil, default applied)
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Convert String to Date
+    /// Column(name: "Date String", keyPath: \.dateString)
+    ///     .toDate { (dateStr: String) in
+    ///         ISO8601DateFormatter().date(from: dateStr) ?? Date()
+    ///     }
+    ///
+    /// // Convert timestamp to Date
+    /// Column(name: "Timestamp", keyPath: \.timestamp)
+    ///     .toDate { (timestamp: Double) in
+    ///         Date(timeIntervalSince1970: timestamp)
+    ///     }
+    ///
+    /// // Convert optional values with defaultValue
+    /// Column(name: "Created", keyPath: \.createdString)
+    ///     .defaultValue("2024-01-01")
+    ///     .toDate { (dateStr: String) in  // Non-optional after defaultValue!
+    ///         ISO8601DateFormatter().date(from: dateStr) ?? Date()
+    ///     }
+    /// ```
+    ///
+    /// - Parameter transform: A closure that converts the processed value to Date
+    /// - Returns: A new column that outputs DateColumnType with transformed values
+    public func toDate<T>(
+        _ transform: @escaping (T) -> Date) -> Column<ObjectType, InputType, DateColumnType> where OutputType.Config.ValueType == T
+    {
+        Column<ObjectType, InputType, DateColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { input in
+                // First apply the original mapping
+                let originalOutput = self.mapping(input)
+
+                // Apply nilHandling logic to get the final processed output
+                let processedOutput = switch self.nilHandling {
+                    case .keepEmpty:
+                        originalOutput
+                    case let .defaultValue(defaultValue):
+                        OutputType.withDefaultValue(defaultValue, config: originalOutput.config)
+                }
+
+                // Extract the value from the processed output (now with defaults applied)
+                let finalValue = processedOutput.config.value
+
+                // Apply the transformation - when defaultValue is used, finalValue is guaranteed to be non-nil
+                let dateValue: Date = switch self.nilHandling {
+                    case .keepEmpty:
+                        // For keepEmpty, we need to handle nil safely
+                        if let finalValue {
+                            transform(finalValue)
+                        } else {
+                            // This shouldn't happen with the current API, but handle gracefully
+                            transform(finalValue!)
+                        }
+                    case .defaultValue:
+                        // For defaultValue, finalValue is guaranteed to be non-nil
+                        transform(finalValue!)
+                }
+
+                // Return DateColumnType with current timezone
+                return DateColumnType(DateColumnConfig(value: dateValue, timeZone: TimeZone.current))
+            },
+            nilHandling: .keepEmpty // Date output is never nil
+        )
+    }
+
+    /// Transforms column values to Date using a custom conversion closure that handles optional values.
+    ///
+    /// This overload is for columns that may contain nil values (when nilHandling is .keepEmpty).
+    /// Use this when you need to explicitly handle nil cases in your transformation.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Convert optional String to optional Date
+    /// Column(name: "Date", keyPath: \.dateString)
+    ///     .toDate { (dateStr: String?) in
+    ///         guard let dateStr else { return nil }
+    ///         return ISO8601DateFormatter().date(from: dateStr)
+    ///     }
+    ///
+    /// // Convert with custom nil handling
+    /// Column(name: "Modified", keyPath: \.modifiedString)
+    ///     .toDate { (dateStr: String?) in
+    ///         dateStr.flatMap { ISO8601DateFormatter().date(from: $0) } ?? Date()
+    ///     }
+    /// ```
+    ///
+    /// - Parameter transform: A closure that converts the optional value to optional Date
+    /// - Returns: A new column that outputs DateColumnType with transformed values
+    public func toDate<T>(
+        _ transform: @escaping (T?) -> Date?) -> Column<ObjectType, InputType, DateColumnType> where OutputType.Config.ValueType == T
+    {
+        Column<ObjectType, InputType, DateColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { input in
+                // First apply the original mapping
+                let originalOutput = self.mapping(input)
+
+                // Apply nilHandling logic to get the final processed output
+                let processedOutput = switch self.nilHandling {
+                    case .keepEmpty:
+                        originalOutput
+                    case let .defaultValue(defaultValue):
+                        OutputType.withDefaultValue(defaultValue, config: originalOutput.config)
+                }
+
+                // Extract the value from the processed output
+                let finalValue = processedOutput.config.value
+
+                // Apply the transformation with optional handling
+                let dateValue = transform(finalValue)
+
+                // Return DateColumnType with current timezone
+                return DateColumnType(DateColumnConfig(value: dateValue, timeZone: TimeZone.current))
+            },
+            nilHandling: .keepEmpty // Date output may be nil
+        )
+    }
 }

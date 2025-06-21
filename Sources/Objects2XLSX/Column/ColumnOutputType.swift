@@ -183,20 +183,27 @@ public struct DateColumnType: ColumnOutputTypeProtocol {
 
     /// Converts the Date value to Excel's date cell type.
     ///
-    /// Returns a `.date()` cell type with timezone information that Excel
-    /// will convert to its internal numeric date representation.
+    /// Returns an appropriate date cell type that Excel will render with date formatting.
+    /// Uses `.dateValue()` for non-nil values and `.optionalDate()` for optional values.
     public var cellType: Cell.CellType {
-        .date(config.value, timeZone: config.timeZone)
+        if let value = config.value {
+            .dateValue(value, timeZone: config.timeZone)
+        } else {
+            .optionalDate(config.value, timeZone: config.timeZone)
+        }
     }
 
     /// Creates a DateColumnType with a substituted default value for nil handling.
     ///
+    /// This method only substitutes the default value when the original config value is nil.
+    /// If the original config has a non-nil value, that value is preserved.
+    ///
     /// - Parameters:
     ///   - value: The default Date value to use instead of nil
-    ///   - config: Original configuration providing timezone settings
-    /// - Returns: New DateColumnType with the default value and preserved timezone
+    ///   - config: Original configuration containing the actual value (may be nil)
+    /// - Returns: New DateColumnType with original value if non-nil, otherwise default value
     public static func withDefaultValue(_ value: Date, config: DateColumnConfig) -> Self {
-        DateColumnType(DateColumnConfig(value: value, timeZone: config.timeZone))
+        DateColumnType(DateColumnConfig(value: config.value ?? value, timeZone: config.timeZone))
     }
 }
 

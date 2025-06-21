@@ -761,3 +761,40 @@ extension Column {
             nilHandling: .keepEmpty)
     }
 }
+
+extension Column where InputType == Date?, OutputType == DateColumnType {
+    /// Creates a column for optional Date values that will be displayed as dates.
+    ///
+    /// This is a convenience initializer that automatically maps optional Date values
+    /// to DateColumnType without requiring explicit column configuration. Uses the
+    /// current system timezone by default.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Basic usage:
+    /// Column(name: "Modified Date", keyPath: \.modifiedDate)  // nil -> empty cell
+    ///
+    /// // With default value:
+    /// Column(name: "Due Date", keyPath: \.dueDate).defaultValue(Date())  // nil -> current date
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: Display name in the Excel header row
+    ///   - keyPath: KeyPath to an optional Date property
+    /// - Returns: A configured column that automatically maps optional Date values
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, Date?>) where InputType == Date?, OutputType == DateColumnType
+    {
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: nil,
+            bodyStyle: nil,
+            headerStyle: nil,
+            mapping: { value in
+                DateColumnType(DateColumnConfig(value: value, timeZone: TimeZone.current))
+            },
+            nilHandling: .keepEmpty)
+    }
+}

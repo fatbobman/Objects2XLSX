@@ -94,3 +94,35 @@ extension Column where InputType == Int?, OutputType == IntColumnType {
             nilHandling: .defaultValue(defaultValue))
     }
 }
+
+// MARK: - Chainable Configuration Methods for Optional Date Columns
+
+extension Column where InputType == Date?, OutputType == DateColumnType {
+    /// Sets a default value to use when the source property is nil.
+    ///
+    /// This method transforms an optional Date column into one that uses a specified
+    /// default value instead of empty cells for nil values.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Created Date", keyPath: \.createdDate)
+    ///     .defaultValue(Date())  // nil dates become current date
+    ///     .bodyStyle(dateStyle)
+    ///
+    /// Column(name: "Due Date", keyPath: \.dueDate)
+    ///     .defaultValue(Calendar.current.date(byAdding: .day, value: 30, to: Date())!)
+    /// ```
+    ///
+    /// - Parameter defaultValue: The Date value to use when the source is nil
+    /// - Returns: A new column that replaces nil values with the default value
+    public func defaultValue(_ defaultValue: Date) -> Column<ObjectType, Date?, DateColumnType> {
+        Column<ObjectType, Date?, DateColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: mapping,
+            nilHandling: .defaultValue(defaultValue))
+    }
+}
