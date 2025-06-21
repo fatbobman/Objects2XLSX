@@ -120,7 +120,7 @@ extension Cell {
             xml += " s=\"\(styleID)\""
         }
 
-        // Add cell type attribute based on value type
+        // Add cell type attribute based on value type and whether it uses shared strings
         switch value {
             case .string, .url:
                 if sharedStringID != nil {

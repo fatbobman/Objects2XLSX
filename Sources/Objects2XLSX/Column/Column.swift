@@ -542,3 +542,551 @@ extension Column where InputType == Double, OutputType == PercentageColumnType {
             nilHandling: nilHandling)
     }
 }
+
+// MARK: - Simplified Mapping Extensions
+
+// MARK: - Instance Convenience Methods
+
+extension Column where InputType == Double {
+    /// Converts this column to use percentage formatting with specified precision.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Rate", keyPath: \.rate).percentage(precision: 1)
+    /// ```
+    ///
+    /// - Parameter precision: The precision for percentage display (default: 2)
+    /// - Returns: A configured percentage column
+    public func percentage(precision: Int = 2) -> Column<ObjectType, Double, PercentageColumnType> {
+        Column<ObjectType, Double, PercentageColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { value in
+                PercentageColumnType(PercentageColumnConfig(value: value, precision: precision))
+            },
+            nilHandling: .keepEmpty)
+    }
+
+    /// Converts this column to use double formatting.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Price", keyPath: \.price).double()
+    /// ```
+    ///
+    /// - Returns: A configured double column
+    public func double() -> Column<ObjectType, Double, DoubleColumnType> {
+        Column<ObjectType, Double, DoubleColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { value in
+                DoubleColumnType(DoubleColumnConfig(value: value))
+            },
+            nilHandling: .keepEmpty)
+    }
+}
+
+extension Column where InputType == Double? {
+    /// Converts this column to use percentage formatting with specified precision for optional Double values.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Rate", keyPath: \.rate).percentage(precision: 1)
+    /// ```
+    ///
+    /// - Parameter precision: The precision for percentage display (default: 2)
+    /// - Returns: A configured percentage column
+    public func percentage(precision: Int = 2) -> Column<ObjectType, Double?, PercentageColumnType> {
+        Column<ObjectType, Double?, PercentageColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { value in
+                PercentageColumnType(PercentageColumnConfig(value: value, precision: precision))
+            },
+            nilHandling: .keepEmpty)
+    }
+
+    /// Converts this column to use double formatting for optional Double values.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Price", keyPath: \.price).double()
+    /// ```
+    ///
+    /// - Returns: A configured double column
+    public func double() -> Column<ObjectType, Double?, DoubleColumnType> {
+        Column<ObjectType, Double?, DoubleColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { value in
+                DoubleColumnType(DoubleColumnConfig(value: value))
+            },
+            nilHandling: .keepEmpty)
+    }
+}
+
+extension Column where InputType == String {
+    /// Converts this column to use text formatting.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Name", keyPath: \.name).text()
+    /// ```
+    ///
+    /// - Returns: A configured text column
+    public func text() -> Column<ObjectType, String, TextColumnType> {
+        Column<ObjectType, String, TextColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { value in
+                TextColumnType(TextColumnConfig(value: value))
+            },
+            nilHandling: .keepEmpty)
+    }
+}
+
+extension Column where InputType == Int {
+    /// Converts this column to use integer formatting.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Age", keyPath: \.age).int()
+    /// ```
+    ///
+    /// - Returns: A configured integer column
+    public func int() -> Column<ObjectType, Int, IntColumnType> {
+        Column<ObjectType, Int, IntColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { value in
+                IntColumnType(IntColumnConfig(value: value))
+            },
+            nilHandling: .keepEmpty)
+    }
+}
+
+extension Column where InputType == Date {
+    /// Converts this column to use date formatting.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Birth Date", keyPath: \.birthDate).date(timeZone: .utc)
+    /// ```
+    ///
+    /// - Parameter timeZone: The time zone to use (default: current)
+    /// - Returns: A configured date column
+    public func date(timeZone: TimeZone = TimeZone.current) -> Column<ObjectType, Date, DateColumnType> {
+        Column<ObjectType, Date, DateColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { value in
+                DateColumnType(DateColumnConfig(value: value, timeZone: timeZone))
+            },
+            nilHandling: .keepEmpty)
+    }
+}
+
+extension Column where InputType == Bool {
+    /// Converts this column to use boolean formatting.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Active", keyPath: \.isActive).boolean(expressions: .yesAndNo)
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - expressions: The boolean expressions to use (default: .trueAndFalse)
+    ///   - caseStrategy: The case strategy to use (default: .upper)
+    /// - Returns: A configured boolean column
+    public func boolean(expressions: Cell.BooleanExpressions = .trueAndFalse, caseStrategy: Cell.CaseStrategy = .upper) -> Column<ObjectType, Bool, BoolColumnType> {
+        Column<ObjectType, Bool, BoolColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { value in
+                BoolColumnType(BoolColumnConfig(
+                    value: value,
+                    booleanExpressions: expressions,
+                    caseStrategy: caseStrategy))
+            },
+            nilHandling: .keepEmpty)
+    }
+}
+
+extension Column where InputType == URL {
+    /// Converts this column to use URL formatting.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Website", keyPath: \.website).url()
+    /// ```
+    ///
+    /// - Returns: A configured URL column
+    public func url() -> Column<ObjectType, URL, URLColumnType> {
+        Column<ObjectType, URL, URLColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { value in
+                URLColumnType(URLColumnConfig(value: value))
+            },
+            nilHandling: .keepEmpty)
+    }
+}
+
+// MARK: - Static Convenience Methods
+
+extension Column {
+    /// Creates a column with simplified percentage mapping syntax.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column.percentage("Rate", keyPath: \.rate, precision: 1)
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: The name of the column
+    ///   - keyPath: The key path to extract the Double value
+    ///   - precision: The precision for percentage display (default: 2)
+    ///   - width: Optional column width
+    ///   - bodyStyle: Optional styling for data cells
+    ///   - headerStyle: Optional styling for header cell
+    ///   - nilHandling: How to handle nil values
+    /// - Returns: A configured percentage column
+    public static func percentage(
+        _ name: String,
+        keyPath: KeyPath<ObjectType, Double>,
+        precision: Int = 2,
+        width: Int? = nil,
+        bodyStyle: CellStyle? = nil,
+        headerStyle: CellStyle? = nil,
+        nilHandling: TypedNilHandling<PercentageColumnType> = .keepEmpty) -> Column<ObjectType, Double, PercentageColumnType>
+    {
+        Column<ObjectType, Double, PercentageColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { value in
+                PercentageColumnType(PercentageColumnConfig(value: value, precision: precision))
+            },
+            nilHandling: nilHandling)
+    }
+
+    /// Creates a column with simplified percentage mapping syntax for optional Double values.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column.percentage("Rate", keyPath: \.rate, precision: 1)
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: The name of the column
+    ///   - keyPath: The key path to extract the optional Double value
+    ///   - precision: The precision for percentage display (default: 2)
+    ///   - width: Optional column width
+    ///   - bodyStyle: Optional styling for data cells
+    ///   - headerStyle: Optional styling for header cell
+    ///   - nilHandling: How to handle nil values
+    /// - Returns: A configured percentage column
+    public static func percentage(
+        _ name: String,
+        keyPath: KeyPath<ObjectType, Double?>,
+        precision: Int = 2,
+        width: Int? = nil,
+        bodyStyle: CellStyle? = nil,
+        headerStyle: CellStyle? = nil,
+        nilHandling: TypedNilHandling<PercentageColumnType> = .keepEmpty) -> Column<ObjectType, Double?, PercentageColumnType>
+    {
+        Column<ObjectType, Double?, PercentageColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { value in
+                PercentageColumnType(PercentageColumnConfig(value: value, precision: precision))
+            },
+            nilHandling: nilHandling)
+    }
+
+    /// Creates a column with simplified text mapping syntax.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column.text("Name", keyPath: \.name)
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: The name of the column
+    ///   - keyPath: The key path to extract the String value
+    ///   - width: Optional column width
+    ///   - bodyStyle: Optional styling for data cells
+    ///   - headerStyle: Optional styling for header cell
+    ///   - nilHandling: How to handle nil values
+    /// - Returns: A configured text column
+    public static func text(
+        _ name: String,
+        keyPath: KeyPath<ObjectType, String>,
+        width: Int? = nil,
+        bodyStyle: CellStyle? = nil,
+        headerStyle: CellStyle? = nil,
+        nilHandling: TypedNilHandling<TextColumnType> = .keepEmpty) -> Column<ObjectType, String, TextColumnType>
+    {
+        Column<ObjectType, String, TextColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { value in
+                TextColumnType(TextColumnConfig(value: value))
+            },
+            nilHandling: nilHandling)
+    }
+
+    /// Creates a column with simplified double mapping syntax.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column.double("Price", keyPath: \.price)
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: The name of the column
+    ///   - keyPath: The key path to extract the Double value
+    ///   - width: Optional column width
+    ///   - bodyStyle: Optional styling for data cells
+    ///   - headerStyle: Optional styling for header cell
+    ///   - nilHandling: How to handle nil values
+    /// - Returns: A configured double column
+    public static func double(
+        _ name: String,
+        keyPath: KeyPath<ObjectType, Double>,
+        width: Int? = nil,
+        bodyStyle: CellStyle? = nil,
+        headerStyle: CellStyle? = nil,
+        nilHandling: TypedNilHandling<DoubleColumnType> = .keepEmpty) -> Column<ObjectType, Double, DoubleColumnType>
+    {
+        Column<ObjectType, Double, DoubleColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { value in
+                DoubleColumnType(DoubleColumnConfig(value: value))
+            },
+            nilHandling: nilHandling)
+    }
+
+    /// Creates a column with simplified double mapping syntax for optional Double values.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column.double("Price", keyPath: \.price)
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: The name of the column
+    ///   - keyPath: The key path to extract the optional Double value
+    ///   - width: Optional column width
+    ///   - bodyStyle: Optional styling for data cells
+    ///   - headerStyle: Optional styling for header cell
+    ///   - nilHandling: How to handle nil values
+    /// - Returns: A configured double column
+    public static func double(
+        _ name: String,
+        keyPath: KeyPath<ObjectType, Double?>,
+        width: Int? = nil,
+        bodyStyle: CellStyle? = nil,
+        headerStyle: CellStyle? = nil,
+        nilHandling: TypedNilHandling<DoubleColumnType> = .keepEmpty) -> Column<ObjectType, Double?, DoubleColumnType>
+    {
+        Column<ObjectType, Double?, DoubleColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { value in
+                DoubleColumnType(DoubleColumnConfig(value: value))
+            },
+            nilHandling: nilHandling)
+    }
+
+    /// Creates a column with simplified integer mapping syntax.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column.int("Age", keyPath: \.age)
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: The name of the column
+    ///   - keyPath: The key path to extract the Int value
+    ///   - width: Optional column width
+    ///   - bodyStyle: Optional styling for data cells
+    ///   - headerStyle: Optional styling for header cell
+    ///   - nilHandling: How to handle nil values
+    /// - Returns: A configured integer column
+    public static func int(
+        _ name: String,
+        keyPath: KeyPath<ObjectType, Int>,
+        width: Int? = nil,
+        bodyStyle: CellStyle? = nil,
+        headerStyle: CellStyle? = nil,
+        nilHandling: TypedNilHandling<IntColumnType> = .keepEmpty) -> Column<ObjectType, Int, IntColumnType>
+    {
+        Column<ObjectType, Int, IntColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { value in
+                IntColumnType(IntColumnConfig(value: value))
+            },
+            nilHandling: nilHandling)
+    }
+
+    /// Creates a column with simplified date mapping syntax.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column.date("Birth Date", keyPath: \.birthDate, timeZone: .utc)
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: The name of the column
+    ///   - keyPath: The key path to extract the Date value
+    ///   - timeZone: The time zone to use (default: current)
+    ///   - width: Optional column width
+    ///   - bodyStyle: Optional styling for data cells
+    ///   - headerStyle: Optional styling for header cell
+    ///   - nilHandling: How to handle nil values
+    /// - Returns: A configured date column
+    public static func date(
+        _ name: String,
+        keyPath: KeyPath<ObjectType, Date>,
+        timeZone: TimeZone = TimeZone.current,
+        width: Int? = nil,
+        bodyStyle: CellStyle? = nil,
+        headerStyle: CellStyle? = nil,
+        nilHandling: TypedNilHandling<DateColumnType> = .keepEmpty) -> Column<ObjectType, Date, DateColumnType>
+    {
+        Column<ObjectType, Date, DateColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { value in
+                DateColumnType(DateColumnConfig(value: value, timeZone: timeZone))
+            },
+            nilHandling: nilHandling)
+    }
+
+    /// Creates a column with simplified boolean mapping syntax.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column.boolean("Active", keyPath: \.isActive, expressions: .yesAndNo)
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: The name of the column
+    ///   - keyPath: The key path to extract the Bool value
+    ///   - expressions: The boolean expressions to use (default: .trueAndFalse)
+    ///   - caseStrategy: The case strategy to use (default: .upper)
+    ///   - width: Optional column width
+    ///   - bodyStyle: Optional styling for data cells
+    ///   - headerStyle: Optional styling for header cell
+    ///   - nilHandling: How to handle nil values
+    /// - Returns: A configured boolean column
+    public static func boolean(
+        _ name: String,
+        keyPath: KeyPath<ObjectType, Bool>,
+        expressions: Cell.BooleanExpressions = .trueAndFalse,
+        caseStrategy: Cell.CaseStrategy = .upper,
+        width: Int? = nil,
+        bodyStyle: CellStyle? = nil,
+        headerStyle: CellStyle? = nil,
+        nilHandling: TypedNilHandling<BoolColumnType> = .keepEmpty) -> Column<ObjectType, Bool, BoolColumnType>
+    {
+        Column<ObjectType, Bool, BoolColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { value in
+                BoolColumnType(BoolColumnConfig(
+                    value: value,
+                    booleanExpressions: expressions,
+                    caseStrategy: caseStrategy))
+            },
+            nilHandling: nilHandling)
+    }
+
+    /// Creates a column with simplified URL mapping syntax.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column.url("Website", keyPath: \.website)
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: The name of the column
+    ///   - keyPath: The key path to extract the URL value
+    ///   - width: Optional column width
+    ///   - bodyStyle: Optional styling for data cells
+    ///   - headerStyle: Optional styling for header cell
+    ///   - nilHandling: How to handle nil values
+    /// - Returns: A configured URL column
+    public static func url(
+        _ name: String,
+        keyPath: KeyPath<ObjectType, URL>,
+        width: Int? = nil,
+        bodyStyle: CellStyle? = nil,
+        headerStyle: CellStyle? = nil,
+        nilHandling: TypedNilHandling<URLColumnType> = .keepEmpty) -> Column<ObjectType, URL, URLColumnType>
+    {
+        Column<ObjectType, URL, URLColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { value in
+                URLColumnType(URLColumnConfig(value: value))
+            },
+            nilHandling: nilHandling)
+    }
+}

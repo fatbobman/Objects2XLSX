@@ -136,17 +136,17 @@ struct ExcelGenerator {
             // Name column - basic string
             Column(name: "Name", keyPath: \.name)
                 .width(20)
-                .bodyStyle(CorporateStyle.createDataStyle())
+            // .bodyStyle(CorporateStyle.createDataStyle())
 
             // Age column - basic integer
             Column(name: "Age", keyPath: \.age)
                 .width(8)
-                .bodyStyle(CorporateStyle.createDataStyle())
+            // .bodyStyle(CorporateStyle.createDataStyle())
 
             // Department column - enum mapping
             Column(name: "Department", keyPath: \.department.displayName)
                 .width(18)
-                .bodyStyle(CorporateStyle.createDataStyle())
+            // .bodyStyle(CorporateStyle.createDataStyle())
 
             // Salary column - optional with currency formatting
             Column(
@@ -159,14 +159,14 @@ struct ExcelGenerator {
                 })
 
             // Email column - URL type
-            Column(name: "Email", keyPath: \.email.absoluteString)
+            Column(name: "Email", keyPath: \.email)
                 .width(25)
-                .bodyStyle(CorporateStyle.createDataStyle())
+            // .bodyStyle(CorporateStyle.createDataStyle())
 
             // Hire Date column - date formatting
             Column(name: "Hire Date", keyPath: \.hireDate)
-                .width(12)
-                .bodyStyle(CorporateStyle.createDateStyle())
+                .width(20)
+            // .bodyStyle(CorporateStyle.createDateStyle())
 
             // Manager Status column - boolean mapping
             Column(
@@ -181,7 +181,7 @@ struct ExcelGenerator {
                 name: "Address",
                 keyPath: \.address,
                 width: 30,
-                bodyStyle: CorporateStyle.createDataStyle(),
+                // bodyStyle: CorporateStyle.createDataStyle(),
                 mapping: { address in
                     TextColumnType(TextColumnConfig(value: address ?? "Not Provided"))
                 })
@@ -238,7 +238,7 @@ struct ExcelGenerator {
                     switch stock {
                         case 0: TextColumnType(TextColumnConfig(value: "Out"))
                         case 1 ... 10: TextColumnType(TextColumnConfig(value: "\(stock) ⚠️"))
-                        default: TextColumnType(TextColumnConfig(value: "\(stock)"))
+                        default: TextColumnType(TextColumnConfig(value: "`\(stock)`"))
                     }
                 })
 
@@ -296,7 +296,7 @@ struct ExcelGenerator {
 
             // Order Date column
             Column(name: "Order Date", keyPath: \.orderDate)
-                .width(12)
+                .width(20)
                 .bodyStyle(DefaultStyle.createDateStyle())
 
             // Items column - array to string mapping
@@ -309,15 +309,11 @@ struct ExcelGenerator {
                 .width(12)
                 .bodyStyle(DefaultStyle.createCurrencyStyle())
 
-            // Tax Rate column - percentage
-            Column(
-                name: "Tax Rate",
-                keyPath: \.taxRate,
-                width: 10,
-                bodyStyle: DefaultStyle.createNumericStyle(),
-                mapping: { rate in
-                    PercentageColumnType(PercentageColumnConfig(value: rate, precision: 1))
-                })
+            // Tax Rate column - percentage (simplified syntax)
+            Column(name: "Tax Rate", keyPath: \.taxRate)
+                .percentage(precision: 1)
+                .width(10)
+                .bodyStyle(DefaultStyle.createNumericStyle())
 
             // Tax Amount column
             Column(name: "Tax", keyPath: \.tax)
