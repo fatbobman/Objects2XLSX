@@ -224,11 +224,11 @@ extension Cell {
         /// Text string value with optional shared string optimization.
         /// - Parameter string: The string content (nil represents empty cell)
         case string(String?)
-        
+
         /// Non-optional text string value.
         /// - Parameter string: The guaranteed non-nil string value
         case stringValue(String)
-        
+
         /// Optional text string value.
         /// - Parameter string: The optional string value (nil represents empty cell)
         case optionalString(String?)
