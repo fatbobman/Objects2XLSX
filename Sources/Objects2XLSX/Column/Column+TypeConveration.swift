@@ -139,4 +139,126 @@ extension Column {
             nilHandling: .keepEmpty // String output is never nil
         )
     }
+
+    /// Transforms column values to Int using a custom conversion closure.
+    ///
+    /// This method provides a universal way to convert any column output type to integer values.
+    /// The closure receives the processed value based on the column's nilHandling configuration:
+    /// - For columns with `.keepEmpty`: receives T? (may be nil)
+    /// - For columns with `.defaultValue`: receives T (never nil, default applied)
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Convert string to Int with defaultValue
+    /// Column(name: "Score", keyPath: \.scoreString)
+    ///     .defaultValue("0")
+    ///     .toInt { (scoreStr: String) in  // Non-optional after defaultValue!
+    ///         Int(scoreStr) ?? 0
+    ///     }
+    ///
+    /// // Convert Double to Int
+    /// Column(name: "Rounded Price", keyPath: \.price)
+    ///     .toInt { (price: Double) in
+    ///         Int(price.rounded())
+    ///     }
+    /// ```
+    ///
+    /// - Parameter transform: A closure that converts the processed value to Int
+    /// - Returns: A new column that outputs IntColumnType with transformed values
+    public func toInt<T>(
+        _ transform: @escaping (T) -> Int) -> Column<ObjectType, InputType, IntColumnType> where OutputType.Config.ValueType == T
+    {
+        Column<ObjectType, InputType, IntColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { input in
+                // First apply the original mapping
+                let originalOutput = self.mapping(input)
+
+                // Apply nilHandling logic to get the final processed output
+                let processedOutput = switch self.nilHandling {
+                    case .keepEmpty:
+                        originalOutput
+                    case let .defaultValue(defaultValue):
+                        OutputType.withDefaultValue(defaultValue, config: originalOutput.config)
+                }
+
+                // Extract the value from the processed output (now with defaults applied)
+                let finalValue = processedOutput.config.value
+
+                // Apply the transformation - when defaultValue is used, finalValue is guaranteed to be non-nil
+                let intValue: Int = switch self.nilHandling {
+                    case .keepEmpty:
+                        // For keepEmpty, we need to handle nil safely
+                        if let finalValue {
+                            transform(finalValue)
+                        } else {
+                            // This shouldn't happen with the current API, but handle gracefully
+                            transform(finalValue!)
+                        }
+                    case .defaultValue:
+                        // For defaultValue, finalValue is guaranteed to be non-nil
+                        transform(finalValue!)
+                }
+
+                // Return IntColumnType
+                return IntColumnType(IntColumnConfig(value: intValue))
+            },
+            nilHandling: .keepEmpty // Int output is never nil
+        )
+    }
+
+    /// Transforms column values to Int using a custom conversion closure that handles optional values.
+    ///
+    /// This overload is for columns that may contain nil values (when nilHandling is .keepEmpty).
+    /// Use this when you need to explicitly handle nil cases in your transformation.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // For handling optional values explicitly
+    /// Column(name: "Priority", keyPath: \.priority)
+    ///     .toInt { (priority: String?) in
+    ///         guard let priority = priority else { return 0 }
+    ///         return Int(priority) ?? 0
+    ///     }
+    /// ```
+    ///
+    /// - Parameter transform: A closure that converts the optional value to Int
+    /// - Returns: A new column that outputs IntColumnType with transformed values
+    public func toInt<T>(
+        _ transform: @escaping (T?) -> Int) -> Column<ObjectType, InputType, IntColumnType> where OutputType.Config.ValueType == T
+    {
+        Column<ObjectType, InputType, IntColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: { input in
+                // First apply the original mapping
+                let originalOutput = self.mapping(input)
+
+                // Apply nilHandling logic to get the final processed output
+                let processedOutput = switch self.nilHandling {
+                    case .keepEmpty:
+                        originalOutput
+                    case let .defaultValue(defaultValue):
+                        OutputType.withDefaultValue(defaultValue, config: originalOutput.config)
+                }
+
+                // Extract the value from the processed output
+                let finalValue = processedOutput.config.value
+
+                // Apply the transformation with optional handling
+                let intValue = transform(finalValue)
+
+                // Return IntColumnType
+                return IntColumnType(IntColumnConfig(value: intValue))
+            },
+            nilHandling: .keepEmpty // Int output is never nil
+        )
+    }
 }

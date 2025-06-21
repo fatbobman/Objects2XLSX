@@ -36,3 +36,32 @@ extension Column where InputType == Double?, OutputType == DoubleColumnType {
             nilHandling: .defaultValue(defaultValue))
     }
 }
+
+// MARK: - Chainable Configuration Methods for Optional Int Columns
+
+extension Column where InputType == Int?, OutputType == IntColumnType {
+    /// Sets a default value to use when the source property is nil.
+    ///
+    /// This method transforms an optional Int column into one that uses a specified
+    /// default value instead of empty cells for nil values.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Quantity", keyPath: \.quantity)
+    ///     .defaultValue(0)  // nil quantities become 0
+    ///     .bodyStyle(numericStyle)
+    /// ```
+    ///
+    /// - Parameter defaultValue: The Int value to use when the source is nil
+    /// - Returns: A new column that replaces nil values with the default value
+    public func defaultValue(_ defaultValue: Int) -> Column<ObjectType, Int?, IntColumnType> {
+        Column<ObjectType, Int?, IntColumnType>(
+            name: name,
+            keyPath: keyPath,
+            width: width,
+            bodyStyle: bodyStyle,
+            headerStyle: headerStyle,
+            mapping: mapping,
+            nilHandling: .defaultValue(defaultValue))
+    }
+}

@@ -318,7 +318,7 @@ extension Column where InputType == Double, OutputType == DoubleColumnType {
     ///   - bodyStyle: Optional style for the column's cells
     ///   - headerStyle: Optional style for the column's header
     ///   - nilHandling: How to handle nil values
-    public init(
+    init(
         name: String,
         keyPath: KeyPath<ObjectType, InputType>,
         width: Int? = nil,
@@ -350,7 +350,7 @@ extension Column where InputType == Int, OutputType == IntColumnType {
     ///   - bodyStyle: Optional style for the column's cells
     ///   - headerStyle: Optional style for the column's header
     ///   - nilHandling: How to handle nil values
-    public init(
+    init(
         name: String,
         keyPath: KeyPath<ObjectType, InputType>,
         width: Int? = nil,
@@ -382,7 +382,7 @@ extension Column where InputType == String, OutputType == TextColumnType {
     ///   - bodyStyle: Optional style for the column's cells
     ///   - headerStyle: Optional style for the column's header
     ///   - nilHandling: How to handle nil values
-    public init(
+    init(
         name: String,
         keyPath: KeyPath<ObjectType, InputType>,
         width: Int? = nil,
@@ -415,7 +415,7 @@ extension Column where InputType == Date, OutputType == DateColumnType {
     ///   - headerStyle: Optional style for the column's header
     ///   - nilHandling: How to handle nil values
     ///   - timeZone: The time zone to use for the date
-    public init(
+    init(
         name: String,
         keyPath: KeyPath<ObjectType, InputType>,
         width: Int? = nil,
@@ -450,7 +450,7 @@ extension Column where InputType == Bool, OutputType == BoolColumnType {
     ///   - nilHandling: How to handle nil values
     ///   - booleanExpressions: The boolean expressions to use for the column
     ///   - caseStrategy: The case strategy to use for the column
-    public init(
+    init(
         name: String,
         keyPath: KeyPath<ObjectType, InputType>,
         width: Int? = nil,
@@ -487,7 +487,7 @@ extension Column where InputType == URL, OutputType == URLColumnType {
     ///   - bodyStyle: Optional style for the column's cells
     ///   - headerStyle: Optional style for the column's header
     ///   - nilHandling: How to handle nil values
-    public init(
+    init(
         name: String,
         keyPath: KeyPath<ObjectType, InputType>,
         width: Int? = nil,
@@ -520,7 +520,7 @@ extension Column where InputType == Double, OutputType == PercentageColumnType {
     ///   - headerStyle: Optional style for the column's header
     ///   - nilHandling: How to handle nil values
     ///   - precision: The precision to use for the column
-    public init(
+    init(
         name: String,
         keyPath: KeyPath<ObjectType, InputType>,
         width: Int? = nil,
@@ -580,30 +580,6 @@ extension Column {
             nilHandling: .keepEmpty)
     }
 
-    /// Creates a simplified column for non-optional Double values with width specification.
-    ///
-    /// - Parameters:
-    ///   - name: Display name in the Excel header row
-    ///   - keyPath: KeyPath to a non-optional Double property
-    ///   - width: Column width in character units
-    /// - Returns: A configured column that automatically maps Double values
-    public init(
-        name: String,
-        keyPath: KeyPath<ObjectType, Double>,
-        width: Int) where InputType == Double, OutputType == DoubleColumnType
-    {
-        self.init(
-            name: name,
-            keyPath: keyPath,
-            width: width,
-            bodyStyle: nil,
-            headerStyle: nil,
-            mapping: { value in
-                DoubleColumnType(DoubleColumnConfig(value: value))
-            },
-            nilHandling: .keepEmpty)
-    }
-
     /// Creates a simplified column for optional Double values with automatic type mapping.
     ///
     /// This convenience initializer provides simplified syntax for optional Double properties.
@@ -638,27 +614,149 @@ extension Column {
             },
             nilHandling: .keepEmpty)
     }
+}
 
-    /// Creates a simplified column for optional Double values with width specification.
+// MARK: - Simplified Column Declaration for Int Types
+
+extension Column {
+    /// Creates a simplified column for non-optional Int values with automatic type mapping.
+    ///
+    /// This convenience initializer eliminates the need for explicit mapping when working with
+    /// non-optional Int properties, providing a cleaner syntax for common use cases.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Instead of verbose mapping:
+    /// Column(name: "Count", keyPath: \.count, mapping: { IntColumnType(IntColumnConfig(value: $0)) })
+    ///
+    /// // Use simplified syntax:
+    /// Column(name: "Count", keyPath: \.count)
+    /// ```
     ///
     /// - Parameters:
     ///   - name: Display name in the Excel header row
-    ///   - keyPath: KeyPath to an optional Double property
-    ///   - width: Column width in character units
-    /// - Returns: A configured column that automatically maps optional Double values
+    ///   - keyPath: KeyPath to a non-optional Int property
+    /// - Returns: A configured column that automatically maps Int values
     public init(
         name: String,
-        keyPath: KeyPath<ObjectType, Double?>,
-        width: Int) where InputType == Double?, OutputType == DoubleColumnType
+        keyPath: KeyPath<ObjectType, Int>) where InputType == Int, OutputType == IntColumnType
     {
         self.init(
             name: name,
             keyPath: keyPath,
-            width: width,
+            width: nil,
             bodyStyle: nil,
             headerStyle: nil,
             mapping: { value in
-                DoubleColumnType(DoubleColumnConfig(value: value))
+                IntColumnType(IntColumnConfig(value: value))
+            },
+            nilHandling: .keepEmpty)
+    }
+
+    /// Creates a simplified column for optional Int values with automatic type mapping.
+    ///
+    /// This convenience initializer provides simplified syntax for optional Int properties.
+    /// By default, nil values are kept as empty cells, but this can be modified using
+    /// the `.defaultValue()` method.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Basic optional column:
+    /// Column(name: "Quantity", keyPath: \.quantity)  // nil -> empty cell
+    ///
+    /// // With default value:
+    /// Column(name: "Quantity", keyPath: \.quantity).defaultValue(0)  // nil -> 0
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: Display name in the Excel header row
+    ///   - keyPath: KeyPath to an optional Int property
+    /// - Returns: A configured column that automatically maps optional Int values
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, Int?>) where InputType == Int?, OutputType == IntColumnType
+    {
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: nil,
+            bodyStyle: nil,
+            headerStyle: nil,
+            mapping: { value in
+                IntColumnType(IntColumnConfig(value: value))
+            },
+            nilHandling: .keepEmpty)
+    }
+}
+
+// MARK: - Simplified Column Declaration for String Types
+
+extension Column {
+    /// Creates a simplified column for non-optional String values with automatic type mapping.
+    ///
+    /// This convenience initializer eliminates the need for explicit mapping when working with
+    /// non-optional String properties, providing a cleaner syntax for common use cases.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Instead of verbose mapping:
+    /// Column(name: "Name", keyPath: \.name, mapping: { TextColumnType(TextColumnConfig(value: $0)) })
+    ///
+    /// // Use simplified syntax:
+    /// Column(name: "Name", keyPath: \.name)
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: Display name in the Excel header row
+    ///   - keyPath: KeyPath to a non-optional String property
+    /// - Returns: A configured column that automatically maps String values
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, String>) where InputType == String, OutputType == TextColumnType
+    {
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: nil,
+            bodyStyle: nil,
+            headerStyle: nil,
+            mapping: { value in
+                TextColumnType(TextColumnConfig(value: value))
+            },
+            nilHandling: .keepEmpty)
+    }
+
+    /// Creates a simplified column for optional String values with automatic type mapping.
+    ///
+    /// This convenience initializer provides simplified syntax for optional String properties.
+    /// By default, nil values are kept as empty cells, but this can be modified using
+    /// the `.defaultValue()` method.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// // Basic optional column:
+    /// Column(name: "Description", keyPath: \.description)  // nil -> empty cell
+    ///
+    /// // With default value:
+    /// Column(name: "Description", keyPath: \.description).defaultValue("N/A")  // nil -> "N/A"
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: Display name in the Excel header row
+    ///   - keyPath: KeyPath to an optional String property
+    /// - Returns: A configured column that automatically maps optional String values
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, String?>) where InputType == String?, OutputType == TextColumnType
+    {
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: nil,
+            bodyStyle: nil,
+            headerStyle: nil,
+            mapping: { value in
+                TextColumnType(TextColumnConfig(value: value))
             },
             nilHandling: .keepEmpty)
     }

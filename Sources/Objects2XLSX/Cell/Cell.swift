@@ -134,7 +134,7 @@ extension Cell {
                 // Empty cells don't need type attributes
                 break
             default:
-                // Numeric types (.double, .doubleValue, .optionalDouble, .int, .date, .percentage)
+                // Numeric types (.double, .doubleValue, .optionalDouble, .int, .intValue, .optionalInt, .date, .percentage)
                 // don't need explicit type attributes as they default to numeric
                 break
         }
@@ -169,6 +169,12 @@ extension Cell {
             case let .optionalDouble(double):
                 // Optional double - handle nil case
                 xml += "<v>\(double.cellValueString)</v>"
+            case let .intValue(int):
+                // Non-optional int - guaranteed to have value, optimized path
+                xml += "<v>\(String(int))</v>"
+            case let .optionalInt(int):
+                // Optional int - handle nil case
+                xml += "<v>\(int.cellValueString)</v>"
             case .empty:
                 // Explicitly empty cell
                 xml += "<v></v>"
@@ -220,6 +226,14 @@ extension Cell {
         /// - Parameter int: The integer value (nil represents empty cell)
         case int(Int?)
 
+        /// Non-optional integer numeric value.
+        /// - Parameter int: The guaranteed non-nil integer value
+        case intValue(Int)
+
+        /// Optional integer numeric value.
+        /// - Parameter int: The optional integer value (nil represents empty cell)
+        case optionalInt(Int?)
+
         /// Date and time value with timezone support.
         /// - Parameter date: The date/time value (nil represents empty cell)
         /// - Parameter timeZone: Timezone for date interpretation (defaults to current)
@@ -267,6 +281,10 @@ extension Cell {
                     String(double)
                 case let .optionalDouble(double):
                     double.cellValueString
+                case let .intValue(int):
+                    String(int)
+                case let .optionalInt(int):
+                    int.cellValueString
                 case let .int(int):
                     int.cellValueString
                 case let .date(date, timeZone):

@@ -197,314 +197,242 @@ swift package generate-xcodeproj
 - 无外部依赖
 - Linux/macOS 兼容性
 
-### 📚 当前工作：综合演示项目 (Demo Project)
+## 🚀 Column API 优化历程
 
-#### 🎯 项目目标
-创建一个完整的可执行演示项目，全面展示 Objects2XLSX 库的所有核心功能，作为用户学习和评估的最佳入口。
+### v1.1 简化列声明语法（已完成）
 
-#### 📁 项目结构
-```
-Demo/                           # 嵌套 Package 演示项目
-├── Package.swift              # 可执行 SPM 配置
-├── Sources/Objects2XLSXDemo/
-│   ├── main.swift            # 程序入口
-│   ├── Models/               # 三种业务数据模型
-│   │   ├── Employee.swift    # 员工模型 (复杂数据类型)
-│   │   ├── Product.swift     # 产品模型 (条件格式)
-│   │   └── Order.swift       # 订单模型 (关联数据)
-│   ├── Data/                 # 演示数据生成器
-│   │   ├── SampleEmployees.swift
-│   │   ├── SampleProducts.swift
-│   │   └── SampleOrders.swift
-│   ├── Styles/               # 三种样式主题
-│   │   ├── CorporateStyle.swift    # 企业风格
-│   │   ├── ModernStyle.swift       # 现代风格
-│   │   └── DefaultStyle.swift      # 默认风格
-│   └── ExcelGenerator.swift # 生成逻辑
-├── Output/                   # 输出目录
-└── README.md                # 演示项目说明
-```
+#### 📋 背景问题
+在 v1.0 版本中，用户需要手动编写复杂的列定义：
 
-#### 🎨 三表演示方案
-
-**1. Employee 工作表 (企业风格 + 行高设置)**
-- 样式：深蓝色企业主题，Times New Roman 字体
-- 特色：自定义行高 25pt，完整边框
-- 列功能演示：
-  - `name`: 字符串 + 列宽 20
-  - `age`: 数字 + filter(>= 18)
-  - `department`: 枚举 + mapping 转换
-  - `salary`: Double + 货币格式 + nil handling
-  - `email`: URL + 验证过滤
-  - `hireDate`: Date + 格式化
-  - `isManager`: Bool + mapping("是"/"否")
-  - `address`: Optional String + nil 显示为 "未提供"
-
-**2. Product 工作表 (现代风格)**
-- 样式：渐变色背景，Helvetica 字体，交替行颜色
-- 特色：条件格式化，现代配色方案
-- 列功能演示：
-  - `id`: 自增ID + 列宽 8
-  - `name`: 产品名 + 列宽 25 + 自动换行
-  - `category`: 分类 + filter(只显示特定分类)
-  - `price`: 价格 + 货币格式 + nil handling
-  - `stock`: 库存 + 条件格式(低库存红色)
-  - `rating`: 评分 + mapping(星级显示)
-  - `isActive`: 状态 + mapping + filter
-  - `description`: 描述 + 自动换行 + 列宽 30
-
-**3. Order 工作表 (默认风格)**
-- 样式：Excel 默认样式，展示基础效果
-- 特色：最小化样式，关注数据展示
-- 列功能演示：
-  - `orderID`: 订单号 + 格式化
-  - `customerName`: 客户名 + filter(非空)
-  - `orderDate`: 订单日期 + 日期格式
-  - `items`: 商品列表 + mapping(数组转字符串)
-  - `subtotal`: 小计 + 计算字段
-  - `tax`: 税费 + 百分比格式
-  - `total`: 总计 + 货币格式 + 加粗
-  - `status`: 状态 + mapping + 条件颜色
-
-#### 🛠 技术特性演示
-
-**列功能全面展示**
-- ✅ Filter: 年龄过滤、状态过滤、非空过滤
-- ✅ Mapping: 枚举转换、布尔值转换、数组转字符串
-- ✅ Nil Handling: 自定义空值显示、默认值设置
-- ✅ 列宽设置: 不同列的宽度优化
-- ✅ 数据格式: 货币、百分比、日期、URL
-
-**高级功能演示**
-- ✅ 多表格工作簿: 三个不同主题的表格
-- ✅ 进度跟踪: 实时生成进度显示
-- ✅ 样式层级: Book → Sheet → Column → Cell
-- ✅ 内存优化: 大数据集处理演示
-- ✅ 错误处理: 完整的异常处理示例
-
-#### 📱 命令行接口
-
-```bash
-swift run Objects2XLSXDemo [OPTIONS] [OUTPUT_FILE]
-
-Options:
-  -h, --help              显示帮助信息
-  -s, --size SIZE         数据量: small(10), medium(50), large(200) (默认: medium)
-  -o, --output PATH       输出文件路径 (默认: demo_output.xlsx)
-  -t, --theme THEME       样式主题: corporate, modern, default, mixed (默认: mixed)
-  -v, --verbose           显示详细进度信息
-  -b, --benchmark         显示性能基准测试
-
-Examples:
-  swift run Objects2XLSXDemo --help
-  swift run Objects2XLSXDemo -s small -v test.xlsx
-  swift run Objects2XLSXDemo -s large -t corporate -v -b output.xlsx
-```
-
-#### 📊 性能基准测试
-
-**实际测试结果 (macOS):**
-- **小型数据集 (30记录)**: 0.02s, 1999记录/秒, 26.5KB
-- **中型数据集 (150记录)**: 预估 0.08s, ~1900记录/秒, ~85KB  
-- **大型数据集 (600记录)**: 预估 0.32s, ~1875记录/秒, ~320KB
-
-**生成流程详情:**
-- XML生成: ~70% 时间 (工作表XML + 全局文件)
-- ZIP压缩: ~20% 时间 (SimpleZip纯Swift实现)
-- 样式处理: ~10% 时间 (注册器优化去重)
-
-#### 🎯 项目成果
-
-**用户体验 ✅**
-- ✅ 克隆项目后即可体验完整功能 (`swift run Objects2XLSXDemo --help`)
-- ✅ 生成包含三个工作表的专业 Excel 文件 (企业/现代/默认主题)
-- ✅ 实时进度显示和性能统计 (`--verbose --benchmark`)
-- ✅ 完整的源码学习材料 (8个模型+3个样式+生成器)
-
-**技术价值 ✅**
-- ✅ 最佳实践参考 (Column API使用/样式层级/错误处理)
-- ✅ 功能完整性验证 (所有核心API演示)
-- ✅ 性能基准测试 (26.5KB/30记录/0.02s/1999记录每秒)
-- ✅ 集成测试补充 (端到端Excel生成验证)
-
-#### 📋 实施计划和进度
-
-- ✅ **Phase 1**: 基础结构搭建 (Package.swift, 目录结构) - **已完成**
-- ✅ **Phase 2**: 数据模型定义 (三个业务模型) - **已完成**
-- ✅ **Phase 2.1**: 数据生成器实现 - **已完成**
-  - ✅ SampleEmployees: 完整员工数据生成 (包含边缘案例)
-  - ✅ SampleProducts: 六类产品数据生成 (库存/评分/状态变化)
-  - ✅ SampleOrders: 订单数据生成 (计算字段/多状态)
-  - ✅ 共享工具: SeededRandomGenerator + DataSize 枚举
-- ✅ **Phase 3**: 样式主题实现 (三种样式配置) - **已完成**
-  - ✅ CorporateStyle: 企业风格主题 (深蓝配色/Times New Roman/25pt行高)
-  - ✅ ModernStyle: 现代风格主题 (清新配色/Helvetica/条件格式)
-  - ✅ DefaultStyle: 默认风格主题 (Excel标准/Calibri/基础样式)
-  - ✅ 专业样式库: 货币/日期/状态/评分等专用样式
-- ✅ **Phase 4**: 生成逻辑开发 (Excel 生成和 CLI) - **已完成**
-  - ✅ ExcelGenerator: 完整的 Excel 生成逻辑 (三表/三主题/进度跟踪)
-  - ✅ CLI 参数解析: --help/--size/--output/--theme/--verbose/--benchmark
-  - ✅ 错误处理: 完整的 BookError 类型化错误支持
-  - ✅ 性能优化: 异步进度跟踪 + Swift 6 并发安全
-  - ✅ 端到端测试: 26.5KB/30记录/3工作表/0.02s生成时间
-- ✅ **Phase 5**: 测试和优化 (错误处理、性能优化) - **已完成**
-- 🔄 **Phase 6**: 文档完善 (README 更新、使用指南) - **进行中**
-
-#### 🎉 项目价值
-
-这个演示项目将成为 Objects2XLSX 库的：
-- **功能展示窗口** - 完整展示库的所有核心能力
-- **学习入门教程** - 用户学习使用的最佳起点
-- **最佳实践指南** - 展示正确的使用模式
-- **质量保证工具** - 作为持续集成的一部分
-
-## 🚧 当前开发任务：Column 声明方式优化
-
-### 📌 分支信息
-- **当前分支**: `feature/optimize-column-declaration`
-- **目标版本**: v1.1
-- **开发状态**: 🔄 进行中
-
-### 🎯 优化目标
-
-#### 问题分析
-当前 Column 设计在类型处理上存在以下问题：
-
-1. **类型信息丢失**: 所有 CellType 枚举值都使用 Optional 类型，即使源数据不是 Optional
-2. **不必要的类型转换**: `processValueForCell` 方法将所有值都"可选化"处理
-3. **声明方式冗长**: 需要显式指定 mapping 和 nilHandling，即使是简单的类型映射
-
-#### 期望的声明方式
 ```swift
-// 当前冗长的声明
-Column(
-    name: "Salary",
-    keyPath: \.salary, // Double?
-    width: 12,
-    bodyStyle: CorporateStyle.createCurrencyStyle(),
+// v1.0 冗长语法
+Column<Person, Double?, DoubleColumnType>(
+    name: "Salary", 
+    keyPath: \.salary,
     mapping: { salary in
-        DoubleColumnType(DoubleColumnConfig(value: salary ?? 0.0))
-    })
-
-// 期望的简化声明
-Column(name: "Salary", keyPath: \.salary, width: 12)
-    .defaultValue(-1.0)  // 只在 InputType 为 Optional 时可用
-    .bodyStyle(CorporateStyle.createCurrencyStyle())
+        DoubleColumnType(DoubleColumnConfig(value: salary))
+    }
+)
 ```
 
-### 🛠 技术方案：CellType 类型精确化
+#### 🎯 解决方案：简化构造方法
+为常用数据类型添加了简化构造方法，支持类型推断：
 
-#### 方案概述
-采用**方案三：扁平化枚举**，为 Optional 和非 Optional 类型创建独立的枚举值。
-
-#### 第一阶段：Double 类型重构
-
-**原有设计**:
 ```swift
-public enum CellType: Equatable, Sendable {
-    case double(Double?)  // 统一使用 Optional
-    // ...
-}
+// v1.1 简化语法
+Column(name: "Salary", keyPath: \.salary)
+    .defaultValue(0.0)
+    .width(12)
+    .bodyStyle(currencyStyle)
 ```
 
-**新设计**:
+#### ✅ toString 方法类型安全优化
+
+**核心问题**：`toString` 方法在设置 `defaultValue` 后仍然传递可选类型给闭包
+
 ```swift
-public enum CellType: Equatable, Sendable {
-    case double(Double)          // 非 Optional 版本
-    case optionalDouble(Double?) // Optional 版本
-    case empty                   // 明确的空单元格
-    // 其他类型保持不变...
-}
+// 问题代码
+Column(name: "Salary Level", keyPath: \.salary)
+    .defaultValue(0.0)
+    .toString { salary in salary < 50000 ? "Standard" : "Premium" }
+    //         ^^^^^^ 编译错误：Value of optional type 'Double?' must be unwrapped
 ```
 
-### 📋 实施步骤
+**解决方案**：实现双重载 toString 方法
+- `toString<T>(_ transform: @escaping (T) -> String)` - 用于 defaultValue 后的非可选值
+- `toString<T>(_ transform: @escaping (T?) -> String)` - 用于 keepEmpty 的可选值
 
-#### ✅ 步骤 1: 项目准备
-- ✅ 创建新分支 `feature/optimize-column-declaration`
-- ✅ 在 CLAUDE.md 中记录开发计划
+**关键实现**：
+1. 在 `toString` 方法内部先应用 `nilHandling` 逻辑
+2. 根据 `nilHandling` 类型选择正确的闭包签名
+3. Swift 编译器根据闭包参数类型自动选择正确的重载
 
-#### ✅ 步骤 2: CellType 枚举扩展
-- ✅ 在 `Cell.swift` 中添加 `doubleValue(Double)` 和 `optionalDouble(Double?)` 枚举值
-- ✅ 保持向后兼容，暂时保留原有的 `double(Double?)` 枚举值（标记为已弃用）
-- ✅ 添加 `empty` 枚举值用于明确的空单元格
-- ✅ 更新 `valueString` 计算属性以支持新枚举值
+#### ✅ Int 类型完整支持
 
-#### ✅ 步骤 3: XML 生成逻辑更新
-- ✅ 修改 `generateXML()` 方法，为新的枚举值生成正确的 XML
-- ✅ 优化 XML 生成，为 `doubleValue` 提供优化路径（减少 nil 检查）
-- ✅ 确保 `empty` 枚举值正确生成空 XML 值
-- ✅ 更新 `StyleRegister.swift` 中的 switch 语句以支持新枚举值
+**第一阶段：基础 Int 支持**
+- 添加简化构造方法：`Column(name: String, keyPath: KeyPath<ObjectType, Int>)`
+- 添加可选 Int 支持：`Column(name: String, keyPath: KeyPath<ObjectType, Int?>)`
+- 实现 `defaultValue(_ defaultValue: Int)` 方法
 
-#### ✅ 步骤 4: DoubleColumnType 重构
-- ✅ 修改 `DoubleColumnType.cellType` 属性，根据值是否为 nil 返回不同的 CellType
-  - 非 nil 值使用 `.doubleValue(value)` 
-  - nil 值使用 `.optionalDouble(nil)`
-- ✅ 更新相关的 `ColumnOutputTypeProtocol` 实现
-- ✅ 保持与现有 API 的兼容性
+**第二阶段：toInt 转换方法**
+- 实现双重载 `toInt` 方法，遵循 `toString` 的设计模式
+- 支持从任意类型转换为 Int：`String -> Int`, `Double -> Int` 等
 
-#### ✅ 步骤 5: Column 便利方法优化
-- ✅ 为 `KeyPath<ObjectType, Double>` 创建无需显式 mapping 的构造器
-  - `Column(name: "Price", keyPath: \.price)` - 基础简化语法
-  - `Column(name: "Price", keyPath: \.price, width: 12)` - 带宽度版本
-- ✅ 为 `KeyPath<ObjectType, Double?>` 创建支持 defaultValue 的链式 API
-  - `Column(name: "Salary", keyPath: \.salary)` - Optional 基础语法
-  - `Column(name: "Salary", keyPath: \.salary, width: 12)` - 带宽度版本
-- ✅ 实现 `.defaultValue()` 扩展方法
-  - `Column(name: "Salary", keyPath: \.salary).defaultValue(0.0)` - 设置默认值
-- ✅ 实现链式样式配置方法
-  - `.bodyStyle()`, `.headerStyle()`, `.width()` - 支持方法链
+**第三阶段：CellType 类型安全**
+发现关键问题：Int 类型缺少类型安全的 CellType 支持
 
-#### 🔄 步骤 6: 测试更新
-- [ ] 更新现有的 Double 相关测试用例
-- [ ] 添加新的类型精确化测试
-- [ ] 确保 Row XML 和 Cell XML 测试通过
+**现有 Double 类型**：
+- `case doubleValue(Double)` - 非可选
+- `case optionalDouble(Double?)` - 可选  
+- `case double(Double?)` - 已弃用
 
-#### 🔄 步骤 7: Demo 项目集成
-- [ ] 在 Demo 项目中使用新的简化声明方式
-- [ ] 验证生成的 Excel 文件正确性
-- [ ] 性能对比测试
+**需要补充 Int 类型**：
+- `case intValue(Int)` - 非可选
+- `case optionalInt(Int?)` - 可选
+- `case int(Int?)` - 保持向后兼容
 
-#### 🔄 步骤 8: 文档和清理
-- [ ] 更新代码注释和文档
-- [ ] 移除过时的代码（如果需要）
-- [ ] 准备 PR 合并回主分支
+**完整实现**：
+1. **CellType 枚举扩展**：添加 `intValue` 和 `optionalInt` cases
+2. **XML 生成支持**：为新 cases 添加专门的 XML 生成逻辑
+3. **IntColumnType 优化**：使用类型安全的 cellType，像 DoubleColumnType 一样
+4. **StyleRegister 更新**：添加对新 Int cases 的支持
+5. **withDefaultValue 修正**：确保正确保留非 nil 值
 
-### 🧪 验证标准
+#### 🏗️ API 设计优化
 
-#### 功能验证
-- [ ] 所有现有测试用例通过
-- [ ] 新的类型精确化逻辑正确工作
-- [ ] 生成的 Excel 文件与之前版本完全一致
+**移除冗余构造方法**：
+- 移除了带 `width` 参数的构造方法
+- 将完整参数构造方法改为 `internal`
+- 强制用户使用统一的链式调用风格
 
-#### 性能验证
-- [ ] XML 生成性能不下降
-- [ ] 内存使用不增加
-- [ ] 编译时间不显著增加
+**优势**：
+- **简化公共 API**：用户只需要记住基础构造方法
+- **统一代码风格**：所有配置都通过链式调用
+- **保持内部灵活性**：internal 构造方法仍可用于内部实现
 
-#### API 验证
-- [ ] 向后兼容性保持
-- [ ] 新的简化 API 按期望工作
-- [ ] 类型推断和编译时检查正确
+#### 📊 当前支持状态
 
-### 📈 后续扩展
+**✅ Double 类型（完整支持）**：
+```swift
+Column(name: "Price", keyPath: \.price)           // Double
+Column(name: "Discount", keyPath: \.discount)     // Double?
+    .defaultValue(0.0)
+    .toString { price in "¥\(price)" }
+    .toInt { price in Int(price.rounded()) }
+```
 
-如果 Double 类型重构成功，将按相同模式扩展其他类型：
-- String / String?
-- Int / Int?
-- Bool / Bool?
-- Date / Date?
-- URL / URL?
+**✅ Int 类型（完整支持）**：
+```swift
+Column(name: "Count", keyPath: \.count)           // Int  
+Column(name: "Stock", keyPath: \.stock)           // Int?
+    .defaultValue(0)
+    .toString { count in "\(count) items" }
+    .toInt { count in count * 2 }
+```
 
-### 🔗 相关文件
+**✅ String 类型（基础支持）**：
+```swift
+Column(name: "Name", keyPath: \.name)             // String
+Column(name: "Note", keyPath: \.note)             // String?
+```
 
-**核心文件**:
-- `Sources/Objects2XLSX/Cell/Cell.swift` - CellType 枚举定义
-- `Sources/Objects2XLSX/Column/Column.swift` - Column 类型和扩展
-- `Sources/Objects2XLSX/Column/ColumnOutputTypes/DoubleColumnType.swift` - Double 列类型
+#### 🎨 技术架构亮点
 
-**测试文件**:
-- `Tests/Objects2XLSXTests/XmlGenerator/CellXMLTest.swift` - Cell XML 生成测试
-- `Tests/Objects2XLSXTests/XmlGenerator/RowXMLTest.swift` - Row XML 生成测试
+**类型安全保证**：
+- 编译时类型检查：`defaultValue` 后的转换方法接收非可选类型
+- 性能优化：非可选值使用专门的 CellType cases
+- 一致性：Int 和 Double 有相同的 API 模式
+
+**内存和性能优化**：
+- `intValue(Int)` 和 `doubleValue(Double)` 避免可选值包装
+- 专门的 XML 生成路径：`<v>\(String(int))</v>`
+- 编译器内联优化机会
+
+**代码组织**：
+- **Column.swift**：核心定义和简化构造方法
+- **Column+OptionalSupport.swift**：可选类型支持（defaultValue 等）
+- **Column+TypeConversions.swift**：类型转换方法（toString, toInt 等）
+
+#### 📈 使用效果对比
+
+**v1.0 复杂语法**：
+```swift
+Column<Employee, Double?, DoubleColumnType>(
+    name: "Salary Level",
+    keyPath: \.salary,
+    mapping: { salary in
+        let processedSalary = salary ?? 0.0
+        let level = processedSalary < 50000 ? "Standard" : "Premium" 
+        return TextColumnType(TextColumnConfig(value: level))
+    }
+)
+```
+
+**v1.1 简洁语法**：
+```swift
+Column(name: "Salary Level", keyPath: \.salary)
+    .defaultValue(0.0)
+    .toString { salary in salary < 50000 ? "Standard" : "Premium" }
+    .width(12)
+    .bodyStyle(headerStyle)
+```
+
+**改进效果**：
+- **代码行数**：从 8 行减少到 5 行
+- **可读性**：从技术实现细节转为业务逻辑表达
+- **类型安全**：编译时保证，无需手动 nil 检查
+- **链式调用**：配置更加灵活和直观
+
+#### 🎯 Demo 项目成果
+
+Objects2XLSX 现在包含一个完整的可执行演示项目 (`Demo/`)，展示了所有核心功能：
+
+**核心特性**
+- ✅ 三表演示 (Employee/Product/Order) + 三种专业样式主题
+- ✅ 完整的命令行接口 (`swift run Objects2XLSXDemo --help`)
+- ✅ 实时进度跟踪和性能基准测试
+- ✅ 26.5KB/30记录/0.02s 生成性能验证
+
+**技术价值**
+- ✅ 最佳实践参考和功能完整性验证
+- ✅ 端到端集成测试补充
+- ✅ 用户学习和评估的最佳入口
+
+#### ✅ Int 类型完整支持（v1.1.1 更新）
+
+继 Double 类型优化成功后，Int 类型现已获得完整的类型安全支持，遵循相同的设计模式：
+
+**第一阶段：基础结构**
+- ✅ 添加简化构造方法：`Column(name: String, keyPath: KeyPath<ObjectType, Int>)`
+- ✅ 添加可选 Int 支持：`Column(name: String, keyPath: KeyPath<ObjectType, Int?>)`
+- ✅ 实现 `defaultValue(_ defaultValue: Int)` 方法
+
+**第二阶段：toInt 转换方法**
+- ✅ 实现双重载 `toInt` 方法，遵循 `toString` 的设计模式
+- ✅ 支持从任意类型转换为 Int：`String -> Int`, `Double -> Int` 等
+- ✅ 类型安全：`defaultValue` 后的 `toInt` 接收非可选类型
+
+**第三阶段：CellType 类型安全**
+- ✅ 添加 `intValue(Int)` - 非可选整数，性能优化
+- ✅ 添加 `optionalInt(Int?)` - 可选整数，完整兼容
+- ✅ 保留 `int(Int?)` - 向后兼容，标记为传统用法
+
+**第四阶段：系统集成**
+- ✅ 更新 IntColumnType 使用类型安全的 cellType
+- ✅ 修正 withDefaultValue 正确保留非 nil 值
+- ✅ 更新 StyleRegister 支持新的 Int cases
+- ✅ 完善 XML 生成专门路径：`<v>\(String(int))</v>`
+
+#### 🎯 Int 类型 API 使用指南
+
+**基础用法**：
+```swift
+// 非可选 Int
+Column(name: "Count", keyPath: \.count)           // Int
+    .width(8)
+    .toString { count in "\(count) items" }
+
+// 可选 Int + 默认值
+Column(name: "Stock", keyPath: \.stock)           // Int?
+    .defaultValue(0)
+    .toInt { stock in stock * 2 }                 // 非可选！
+
+// 可选 Int + 显式 nil 处理
+Column(name: "Quantity", keyPath: \.quantity)     // Int?
+    .toString { (quantity: Int?) in               // 可选
+        quantity.map { "\($0) units" } ?? "N/A"
+    }
+```
+
+**类型安全保证**：
+- `defaultValue(0)` 后，所有转换方法接收 `Int` 而非 `Int?`
+- 专门的 `intValue(Int)` CellType 避免不必要的可选值包装
+- 编译时类型检查确保运行时安全
+
+**性能优化**：
+- 非可选路径：`intValue(Int)` → `<v>\(String(int))</v>`
+- 减少 nil 检查和条件分支
+- 编译器内联优化机会
 
 ### 后续发展方向
 
@@ -608,811 +536,38 @@ do {
 }
 ```
 
-## 📚 toString 方法重大更新 (2025-06-21)
+#### 🎯 数据类型支持现状
 
-### 🎯 问题描述
+**✅ 完整支持（类型安全 + 转换方法）**：
+- **Double/Double?**: 简化构造器 + defaultValue + toString/toInt
+- **Int/Int?**: 简化构造器 + defaultValue + toString/toInt  
+- **String/String?**: 基础简化构造器
 
-在之前的实现中，`toString` 方法存在类型签名不够精确的问题：
+**🔄 计划扩展（按需实现）**：
+- Bool/Bool?, Date/Date?, URL/URL? 
+- 通用转换系统 (toXXX 方法)
 
-**问题表现**:
+#### 🎯 核心设计模式
+
+**类型安全保证**：
 ```swift
-Column(name: "Salary Level", keyPath: \.salary)
+// 设置 defaultValue 后，转换方法接收非可选类型
+Column(name: "Level", keyPath: \.salary)  // Double?
     .defaultValue(0.0)
-    .toString { salary in salary < 50000 ? "Standard" : "Premium" }
-    // ❌ 编译错误：Value of optional type 'Double?' must be unwrapped
-```
-
-**根本原因**:
-- 设置了 `defaultValue(0.0)` 后，值应该是非可选的 `Double`
-- 但 `toString` 方法仍然传递 `Double?` 给闭包
-- 没有正确应用 `nilHandling` 逻辑
-
-### 🛠 解决方案：双重载 toString 方法
-
-#### 方案设计理念
-
-基于列的 `nilHandling` 配置，提供两个不同的 `toString` 方法重载：
-
-1. **非可选重载** `(T) -> String` - 适用于：
-   - 设置了 `defaultValue` 的列
-   - 本身就是非可选类型的列
-
-2. **可选重载** `(T?) -> String` - 适用于：
-   - 没有设置 `defaultValue` 的可选类型列
-   - 需要明确处理 nil 值的情况
-
-#### 核心实现逻辑
-
-```swift
-// 非可选版本
-public func toString<T>(
-    _ transform: @escaping (T) -> String
-) -> Column<ObjectType, InputType, TextColumnType> where OutputType.Config.ValueType == T {
-    // 应用 nilHandling 逻辑，然后强制解包传递给 transform
-    switch self.nilHandling {
-    case .keepEmpty:
-        if let finalValue = finalValue {
-            stringValue = transform(finalValue)
-        } else {
-            stringValue = transform(finalValue!) // 编译时保证安全
-        }
-    case .defaultValue:
-        stringValue = transform(finalValue!) // defaultValue 后保证非 nil
-    }
-}
-
-// 可选版本
-public func toString<T>(
-    _ transform: @escaping (T?) -> String
-) -> Column<ObjectType, InputType, TextColumnType> where OutputType.Config.ValueType == T {
-    // 直接传递可能为 nil 的值
-    let stringValue = transform(finalValue)
-}
-```
-
-### 📋 实施步骤详录
-
-#### 步骤 1: 问题诊断
-- **发现**: `defaultValue` 设置后，`toString` 仍接收 `Double?`
-- **原因**: 原有实现只提取 `config.value`，未应用 `nilHandling`
-- **影响**: 用户无法使用简洁的非可选语法
-
-#### 步骤 2: nilHandling 集成修复
-**修改前**:
-```swift
-let finalValue = processedOutput.config.value
-let stringValue = transform(finalValue) // 直接传递，可能为 nil
-```
-
-**修改后**:
-```swift
-let processedOutput = switch self.nilHandling {
-case .keepEmpty:
-    originalOutput
-case let .defaultValue(defaultValue):
-    OutputType.withDefaultValue(defaultValue, config: originalOutput.config)
-}
-```
-
-#### 步骤 3: 双重载实现
-- **第一个重载**: `(T) -> String` - 处理非可选情况
-- **第二个重载**: `(T?) -> String` - 处理可选情况
-- **智能分发**: 根据 `nilHandling` 类型选择正确的处理逻辑
-
-#### 步骤 4: 测试用例更新
-**需要更新的测试模式**:
-```swift
-// 旧测试 (都使用可选)
-.toString { (discount: Double?) in
-    guard let discount = discount else { return "No Discount" }
-    return discount > 0.05 ? "High Discount" : "Low Discount"
-}
-
-// 新测试 (defaultValue 后使用非可选)
-.defaultValue(0.0)
-.toString { (discount: Double) in
-    return discount > 0.05 ? "High Discount" : "Low Discount"
-}
-```
-
-#### 步骤 5: Demo 项目验证
-```swift
-// Demo 中的实际使用
-Column(name: "Salary Level", keyPath: \.salary)
-    .defaultValue(0.0)
-    .toString { (salary: Double) in salary < 50000 ? "Standard" : "Premium" }
-    .width(12)
-    .bodyStyle(CorporateStyle.createDataStyle())
-```
-
-### 🧪 测试验证结果
-
-#### 编译测试
-- ✅ 所有 toString 相关测试通过 (4/4)
-- ✅ Demo 项目编译成功
-- ✅ 新旧 API 并存，向后兼容
-
-#### 功能测试
-- ✅ `defaultValue` + 非可选 `toString` 正常工作
-- ✅ 可选列 + 可选 `toString` 正常工作
-- ✅ 生成的 Excel 文件内容正确
-
-#### 端到端测试
-```bash
-swift run Objects2XLSXDemo -s small -v demo_test.xlsx
-# 输出: ✅ Demo workbook generated successfully!
-# 文件大小: 32.7 KB
-```
-
-### 🎯 最终 API 使用指南
-
-#### 场景 1: 可选类型 + defaultValue
-```swift
-// ✅ 推荐：使用非可选闭包
-Column(name: "Salary Level", keyPath: \.salary) // Double?
-    .defaultValue(0.0)
-    .toString { (salary: Double) in  // 非可选！
+    .toString { (salary: Double) in         // 非可选！
         salary < 50000 ? "Standard" : "Premium"
     }
 ```
 
-#### 场景 2: 可选类型 + 显式 nil 处理
+**一致的 API 模式**：
 ```swift
-// ✅ 推荐：使用可选闭包
-Column(name: "Bonus", keyPath: \.bonus) // Double?
-    .toString { (bonus: Double?) in  // 可选
-        guard let bonus = bonus else { return "No Bonus" }
-        return bonus > 1000 ? "High" : "Low"
-    }
-```
-
-#### 场景 3: 非可选类型
-```swift
-// ✅ 推荐：使用非可选闭包  
-Column(name: "Age Category", keyPath: \.age) // Int
-    .toString { (age: Int) in  // 非可选
-        age < 18 ? "Minor" : "Adult"
-    }
-```
-
-### 🔧 技术细节
-
-#### nilHandling 处理逻辑
-```swift
-// withDefaultValue 的实现确保了类型安全
-public static func withDefaultValue(_ value: Double, config: DoubleColumnConfig) -> Self {
-    DoubleColumnType(DoubleColumnConfig(value: config.value ?? value))
-    // config.value ?? value 确保结果永远不为 nil
-}
-```
-
-#### 重载解析机制
-Swift 编译器会根据闭包参数类型自动选择正确的重载：
-- `{ (value: T) in ... }` → 选择非可选重载
-- `{ (value: T?) in ... }` → 选择可选重载
-
-### 📝 注意事项
-
-#### 1. 类型注解的重要性
-```swift
-// ✅ 明确指定类型，避免歧义
-.toString { (salary: Double) in ... }
-
-// ❌ 编译器可能无法推断
-.toString { salary in ... }
-```
-
-#### 2. defaultValue 与类型的关系
-- 设置 `defaultValue` 后，值保证非 nil
-- 应该使用非可选版本的 `toString`
-- 这样可以避免不必要的 nil 检查
-
-#### 3. 向后兼容性
-- 两个重载并存，不会破坏现有代码
-- 现有的可选处理方式仍然有效
-- 用户可以逐步迁移到更简洁的 API
-
-### 🚀 性能优化
-
-#### 编译时优化
-- 非可选路径减少运行时 nil 检查
-- 类型推断更加精确
-- 强制解包在编译时验证安全性
-
-#### 运行时优化
-- `defaultValue` 处理在 `withDefaultValue` 中完成
-- 减少 `toString` 闭包中的条件分支
-- 更清晰的控制流
-
-### 📋 后续扩展计划
-
-基于 `toString` 的成功经验，类似的双重载模式可以应用到：
-
-1. **filter 方法**: `(T) -> Bool` vs `(T?) -> Bool`
-2. **mapping 方法**: 更精确的类型转换
-3. **validation 方法**: 数据验证逻辑
-
-这种模式为 Objects2XLSX 的类型安全和用户体验树立了新的标准。
-
-## 🗓️ 其他数据类型扩展计划 (v1.1+)
-
-### 📋 总体策略
-
-基于 `Double/Double?` + `toString` 的成功经验，逐步为其他数据类型实现相同的类型精确化和转换方法支持。
-
-### 🎯 扩展目标
-
-#### 核心目标
-1. **类型精确化**: 为每种数据类型实现 optional/non-optional 枚举分离
-2. **简化语法**: 提供简洁的 Column 构造器和链式 API
-3. **通用转换**: 实现 `toXXX` 系列方法，支持跨类型转换
-4. **类型安全**: 确保编译时类型检查和运行时安全
-
-#### 设计原则
-- **渐进式**: 逐个类型实现，避免大规模重构
-- **一致性**: 所有类型使用相同的 API 模式
-- **兼容性**: 保持向后兼容，不破坏现有代码
-- **可测试**: 每个类型都有完整的测试覆盖
-
-### 📅 分阶段实施计划
-
----
-
-## Phase 1: String 类型扩展 (优先级：高)
-
-### 🎯 目标
-String 是最常用的数据类型，优先实现可以最大化用户收益。
-
-### 📋 具体任务
-
-#### 1.1 CellType 枚举扩展
-```swift
-// 在 Cell.swift 中添加
-case stringValue(String)        // 非可选字符串
-case optionalString(String?)    // 可选字符串
-// 保留现有的 case string(String?) 并标记为 deprecated
-```
-
-#### 1.2 StringColumnType 重构
-```swift
-// 更新 ColumnOutputType.swift
-extension StringColumnType {
-    public var cellType: Cell.CellType {
-        if let value = config.value {
-            .stringValue(value)  // 非 nil 使用精确类型
-        } else {
-            .optionalString(config.value)  // nil 使用可选类型
-        }
-    }
-    
-    public static func withDefaultValue(_ value: String, config: StringColumnConfig) -> Self {
-        StringColumnType(StringColumnConfig(value: config.value ?? value))
-    }
-}
-```
-
-#### 1.3 Column 简化构造器
-```swift
-// 在 Column.swift 中添加
-extension Column {
-    // 非可选 String
-    public init(name: String, keyPath: KeyPath<ObjectType, String>) 
-        where InputType == String, OutputType == StringColumnType
-    
-    // 可选 String
-    public init(name: String, keyPath: KeyPath<ObjectType, String?>) 
-        where InputType == String?, OutputType == StringColumnType
-}
-```
-
-#### 1.4 链式配置方法
-```swift
-extension Column where InputType == String?, OutputType == StringColumnType {
-    public func defaultValue(_ defaultValue: String) -> Column<ObjectType, String?, StringColumnType>
-}
-
-extension Column where OutputType == StringColumnType {
-    public func bodyStyle(_ style: CellStyle) -> Column<ObjectType, InputType, StringColumnType>
-    public func headerStyle(_ style: CellStyle) -> Column<ObjectType, InputType, StringColumnType>
-    public func width(_ width: Int) -> Column<ObjectType, InputType, StringColumnType>
-}
-```
-
-#### 1.5 通用转换方法
-```swift
-extension Column {
-    // 通用转换方法 - 用户自定义转换逻辑
-    
-    // toString - 转换为字符串 (已实现)
-    public func toString<T>(_ transform: @escaping (T) -> String) -> Column<ObjectType, InputType, StringColumnType>
-    public func toString<T>(_ transform: @escaping (T?) -> String) -> Column<ObjectType, InputType, StringColumnType>
-    
-    // toDouble - 转换为 Double
-    public func toDouble<T>(_ transform: @escaping (T) -> Double) -> Column<ObjectType, InputType, DoubleColumnType>
-    public func toDouble<T>(_ transform: @escaping (T?) -> Double?) -> Column<ObjectType, InputType, DoubleColumnType>
-    
-    // toInt - 转换为 Int
-    public func toInt<T>(_ transform: @escaping (T) -> Int) -> Column<ObjectType, InputType, IntColumnType>
-    public func toInt<T>(_ transform: @escaping (T?) -> Int?) -> Column<ObjectType, InputType, IntColumnType>
-    
-    // toBool - 转换为 Bool
-    public func toBool<T>(_ transform: @escaping (T) -> Bool) -> Column<ObjectType, InputType, BoolColumnType>
-    public func toBool<T>(_ transform: @escaping (T?) -> Bool?) -> Column<ObjectType, InputType, BoolColumnType>
-    
-    // toDate - 转换为 Date
-    public func toDate<T>(_ transform: @escaping (T) -> Date) -> Column<ObjectType, InputType, DateColumnType>
-    public func toDate<T>(_ transform: @escaping (T?) -> Date?) -> Column<ObjectType, InputType, DateColumnType>
-    
-    // toURL - 转换为 URL
-    public func toURL<T>(_ transform: @escaping (T) -> URL) -> Column<ObjectType, InputType, URLColumnType>
-    public func toURL<T>(_ transform: @escaping (T?) -> URL?) -> Column<ObjectType, InputType, URLColumnType>
-}
-```
-
-#### 1.6 测试实现
-- `StringColumnSyntaxTests.swift`
-- 覆盖所有新增的构造器和方法
-- 验证类型精确化和转换功能
-
-### 📊 预期收益
-- 最常用的字符串类型获得完整的类型安全支持
-- 实现完整的通用转换方法系统 (toXXX 系列)
-- 为后续类型实现树立完整的模板
-
----
-
-## Phase 2: Int 类型扩展 (优先级：高)
-
-### 🎯 目标
-整数类型在数据处理中使用频繁，且相对简单，适合作为第二个实现目标。
-
-### 📋 具体任务
-
-#### 2.1 CellType 枚举扩展
-```swift
-case intValue(Int)        // 非可选整数
-case optionalInt(Int?)    // 可选整数
-// 保留现有的 case int(Int?) 并标记为 deprecated
-```
-
-#### 2.2 IntColumnType 重构
-```swift
-extension IntColumnType {
-    public var cellType: Cell.CellType {
-        if let value = config.value {
-            .intValue(value)
-        } else {
-            .optionalInt(config.value)
-        }
-    }
-    
-    public static func withDefaultValue(_ value: Int, config: IntColumnConfig) -> Self {
-        IntColumnType(IntColumnConfig(value: config.value ?? value))
-    }
-}
-```
-
-#### 2.3 Column 简化构造器和链式方法
-```swift
-// 构造器
-public init(name: String, keyPath: KeyPath<ObjectType, Int>) where InputType == Int, OutputType == IntColumnType
-public init(name: String, keyPath: KeyPath<ObjectType, Int?>) where InputType == Int?, OutputType == IntColumnType
-
-// 链式配置
-extension Column where InputType == Int?, OutputType == IntColumnType {
-    public func defaultValue(_ defaultValue: Int) -> Column<ObjectType, Int?, IntColumnType>
-}
-```
-
-#### 2.4 通用转换方法 (继承自 Phase 1)
-```swift
-// 所有 toXXX 方法都是通用的，在 Phase 1 中已经定义
-// 用户可以使用自定义逻辑进行转换
-
-// 示例用法:
-Column(name: "Age Level", keyPath: \.age)
-    .toString { age in
-        age < 18 ? "Minor" : "Adult"
-    }
-
-Column(name: "Age as Double", keyPath: \.age)
-    .toDouble { age in
-        Double(age)
-    }
-
-Column(name: "Formatted Age", keyPath: \.age)
-    .toString { age in
-        "\(age) years old"
-    }
-```
-
-#### 2.5 测试实现
-- `IntColumnSyntaxTests.swift`
-- 验证数值转换和格式化功能
-
-### 📊 预期收益
-- 整数类型获得完整的类型安全支持
-- 验证通用转换方法在数值类型上的应用
-- 巩固数值类型的处理模式
-
----
-
-## Phase 3: Bool 类型扩展 (优先级：中)
-
-### 🎯 目标
-布尔类型简单但使用频繁，特别是在状态和标志位表示方面。
-
-### 📋 具体任务
-
-#### 3.1 CellType 枚举扩展
-```swift
-case boolValue(Bool)        // 非可选布尔
-case optionalBool(Bool?)    // 可选布尔
-// 保留现有的 case boolean(Bool?) 并标记为 deprecated
-```
-
-#### 3.2 BoolColumnType 重构
-```swift
-extension BoolColumnType {
-    public var cellType: Cell.CellType {
-        if let value = config.value {
-            .boolValue(value)
-        } else {
-            .optionalBool(config.value)
-        }
-    }
-    
-    public static func withDefaultValue(_ value: Bool, config: BoolColumnConfig) -> Self {
-        BoolColumnType(BoolColumnConfig(value: config.value ?? value, 
-                                      booleanExpressions: config.booleanExpressions,
-                                      caseStrategy: config.caseStrategy))
-    }
-}
-```
-
-#### 3.3 通用转换方法 (继承自 Phase 1)
-```swift
-// 所有 toXXX 方法都是通用的，用户自定义转换逻辑
-
-// 示例用法:
-Column(name: "Status Text", keyPath: \.isActive)
-    .toString { isActive in
-        isActive ? "Active" : "Inactive"
-    }
-
-Column(name: "Yes/No", keyPath: \.isActive)
-    .toString { isActive in
-        isActive ? "Yes" : "No"
-    }
-
-Column(name: "Status Icons", keyPath: \.isActive)
-    .toString { isActive in
-        isActive ? "✅" : "❌"
-    }
-
-Column(name: "Binary", keyPath: \.isActive)
-    .toInt { isActive in
-        isActive ? 1 : 0
-    }
-```
-
-#### 3.4 测试实现
-- `BoolColumnSyntaxTests.swift`
-- 验证布尔值转换和表示功能
-
-### 📊 预期收益
-- 布尔类型获得完整的类型安全支持
-- 验证通用转换方法在布尔类型上的应用
-
----
-
-## Phase 4: Date 类型扩展 (优先级：中)
-
-### 🎯 目标
-日期类型在业务数据中极其常用，需要丰富的格式化选项。
-
-### 📋 具体任务
-
-#### 4.1 CellType 枚举扩展
-```swift
-case dateValue(Date)        // 非可选日期
-case optionalDate(Date?)    // 可选日期
-// 保留现有的 case date(Date?) 并标记为 deprecated
-```
-
-#### 4.2 DateColumnType 重构
-```swift
-extension DateColumnType {
-    public var cellType: Cell.CellType {
-        if let value = config.value {
-            .dateValue(value)
-        } else {
-            .optionalDate(config.value)
-        }
-    }
-    
-    public static func withDefaultValue(_ value: Date, config: DateColumnConfig) -> Self {
-        DateColumnType(DateColumnConfig(value: config.value ?? value, timeZone: config.timeZone))
-    }
-}
-```
-
-#### 4.3 通用转换方法 (继承自 Phase 1)
-```swift
-// 所有 toXXX 方法都是通用的，用户自定义转换逻辑
-
-// 示例用法:
-Column(name: "Date String", keyPath: \.date)
-    .toString { date in
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        return formatter.string(from: date)
-    }
-
-Column(name: "Age", keyPath: \.birthDate)
-    .toInt { birthDate in
-        Calendar.current.dateComponents([.year], from: birthDate, to: Date()).year ?? 0
-    }
-
-Column(name: "Weekday", keyPath: \.date)
-    .toString { date in
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE"
-        return formatter.string(from: date)
-    }
-
-Column(name: "Timestamp", keyPath: \.date)
-    .toDouble { date in
-        date.timeIntervalSince1970
-    }
-```
-
-#### 4.4 测试实现
-- `DateColumnSyntaxTests.swift`
-- 验证日期格式化和计算功能
-
-### 📊 预期收益
-- 日期类型获得完整的类型安全支持
-- 验证通用转换方法在日期类型上的应用
-
----
-
-## Phase 5: URL 类型扩展 (优先级：低)
-
-### 🎯 目标
-URL 类型使用相对较少，但在某些场景下很重要。
-
-### 📋 具体任务
-
-#### 5.1 CellType 枚举扩展
-```swift
-case urlValue(URL)        // 非可选 URL
-case optionalURL(URL?)    // 可选 URL
-// 保留现有的 case url(URL?) 并标记为 deprecated
-```
-
-#### 5.2 通用转换方法 (继承自 Phase 1)
-```swift
-// 所有 toXXX 方法都是通用的，用户自定义转换逻辑
-
-// 示例用法:
-Column(name: "URL String", keyPath: \.website)
-    .toString { url in
-        url.absoluteString
-    }
-
-Column(name: "Domain", keyPath: \.website)
-    .toString { url in
-        url.host ?? "Unknown"
-    }
-
-Column(name: "Path", keyPath: \.website)
-    .toString { url in
-        url.path
-    }
-
-Column(name: "Display Name", keyPath: \.website)
-    .toString { url in
-        "Visit \(url.host ?? "website")"
-    }
-```
-
----
-
-## Phase 6: 跨类型转换方法 (优先级：中)
-
-### 🎯 目标
-实现通用的跨类型转换方法，提供最大的灵活性。
-
-### 📋 具体任务
-
-#### 6.1 完整的通用转换方法系统
-```swift
-extension Column {
-    // Phase 6 主要是确保所有类型都支持完整的 toXXX 方法集合
-    // 这些方法在 Phase 1 中定义，Phase 6 确保所有类型都能使用
-    
-    // 核心转换方法 (适用于所有类型)
-    public func toString<T>(_ transform: @escaping (T) -> String) -> Column<ObjectType, InputType, StringColumnType>
-    public func toString<T>(_ transform: @escaping (T?) -> String) -> Column<ObjectType, InputType, StringColumnType>
-    
-    public func toDouble<T>(_ transform: @escaping (T) -> Double) -> Column<ObjectType, InputType, DoubleColumnType>
-    public func toDouble<T>(_ transform: @escaping (T?) -> Double?) -> Column<ObjectType, InputType, DoubleColumnType>
-    
-    public func toInt<T>(_ transform: @escaping (T) -> Int) -> Column<ObjectType, InputType, IntColumnType>
-    public func toInt<T>(_ transform: @escaping (T?) -> Int?) -> Column<ObjectType, InputType, IntColumnType>
-    
-    public func toBool<T>(_ transform: @escaping (T) -> Bool) -> Column<ObjectType, InputType, BoolColumnType>
-    public func toBool<T>(_ transform: @escaping (T?) -> Bool?) -> Column<ObjectType, InputType, BoolColumnType>
-    
-    public func toDate<T>(_ transform: @escaping (T) -> Date) -> Column<ObjectType, InputType, DateColumnType>
-    public func toDate<T>(_ transform: @escaping (T?) -> Date?) -> Column<ObjectType, InputType, DateColumnType>
-    
-    public func toURL<T>(_ transform: @escaping (T) -> URL) -> Column<ObjectType, InputType, URLColumnType>
-    public func toURL<T>(_ transform: @escaping (T?) -> URL?) -> Column<ObjectType, InputType, URLColumnType>
-    
-    // 如果有 PercentageColumnType
-    public func toPercentage<T>(_ transform: @escaping (T) -> Double) -> Column<ObjectType, InputType, PercentageColumnType>
-    public func toPercentage<T>(_ transform: @escaping (T?) -> Double?) -> Column<ObjectType, InputType, PercentageColumnType>
-}
-```
-
-#### 6.2 跨类型转换示例
-```swift
-// 任意类型都可以转换为任意其他类型
-// 用户提供转换逻辑
-
-// String -> Int
-Column(name: "String to Number", keyPath: \.stringValue)
-    .toInt { stringValue in
-        Int(stringValue) ?? 0
-    }
-
-// Date -> String -> URL
-Column(name: "Date URL", keyPath: \.date)
-    .toString { date in
-        "https://calendar.com/\(date.timeIntervalSince1970)"
-    }
-    .toURL { urlString in
-        URL(string: urlString)!
-    }
-
-// Int -> Bool -> String
-Column(name: "Number Status", keyPath: \.count)
-    .toBool { count in
-        count > 0
-    }
-    .toString { hasItems in
-        hasItems ? "Has Items" : "Empty"
-    }
-```
-
----
-
-## Phase 7: 清理和优化 (优先级：低)
-
-### 🎯 目标
-移除已弃用的代码，优化性能，完善文档。
-
-### 📋 具体任务
-
-#### 7.1 代码清理
-- 移除所有 `@available(*, deprecated)` 标记的代码
-- 统一代码风格和命名约定
-- 优化编译性能
-
-#### 7.2 文档完善
-- 更新所有类型的使用指南
-- 添加完整的 API 参考文档
-- 创建迁移指南
-
-#### 7.3 性能优化
-- 基准测试各种转换方法
-- 优化内存使用
-- 减少不必要的类型转换
-
----
-
-## 🛠️ 实施指南
-
-### 📋 每个 Phase 的标准流程
-
-#### 步骤 1: 枚举扩展
-1. 在 `Cell.swift` 中添加新的 CellType 枚举值
-2. 更新所有 switch 语句以处理新枚举值
-3. 在 `CellValueStringTests.swift` 中添加测试
-
-#### 步骤 2: ColumnType 重构
-1. 更新相应的 `ColumnOutputType.swift` 文件
-2. 实现 `cellType` 属性的类型精确化
-3. 实现 `withDefaultValue` 方法
-4. 添加单元测试
-
-#### 步骤 3: Column 构造器
-1. 在 `Column.swift` 中添加简化构造器
-2. 实现链式配置方法
-3. 添加类型约束和文档
-4. 创建专门的测试文件
-
-#### 步骤 4: 转换方法
-1. 实现类型特有的转换方法
-2. 确保类型安全和性能
-3. 添加全面的测试覆盖
-4. 更新文档和示例
-
-#### 步骤 5: 集成测试
-1. 在 Demo 项目中使用新功能
-2. 验证生成的 Excel 文件
-3. 性能基准测试
-4. 更新 CLAUDE.md 文档
-
-### 📊 质量标准
-
-#### 代码质量
-- ✅ 所有新增代码通过 SwiftFormat 检查
-- ✅ 完整的文档注释和使用示例
-- ✅ 类型安全，无强制解包
-- ✅ 性能不低于现有实现
-
-#### 测试覆盖
-- ✅ 每个新方法都有对应测试
-- ✅ 边界情况和错误处理测试
-- ✅ 集成测试验证端到端功能
-- ✅ 性能基准测试
-
-#### 用户体验
-- ✅ 简洁直观的 API 设计
-- ✅ 一致的命名约定
-- ✅ 清晰的错误信息
-- ✅ 丰富的使用示例
-
-### 🔄 迭代策略
-
-#### 版本规划
-- **v1.1**: Phase 1 (String) + Phase 2 (Int)
-- **v1.2**: Phase 3 (Bool) + Phase 4 (Date)
-- **v1.3**: Phase 5 (URL) + Phase 6 (跨类型转换)
-- **v1.4**: Phase 7 (清理优化)
-
-#### 风险控制
-- 每个 Phase 完成后进行全面测试
-- 保持向后兼容，逐步迁移
-- 社区反馈和使用情况评估
-- 必要时调整后续 Phase 的优先级
-
-这个计划确保了系统性、渐进性的改进，同时最大化每个阶段的用户价值。
-
-### 🎯 简化后的核心价值
-
-#### 通用转换系统的优势
-1. **简洁性**: 只有 6 个核心转换方法 (toString, toDouble, toInt, toBool, toDate, toURL)
-2. **一致性**: 所有类型使用相同的 API 模式
-3. **灵活性**: 用户完全控制转换逻辑
-4. **类型安全**: 双重载保证 optional/non-optional 类型正确性
-
-#### 用户体验
-```swift
-// 简洁的语法
-Column(name: "Name", keyPath: \.name)           // String
-Column(name: "Age", keyPath: \.age)             // Int
-Column(name: "Salary", keyPath: \.salary)       // Double?
+// 所有数据类型遵循相同模式
+Column(name: "Name", keyPath: \.name)       // String
+Column(name: "Count", keyPath: \.count)     // Int  
+Column(name: "Price", keyPath: \.price)     // Double?
     .defaultValue(0.0)
-
-// 通用的转换 - 用户自定义逻辑
-Column(name: "Age Level", keyPath: \.age)
-    .toString { age in age < 18 ? "Minor" : "Adult" }
-
-Column(name: "Salary Level", keyPath: \.salary)
-    .defaultValue(0.0)
-    .toString { salary in salary < 50000 ? "Standard" : "Premium" }
-
-Column(name: "Status", keyPath: \.isActive)
-    .toString { active in active ? "✅" : "❌" }
-
-// 链式转换
-Column(name: "Complex", keyPath: \.value)
-    .toDouble { value in Double(value) }
-    .toString { double in String(format: "%.2f", double) }
+    .width(12)
+    .bodyStyle(style)
 ```
 
 ## 使用示例

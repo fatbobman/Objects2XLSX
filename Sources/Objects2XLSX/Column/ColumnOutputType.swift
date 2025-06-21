@@ -87,19 +87,27 @@ public struct IntColumnType: ColumnOutputTypeProtocol {
 
     /// Converts the Int value to Excel's numeric cell type.
     ///
-    /// Returns an `.int()` cell type that Excel will render as a whole number.
+    /// Returns an appropriate int cell type that Excel will render as a whole number.
+    /// Uses `.intValue()` for non-nil values and `.optionalInt()` for optional values.
     public var cellType: Cell.CellType {
-        .int(config.value)
+        if let value = config.value {
+            .intValue(value)
+        } else {
+            .optionalInt(config.value)
+        }
     }
 
     /// Creates an IntColumnType with a substituted default value for nil handling.
     ///
+    /// This method only substitutes the default value when the original config value is nil.
+    /// If the original config has a non-nil value, that value is preserved.
+    ///
     /// - Parameters:
     ///   - value: The default Int value to use instead of nil
-    ///   - config: Original configuration (ignored, new config created with default value)
-    /// - Returns: New IntColumnType with the default value
+    ///   - config: Original configuration containing the actual value (may be nil)
+    /// - Returns: New IntColumnType with original value if non-nil, otherwise default value
     public static func withDefaultValue(_ value: Int, config: IntColumnConfig) -> Self {
-        IntColumnType(IntColumnConfig(value: value))
+        IntColumnType(IntColumnConfig(value: config.value ?? value))
     }
 }
 
@@ -134,6 +142,9 @@ public struct TextColumnType: ColumnOutputTypeProtocol {
     }
 
     /// Creates a TextColumnType with a substituted default value for nil handling.
+    ///
+    /// Note: User should not use this method to create a TextColumnType with a default value.
+    /// Instead, they should use the `.defaultValue` method to set the default value.
     ///
     /// - Parameters:
     ///   - value: The default String value to use instead of nil
