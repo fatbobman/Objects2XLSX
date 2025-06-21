@@ -153,7 +153,7 @@ extension Book {
 
         // 添加 fileVersion（标识创建应用和版本）
         xml += "<fileVersion appName=\"Objects2XLSX\" lastEdited=\"7\" lowestEdited=\"4\" rupBuild=\"1\"/>"
-        
+
         // 添加 workbookPr（工作簿属性）
         xml += "<workbookPr defaultThemeVersion=\"166925\"/>"
 
@@ -171,10 +171,10 @@ extension Book {
         }
 
         xml += "</sheets>"
-        
+
         // 添加 calcPr（计算属性 - 这是最重要的缺失元素）
         xml += "<calcPr calcId=\"171027\"/>"
-        
+
         xml += "</workbook>"
 
         return xml

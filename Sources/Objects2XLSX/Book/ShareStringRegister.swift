@@ -40,7 +40,7 @@ import Foundation
 final class ShareStringRegister {
     /// Internal storage mapping strings to their assigned indices
     private var stringPool: [String: Int] = [:]
-    
+
     /// Total number of times strings have been referenced (for count attribute)
     private var totalReferences: Int = 0
 
@@ -54,9 +54,9 @@ final class ShareStringRegister {
     /// - Note: Existing strings are skipped to maintain their original indices
     func registerStrings(_ strings: some Sequence<String>) {
         for string in strings {
-            if stringPool[string] != nil { 
+            if stringPool[string] != nil {
                 totalReferences += 1
-                continue 
+                continue
             }
             stringPool[string] = stringPool.count
             totalReferences += 1
