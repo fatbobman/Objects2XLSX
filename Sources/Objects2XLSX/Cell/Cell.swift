@@ -130,7 +130,12 @@ extension Cell {
                 }
             case .boolean:
                 xml += " t=\"b\""
+            case .empty:
+                // Empty cells don't need type attributes
+                break
             default:
+                // Numeric types (.double, .doubleValue, .optionalDouble, .int, .date, .percentage) 
+                // don't need explicit type attributes as they default to numeric
                 break
         }
 
@@ -158,6 +163,15 @@ extension Cell {
                 // Boolean values use numeric format (1 for true, 0 for false) with t="b"
                 let boolValue = value.valueString.lowercased() == "true" || value.valueString == "1" || value.valueString.lowercased() == "yes" ? "1" : "0"
                 xml += "<v>\(boolValue)</v>"
+            case let .doubleValue(double):
+                // Non-optional double - guaranteed to have value, optimized path
+                xml += "<v>\(String(double))</v>"
+            case let .optionalDouble(double):
+                // Optional double - handle nil case
+                xml += "<v>\(double.cellValueString)</v>"
+            case .empty:
+                // Explicitly empty cell
+                xml += "<v></v>"
             default:
                 // All other types use numeric value format
                 xml += "<v>\(value.valueString)</v>"
@@ -191,7 +205,16 @@ extension Cell {
 
         /// Floating-point numeric value.
         /// - Parameter double: The numeric value (nil represents empty cell)
+        @available(*, deprecated, message: "Use doubleValue(_) or optionalDouble(_) for better type safety")
         case double(Double?)
+        
+        /// Non-optional floating-point numeric value.
+        /// - Parameter double: The guaranteed non-nil numeric value
+        case doubleValue(Double)
+        
+        /// Optional floating-point numeric value.
+        /// - Parameter double: The optional numeric value (nil represents empty cell)
+        case optionalDouble(Double?)
 
         /// Integer numeric value.
         /// - Parameter int: The integer value (nil represents empty cell)
@@ -219,6 +242,10 @@ extension Cell {
         /// - Parameter percentage: The percentage as decimal (0.5 = 50%)
         /// - Parameter precision: Number of decimal places to preserve
         case percentage(Double?, precision: Int = 2)
+        
+        /// Explicitly empty cell with no value.
+        /// Used when we want to represent a cell that should be completely empty.
+        case empty
 
         /// Converts the cell value to its string representation for Excel XML.
         ///
@@ -236,6 +263,10 @@ extension Cell {
                     string.cellValueString
                 case let .double(double):
                     double.cellValueString
+                case let .doubleValue(double):
+                    String(double)
+                case let .optionalDouble(double):
+                    double.cellValueString
                 case let .int(int):
                     int.cellValueString
                 case let .date(date, timeZone):
@@ -248,6 +279,8 @@ extension Cell {
                     url.cellValueString
                 case let .percentage(percentage, precision):
                     percentage.cellValueString(precision: precision)
+                case .empty:
+                    ""
             }
         }
     }

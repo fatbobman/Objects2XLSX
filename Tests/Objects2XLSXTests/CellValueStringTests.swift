@@ -36,6 +36,32 @@ struct CellValueStringTests {
         #expect(isNanCell.value.valueString == "", "Double NaN cell value should match")
     }
 
+    @Test("Precise double cell value string")
+    func preciseDoubleCellValueString() throws {
+        // Test new doubleValue enum case
+        let doubleValueCell = Cell(row: 0, column: 0, value: .doubleValue(789.123))
+        #expect(doubleValueCell.value.valueString == "789.123", "DoubleValue cell value should match")
+
+        // Test new optionalDouble enum case with value
+        let optionalDoubleCell = Cell(row: 0, column: 1, value: .optionalDouble(456.789))
+        #expect(optionalDoubleCell.value.valueString == "456.789", "OptionalDouble with value should match")
+
+        // Test new optionalDouble enum case with nil
+        let optionalDoubleNilCell = Cell(row: 0, column: 2, value: .optionalDouble(nil))
+        #expect(optionalDoubleNilCell.value.valueString == "", "OptionalDouble with nil should be empty")
+
+        // Test new empty enum case
+        let emptyCell = Cell(row: 0, column: 3, value: .empty)
+        #expect(emptyCell.value.valueString == "", "Empty cell value should be empty")
+
+        // Test edge cases with new enum types
+        let optionalInfinityCell = Cell(row: 0, column: 4, value: .optionalDouble(.infinity))
+        #expect(optionalInfinityCell.value.valueString == "", "OptionalDouble infinity should be empty")
+
+        let optionalNanCell = Cell(row: 0, column: 5, value: .optionalDouble(.nan))
+        #expect(optionalNanCell.value.valueString == "", "OptionalDouble NaN should be empty")
+    }
+
     @Test("Int cell value string")
     func intCellValueString() throws {
         let cell = Cell(row: 0, column: 0, value: .int(42))

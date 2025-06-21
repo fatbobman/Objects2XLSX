@@ -114,6 +114,62 @@ struct CellXMLTest {
         #expect(xml == expected)
     }
 
+    @Test("Double cell with precise value (non-optional)")
+    func doubleCellPreciseValue() throws {
+        let cell = Cell(
+            row: 5,
+            column: 1,
+            value: .doubleValue(3.14159),
+            styleID: 5)
+
+        let xml = cell.generateXML()
+        let expected = "<c r=\"A5\" s=\"5\"><v>3.14159</v></c>"
+
+        #expect(xml == expected)
+    }
+
+    @Test("Optional double cell with value")
+    func optionalDoubleCellWithValue() throws {
+        let cell = Cell(
+            row: 5,
+            column: 2,
+            value: .optionalDouble(2.71828),
+            styleID: 5)
+
+        let xml = cell.generateXML()
+        let expected = "<c r=\"B5\" s=\"5\"><v>2.71828</v></c>"
+
+        #expect(xml == expected)
+    }
+
+    @Test("Optional double cell with nil")
+    func optionalDoubleCellWithNil() throws {
+        let cell = Cell(
+            row: 5,
+            column: 3,
+            value: .optionalDouble(nil),
+            styleID: 5)
+
+        let xml = cell.generateXML()
+        let expected = "<c r=\"C5\" s=\"5\"><v></v></c>"
+
+        #expect(xml == expected)
+    }
+
+    @Test("Empty cell")
+    func emptyCell() throws {
+        let cell = Cell(
+            row: 5,
+            column: 4,
+            value: .empty,
+            styleID: 5)
+
+        let xml = cell.generateXML()
+        let expected = "<c r=\"D5\" s=\"5\"><v></v></c>"
+
+        #expect(xml == expected)
+    }
+
     @Test("Date cell")
     func dateCell() throws {
         let date = Date(timeIntervalSince1970: 0)
@@ -182,11 +238,23 @@ struct CellXMLTest {
         let expectedInt = "<c r=\"B10\"><v></v></c>"
         #expect(intXML == expectedInt)
 
-        // 浮点数类型 - nil
+        // 浮点数类型 - nil (deprecated syntax)
         let doubleCell = Cell(row: 10, column: 3, value: .double(nil))
         let doubleXML = doubleCell.generateXML()
         let expectedDouble = "<c r=\"C10\"><v></v></c>"
         #expect(doubleXML == expectedDouble)
+
+        // 新的精确类型 - optionalDouble with nil
+        let optionalDoubleCell = Cell(row: 10, column: 8, value: .optionalDouble(nil))
+        let optionalDoubleXML = optionalDoubleCell.generateXML()
+        let expectedOptionalDouble = "<c r=\"H10\"><v></v></c>"
+        #expect(optionalDoubleXML == expectedOptionalDouble)
+
+        // 空单元格类型
+        let emptyCell = Cell(row: 10, column: 9, value: .empty)
+        let emptyXML = emptyCell.generateXML()
+        let expectedEmpty = "<c r=\"I10\"><v></v></c>"
+        #expect(emptyXML == expectedEmpty)
 
         // 日期类型 - nil
         let dateCell = Cell(row: 10, column: 4, value: .date(nil))
@@ -251,13 +319,16 @@ struct CellXMLTest {
             Cell(row: 13, column: 4, value: .int(nil)),
             Cell(row: 13, column: 5, value: .double(3.14)),
             Cell(row: 13, column: 6, value: .double(nil)),
+            Cell(row: 13, column: 7, value: .doubleValue(1.618)),
+            Cell(row: 13, column: 8, value: .optionalDouble(nil)),
+            Cell(row: 13, column: 9, value: .empty),
         ]
 
         let row = Row(index: 13, cells: cells)
         let xml = row.generateXML()
 
         let expected =
-            "<row r=\"13\"><c r=\"A13\" t=\"inlineStr\"><is><t>Name</t></is></c><c r=\"B13\" t=\"inlineStr\"><is><t></t></is></c><c r=\"C13\"><v>25</v></c><c r=\"D13\"><v></v></c><c r=\"E13\"><v>3.14</v></c><c r=\"F13\"><v></v></c></row>"
+            "<row r=\"13\"><c r=\"A13\" t=\"inlineStr\"><is><t>Name</t></is></c><c r=\"B13\" t=\"inlineStr\"><is><t></t></is></c><c r=\"C13\"><v>25</v></c><c r=\"D13\"><v></v></c><c r=\"E13\"><v>3.14</v></c><c r=\"F13\"><v></v></c><c r=\"G13\"><v>1.618</v></c><c r=\"H13\"><v></v></c><c r=\"I13\"><v></v></c></row>"
 
         #expect(xml == expected)
     }
