@@ -311,9 +311,10 @@ struct BookXMLGenerationTests {
         #expect(xml.contains("<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet1.xml\"/>"))
         #expect(xml.contains("<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet2.xml\"/>"))
 
-        // Verify styles and sharedStrings relationships
+        // Verify styles, theme, and sharedStrings relationships
         #expect(xml.contains("<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\" Target=\"styles.xml\"/>"))
-        #expect(xml.contains("<Relationship Id=\"rId4\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings\" Target=\"sharedStrings.xml\"/>"))
+        #expect(xml.contains("<Relationship Id=\"rId4\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\" Target=\"theme/theme1.xml\"/>"))
+        #expect(xml.contains("<Relationship Id=\"rId5\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings\" Target=\"sharedStrings.xml\"/>"))
 
         print("Generated Workbook Rels XML:")
         print(xml)
@@ -326,9 +327,10 @@ struct BookXMLGenerationTests {
         let book = Book(style: BookStyle())
         let xml = book.generateWorkbookRelsXML(metas: metas)
 
-        // Should still have styles and sharedStrings relationships
+        // Should still have styles, theme, and sharedStrings relationships
         #expect(xml.contains("<Relationship Id=\"rId1\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles\""))
-        #expect(xml.contains("<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings\""))
+        #expect(xml.contains("<Relationship Id=\"rId2\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/theme\""))
+        #expect(xml.contains("<Relationship Id=\"rId3\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/sharedStrings\""))
         #expect(!xml.contains("worksheet"))
 
         print("Workbook Rels XML with no sheets:")

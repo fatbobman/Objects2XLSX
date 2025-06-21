@@ -284,6 +284,9 @@ public final class Book {
             sendProgress(.generatingSharedStrings)
             try writeSharedStringsXML(to: tempDir, shareStringRegister: shareStringRegister)
 
+            sendProgress(.generatingTheme)
+            try writeThemeXML(to: tempDir)
+
             sendProgress(.generatingCoreProperties)
             try writeCorePropsXML(to: tempDir)
 
@@ -339,6 +342,7 @@ public final class Book {
                 "xl",
                 "xl/_rels",
                 "xl/worksheets",
+                "xl/theme",
             ]
 
             for dir in directories {

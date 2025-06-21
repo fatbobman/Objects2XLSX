@@ -52,6 +52,9 @@ public enum BookGenerationProgress: Sendable {
     /// 生成共享字符串文件
     case generatingSharedStrings
 
+    /// 生成主题文件
+    case generatingTheme
+
     /// 生成核心属性文件
     case generatingCoreProperties
 
@@ -119,6 +122,9 @@ extension BookGenerationProgress {
             case .generatingSharedStrings:
                 return 0.75
 
+            case .generatingTheme:
+                return 0.8
+
             case .generatingCoreProperties:
                 return 0.85
 
@@ -178,6 +184,9 @@ extension BookGenerationProgress {
             case .generatingSharedStrings:
                 "Generating shared strings"
 
+            case .generatingTheme:
+                "Generating theme"
+
             case .generatingCoreProperties:
                 "Generating core properties"
 
@@ -234,6 +243,7 @@ extension BookGenerationProgress: Equatable {
                  (.generatingWorkbookRelationships, .generatingWorkbookRelationships),
                  (.generatingStyles, .generatingStyles),
                  (.generatingSharedStrings, .generatingSharedStrings),
+                 (.generatingTheme, .generatingTheme),
                  (.generatingCoreProperties, .generatingCoreProperties),
                  (.generatingAppProperties, .generatingAppProperties),
                  (.preparingPackage, .preparingPackage),

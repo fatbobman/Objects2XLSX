@@ -12,7 +12,6 @@ import Objects2XLSX
 
 /// Main class responsible for generating the demo Excel workbook
 struct ExcelGenerator {
-
     // MARK: - Configuration
 
     let dataSize: DataSize
@@ -28,8 +27,8 @@ struct ExcelGenerator {
         outputPath: URL,
         styleTheme: StyleTheme = .mixed,
         verbose: Bool = false,
-        benchmark: Bool = false
-    ) {
+        benchmark: Bool = false)
+    {
         self.dataSize = dataSize
         self.outputPath = outputPath
         self.styleTheme = styleTheme
@@ -132,7 +131,7 @@ struct ExcelGenerator {
         let sheet = Sheet<Employee>(
             name: "Employees",
             style: sheetStyle,
-            dataProvider: { employees.filter { $0.age >= 18 } }  // Filter out minors
+            dataProvider: { employees.filter { $0.age >= 18 } } // Filter out minors
         ) {
             // Name column - basic string
             Column(name: "Name", keyPath: \.name)
@@ -150,13 +149,14 @@ struct ExcelGenerator {
                 .bodyStyle(CorporateStyle.createDataStyle())
 
             // Salary column - optional with currency formatting
-            Column(name: "Salary",
-                   keyPath: \Employee.salary,
-                   width: 12,
-                   bodyStyle: CorporateStyle.createCurrencyStyle(),
-                   mapping: { salary in
-                       DoubleColumnType(DoubleColumnConfig(value: salary ?? 0.0))
-                   })
+            Column(
+                name: "Salary",
+                keyPath: \Employee.salary,
+                width: 12,
+                bodyStyle: CorporateStyle.createCurrencyStyle(),
+                mapping: { salary in
+                    DoubleColumnType(DoubleColumnConfig(value: salary ?? 0.0))
+                })
 
             // Email column - URL type
             Column(name: "Email", keyPath: \.email.absoluteString)
@@ -169,20 +169,22 @@ struct ExcelGenerator {
                 .bodyStyle(CorporateStyle.createDateStyle())
 
             // Manager Status column - boolean mapping
-            Column(name: "Is Manager",
-                   keyPath: \.isManager,
-                   width: 10,
-                   bodyStyle: CorporateStyle.createStatusStyle(),
-                   booleanExpressions: .yesAndNo)
+            Column(
+                name: "Is Manager",
+                keyPath: \.isManager,
+                width: 10,
+                bodyStyle: CorporateStyle.createStatusStyle(),
+                booleanExpressions: .yesAndNo)
 
             // Address column - optional string
-            Column(name: "Address",
-                   keyPath: \.address,
-                   width: 30,
-                   bodyStyle: CorporateStyle.createDataStyle(),
-                   mapping: { address in
-                       TextColumnType(TextColumnConfig(value: address ?? "Not Provided"))
-                   })
+            Column(
+                name: "Address",
+                keyPath: \.address,
+                width: 30,
+                bodyStyle: CorporateStyle.createDataStyle(),
+                mapping: { address in
+                    TextColumnType(TextColumnConfig(value: address ?? "Not Provided"))
+                })
         }
 
         return sheet.eraseToAnySheet()
@@ -199,7 +201,7 @@ struct ExcelGenerator {
         let sheet = Sheet<Product>(
             name: "Products",
             style: sheetStyle,
-            dataProvider: { products.filter { $0.isActive } }  // Only show active products
+            dataProvider: { products.filter(\.isActive) } // Only show active products
         ) {
             // ID column - simple integer
             Column(name: "ID", keyPath: \.id)
@@ -217,26 +219,28 @@ struct ExcelGenerator {
                 .bodyStyle(ModernStyle.createDataStyle())
 
             // Price column - optional with currency
-            Column(name: "Price",
-                   keyPath: \Product.price,
-                   width: 10,
-                   bodyStyle: ModernStyle.createPriceStyle(),
-                   mapping: { price in
-                       DoubleColumnType(DoubleColumnConfig(value: price ?? 0.0))
-                   })
+            Column(
+                name: "Price",
+                keyPath: \Product.price,
+                width: 10,
+                bodyStyle: ModernStyle.createPriceStyle(),
+                mapping: { price in
+                    DoubleColumnType(DoubleColumnConfig(value: price ?? 0.0))
+                })
 
             // Stock column - with conditional formatting
-            Column(name: "Stock",
-                   keyPath: \.stock,
-                   width: 8,
-                   bodyStyle: ModernStyle.createDataStyle(),
-                   mapping: { stock in
-                       switch stock {
-                       case 0: return TextColumnType(TextColumnConfig(value: "Out"))
-                       case 1...10: return TextColumnType(TextColumnConfig(value: "\(stock) ⚠️"))
-                       default: return TextColumnType(TextColumnConfig(value: "\(stock)"))
-                       }
-                   })
+            Column(
+                name: "Stock",
+                keyPath: \.stock,
+                width: 8,
+                bodyStyle: ModernStyle.createDataStyle(),
+                mapping: { stock in
+                    switch stock {
+                        case 0: TextColumnType(TextColumnConfig(value: "Out"))
+                        case 1 ... 10: TextColumnType(TextColumnConfig(value: "\(stock) ⚠️"))
+                        default: TextColumnType(TextColumnConfig(value: "\(stock)"))
+                    }
+                })
 
             // Stock Level column - visual indicator
             Column(name: "Level", keyPath: \.stockLevel.displayColor)
@@ -249,13 +253,14 @@ struct ExcelGenerator {
                 .bodyStyle(ModernStyle.createRatingStyle())
 
             // Active Status column - boolean filter demo
-            Column(name: "Status",
-                   keyPath: \.isActive,
-                   width: 8,
-                   bodyStyle: ModernStyle.createDataStyle(),
-                   mapping: { active in
-                       TextColumnType(TextColumnConfig(value: active ? "Active" : "Inactive"))
-                   })
+            Column(
+                name: "Status",
+                keyPath: \.isActive,
+                width: 8,
+                bodyStyle: ModernStyle.createDataStyle(),
+                mapping: { active in
+                    TextColumnType(TextColumnConfig(value: active ? "Active" : "Inactive"))
+                })
 
             // Description column - text wrapping demo
             Column(name: "Description", keyPath: \.description)
@@ -277,7 +282,7 @@ struct ExcelGenerator {
         let sheet = Sheet<Order>(
             name: "Orders",
             style: sheetStyle,
-            dataProvider: { orders.filter { !$0.customerName.isEmpty } }  // Filter out empty customer names
+            dataProvider: { orders.filter { !$0.customerName.isEmpty } } // Filter out empty customer names
         ) {
             // Order ID column
             Column(name: "Order ID", keyPath: \.orderID)
@@ -305,13 +310,14 @@ struct ExcelGenerator {
                 .bodyStyle(DefaultStyle.createCurrencyStyle())
 
             // Tax Rate column - percentage
-            Column(name: "Tax Rate",
-                   keyPath: \.taxRate,
-                   width: 10,
-                   bodyStyle: DefaultStyle.createNumericStyle(),
-                   mapping: { rate in
-                       TextColumnType(TextColumnConfig(value: "\(Int(rate * 100))%"))
-                   })
+            Column(
+                name: "Tax Rate",
+                keyPath: \.taxRate,
+                width: 10,
+                bodyStyle: DefaultStyle.createNumericStyle(),
+                mapping: { rate in
+                    PercentageColumnType(PercentageColumnConfig(value: rate, precision: 1))
+                })
 
             // Tax Amount column
             Column(name: "Tax", keyPath: \.tax)
@@ -337,19 +343,18 @@ struct ExcelGenerator {
     /// Create book style based on theme selection
     private func createBookStyle(for theme: StyleTheme) -> BookStyle {
         switch theme {
-        case .corporate:
-            return CorporateStyle.createBookStyle()
-        case .modern:
-            return ModernStyle.createBookStyle()
-        case .defaultTheme:
-            return DefaultStyle.createBookStyle()
-        case .mixed:
-            // For mixed theme, use a neutral book style
-            return BookStyle(
-                sheetStyle: nil,
-                bodyCellStyle: nil,
-                headerCellStyle: nil
-            )
+            case .corporate:
+                CorporateStyle.createBookStyle()
+            case .modern:
+                ModernStyle.createBookStyle()
+            case .defaultTheme:
+                DefaultStyle.createBookStyle()
+            case .mixed:
+                // For mixed theme, use a neutral book style
+                BookStyle(
+                    sheetStyle: nil,
+                    bodyCellStyle: nil,
+                    headerCellStyle: nil)
         }
     }
 }
@@ -358,22 +363,22 @@ struct ExcelGenerator {
 
 /// Available styling themes for the demo
 enum StyleTheme: String, CaseIterable {
-    case corporate = "corporate"
-    case modern = "modern"
+    case corporate
+    case modern
     case defaultTheme = "default"
-    case mixed = "mixed"
+    case mixed
 
     /// Description of the theme
     var description: String {
         switch self {
-        case .corporate:
-            return "Professional corporate styling for all sheets"
-        case .modern:
-            return "Contemporary modern styling for all sheets"
-        case .defaultTheme:
-            return "Excel default styling for all sheets"
-        case .mixed:
-            return "Different styling theme for each sheet (recommended)"
+            case .corporate:
+                "Professional corporate styling for all sheets"
+            case .modern:
+                "Contemporary modern styling for all sheets"
+            case .defaultTheme:
+                "Excel default styling for all sheets"
+            case .mixed:
+                "Different styling theme for each sheet (recommended)"
         }
     }
 }

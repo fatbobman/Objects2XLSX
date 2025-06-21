@@ -120,14 +120,18 @@ extension Cell {
             xml += " s=\"\(styleID)\""
         }
 
-        // Add cell type attribute for shared strings
-        if sharedStringID != nil {
-            switch value {
-                case .string, .url:
+        // Add cell type attribute based on value type
+        switch value {
+            case .string, .url:
+                if sharedStringID != nil {
                     xml += " t=\"s\""
-                default:
-                    break
-            }
+                } else {
+                    xml += " t=\"inlineStr\""
+                }
+            case .boolean:
+                xml += " t=\"b\""
+            default:
+                break
         }
 
         xml += ">"
@@ -151,8 +155,9 @@ extension Cell {
                     xml += "<is><t>\(url?.absoluteString ?? "")</t></is>"
                 }
             case .boolean:
-                // Boolean values always use inline text (not numeric 0/1)
-                xml += "<inlineStr><t>\(value.valueString)</t></inlineStr>"
+                // Boolean values use numeric format (1 for true, 0 for false) with t="b"
+                let boolValue = value.valueString.lowercased() == "true" || value.valueString == "1" || value.valueString.lowercased() == "yes" ? "1" : "0"
+                xml += "<v>\(boolValue)</v>"
             default:
                 // All other types use numeric value format
                 xml += "<v>\(value.valueString)</v>"

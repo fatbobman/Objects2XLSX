@@ -247,6 +247,12 @@ final class StyleRegister {
         // Generate named cell styles (style names like "Normal", minimal but required)
         xml += generateCellStylesXML()
 
+        // Generate differential formatting (required by Excel spec, even if empty)
+        xml += "<dxfs count=\"0\"/>"
+
+        // Generate table styles (required by Excel spec, even if empty)
+        xml += "<tableStyles count=\"0\" defaultTableStyle=\"TableStyleMedium2\" defaultPivotStyle=\"PivotStyleLight16\"/>"
+
         xml += "</styleSheet>"
         return xml
     }

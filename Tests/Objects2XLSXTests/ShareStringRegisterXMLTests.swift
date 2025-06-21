@@ -81,9 +81,9 @@ struct ShareStringRegisterXMLTests {
 
         let xml = register.generateXML()
 
-        // Should only have 3 unique strings
-        #expect(xml.contains("count=\"3\""))
-        #expect(xml.contains("uniqueCount=\"3\""))
+        // Should have 5 total references but only 3 unique strings
+        #expect(xml.contains("count=\"5\""))  // Total references: Apple(2) + Banana(1) + Cherry(1) = 5
+        #expect(xml.contains("uniqueCount=\"3\""))  // Unique strings: Apple, Banana, Cherry = 3
 
         // Verify each string appears only once
         let appleCount = xml.components(separatedBy: "<si><t>Apple</t></si>").count - 1
@@ -180,9 +180,9 @@ struct ShareStringRegisterXMLTests {
 
         let xml = register.generateXML()
 
-        // Should have 6 unique strings (Two is duplicate)
-        #expect(xml.contains("count=\"6\""))
-        #expect(xml.contains("uniqueCount=\"6\""))
+        // Should have 7 total references but only 6 unique strings (Two is duplicate)
+        #expect(xml.contains("count=\"7\""))  // Total references: 7 registrations
+        #expect(xml.contains("uniqueCount=\"6\""))  // Unique strings: One, Two, Three, Four, Five, Six = 6
 
         // Verify all unique strings are present
         #expect(xml.contains("<si><t>One</t></si>"))
@@ -219,9 +219,10 @@ struct ShareStringRegisterXMLTests {
 
         let xml = register.generateXML()
 
-        // Verify count
-        #expect(xml.contains("count=\"\(stringCount)\""))
-        #expect(xml.contains("uniqueCount=\"\(stringCount)\""))
+        // Verify count: 1000 unique + 100 duplicates = 1100 total references
+        let totalReferences = stringCount + 100  // 1000 unique + 100 duplicates
+        #expect(xml.contains("count=\"\(totalReferences)\""))  // Total references: 1100
+        #expect(xml.contains("uniqueCount=\"\(stringCount)\""))  // Unique strings: 1000
 
         // Verify structure is valid
         #expect(xml.hasPrefix("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>"))

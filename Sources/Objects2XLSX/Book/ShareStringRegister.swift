@@ -40,6 +40,9 @@ import Foundation
 final class ShareStringRegister {
     /// Internal storage mapping strings to their assigned indices
     private var stringPool: [String: Int] = [:]
+    
+    /// Total number of times strings have been referenced (for count attribute)
+    private var totalReferences: Int = 0
 
     /// Returns all registered strings sorted by their assigned indices
     var allStrings: [String] {
@@ -51,8 +54,12 @@ final class ShareStringRegister {
     /// - Note: Existing strings are skipped to maintain their original indices
     func registerStrings(_ strings: some Sequence<String>) {
         for string in strings {
-            if stringPool[string] != nil { continue }
+            if stringPool[string] != nil { 
+                totalReferences += 1
+                continue 
+            }
             stringPool[string] = stringPool.count
+            totalReferences += 1
         }
     }
 
@@ -60,6 +67,7 @@ final class ShareStringRegister {
     /// - Parameter string: The string to register
     /// - Returns: The index assigned to the string (existing or newly created)
     func register(_ string: String) -> Int {
+        totalReferences += 1
         if let id = stringPool[string] { return id }
         let id = stringPool.count
         stringPool[string] = id
@@ -80,15 +88,14 @@ final class ShareStringRegister {
     /// with proper escaping for special characters.
     ///
     /// - Returns: Complete XML string ready for inclusion in the XLSX package
-    /// - Note: The count and uniqueCount attributes are set to the same value since
-    ///         all strings in the pool are unique by design
+    /// - Note: The count attribute represents total references, uniqueCount represents unique strings
     func generateXML() -> String {
         let sortedStrings = allStrings
-        let count = sortedStrings.count
+        let uniqueCount = sortedStrings.count
 
         var xml = """
             <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-            <sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="\(count)" uniqueCount="\(count)">
+            <sst xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" count="\(totalReferences)" uniqueCount="\(uniqueCount)">
             """
 
         for string in sortedStrings {

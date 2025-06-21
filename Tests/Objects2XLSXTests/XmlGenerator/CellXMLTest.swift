@@ -36,7 +36,7 @@ struct CellXMLTest {
             styleID: 1)
 
         let xml = cell.generateXML()
-        let expected = "<c r=\"A1\" s=\"1\"><is><t>Hello World</t></is></c>"
+        let expected = "<c r=\"A1\" s=\"1\" t=\"inlineStr\"><is><t>Hello World</t></is></c>"
 
         #expect(xml == expected)
     }
@@ -67,7 +67,7 @@ struct CellXMLTest {
             styleID: 2)
 
         let xml = cell.generateXML()
-        let expected = "<c r=\"A2\" s=\"2\"><is><t>https://example.com</t></is></c>"
+        let expected = "<c r=\"A2\" s=\"2\" t=\"inlineStr\"><is><t>https://example.com</t></is></c>"
 
         #expect(xml == expected)
     }
@@ -81,7 +81,7 @@ struct CellXMLTest {
             styleID: 3)
 
         let xml = cell.generateXML()
-        let expected = "<c r=\"A3\" s=\"3\"><inlineStr><t>TRUE</t></inlineStr></c>"
+        let expected = "<c r=\"A3\" s=\"3\" t=\"b\"><v>1</v></c>"
 
         #expect(xml == expected)
     }
@@ -149,7 +149,7 @@ struct CellXMLTest {
             value: .string("No Style"))
 
         let xml = cell.generateXML()
-        let expected = "<c r=\"A8\"><is><t>No Style</t></is></c>"
+        let expected = "<c r=\"A8\" t=\"inlineStr\"><is><t>No Style</t></is></c>"
 
         #expect(xml == expected)
     }
@@ -163,7 +163,7 @@ struct CellXMLTest {
             styleID: 8)
 
         let xml = cell.generateXML()
-        let expected = "<c r=\"A9\" s=\"8\"><is><t></t></is></c>"
+        let expected = "<c r=\"A9\" s=\"8\" t=\"inlineStr\"><is><t></t></is></c>"
 
         #expect(xml == expected)
     }
@@ -173,7 +173,7 @@ struct CellXMLTest {
         // 字符串类型 - nil
         let stringCell = Cell(row: 10, column: 1, value: .string(nil))
         let stringXML = stringCell.generateXML()
-        let expectedString = "<c r=\"A10\"><is><t></t></is></c>"
+        let expectedString = "<c r=\"A10\" t=\"inlineStr\"><is><t></t></is></c>"
         #expect(stringXML == expectedString)
 
         // 整数类型 - nil
@@ -197,13 +197,13 @@ struct CellXMLTest {
         // 布尔类型 - nil
         let boolCell = Cell(row: 10, column: 5, value: .boolean(nil))
         let boolXML = boolCell.generateXML()
-        let expectedBool = "<c r=\"E10\"><inlineStr><t></t></inlineStr></c>"
+        let expectedBool = "<c r=\"E10\" t=\"b\"><v>0</v></c>"
         #expect(boolXML == expectedBool)
 
         // URL类型 - nil
         let urlCell = Cell(row: 10, column: 6, value: .url(nil))
         let urlXML = urlCell.generateXML()
-        let expectedURL = "<c r=\"F10\"><is><t></t></is></c>"
+        let expectedURL = "<c r=\"F10\" t=\"inlineStr\"><is><t></t></is></c>"
         #expect(urlXML == expectedURL)
 
         // 百分比类型 - nil
@@ -257,7 +257,7 @@ struct CellXMLTest {
         let xml = row.generateXML()
 
         let expected =
-            "<row r=\"13\"><c r=\"A13\"><is><t>Name</t></is></c><c r=\"B13\"><is><t></t></is></c><c r=\"C13\"><v>25</v></c><c r=\"D13\"><v></v></c><c r=\"E13\"><v>3.14</v></c><c r=\"F13\"><v></v></c></row>"
+            "<row r=\"13\"><c r=\"A13\" t=\"inlineStr\"><is><t>Name</t></is></c><c r=\"B13\" t=\"inlineStr\"><is><t></t></is></c><c r=\"C13\"><v>25</v></c><c r=\"D13\"><v></v></c><c r=\"E13\"><v>3.14</v></c><c r=\"F13\"><v></v></c></row>"
 
         #expect(xml == expected)
     }
@@ -279,8 +279,8 @@ struct CellXMLTest {
         let trueXML = trueCell.generateXML()
         let falseXML = falseCell.generateXML()
 
-        let expectedTrue = "<c r=\"A10\" s=\"9\"><inlineStr><t>1</t></inlineStr></c>"
-        let expectedFalse = "<c r=\"B10\" s=\"9\"><inlineStr><t>NO</t></inlineStr></c>"
+        let expectedTrue = "<c r=\"A10\" s=\"9\" t=\"b\"><v>1</v></c>"
+        let expectedFalse = "<c r=\"B10\" s=\"9\" t=\"b\"><v>0</v></c>"
 
         #expect(trueXML == expectedTrue)
         #expect(falseXML == expectedFalse)

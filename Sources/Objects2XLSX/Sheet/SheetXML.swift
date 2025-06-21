@@ -217,14 +217,14 @@ struct SheetXML {
             xml += "<dimension ref=\"\(dataRange)\"/>"
         }
 
-        // Add worksheet format settings (optional)
-        if let style {
-            xml += generateSheetFormatXML(style)
-        }
-
-        // Add sheetViews settings (freeze panes, zoom, gridlines, etc.)
+        // Add sheetViews settings (freeze panes, zoom, gridlines, etc.) - MUST come before sheetFormatPr per ECMA-376
         if let style {
             xml += generateSheetViewsXML(style)
+        }
+
+        // Add worksheet format settings (optional) - MUST come after sheetViews per ECMA-376
+        if let style {
+            xml += generateSheetFormatXML(style)
         }
 
         // Add column settings (optional)
@@ -238,6 +238,9 @@ struct SheetXML {
             xml += row.generateXML()
         }
         xml += "</sheetData>"
+
+        // Add page margins (required by Excel for proper print layout)
+        xml += "<pageMargins left=\"0.7\" right=\"0.7\" top=\"0.75\" bottom=\"0.75\" header=\"0.3\" footer=\"0.3\"/>"
 
         return xml
     }
