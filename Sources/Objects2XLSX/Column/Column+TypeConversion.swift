@@ -1,5 +1,5 @@
 //
-// Column+TypeConveration.swift
+// Column+TypeConversion.swift
 // Created by Xu Yang on 2025-06-21.
 // Blog: https://fatbobman.com
 // GitHub: https://github.com/fatbobman
