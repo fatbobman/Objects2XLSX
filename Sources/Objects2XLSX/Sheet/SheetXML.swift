@@ -177,11 +177,6 @@ struct SheetXML {
             <worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
             """
 
-        // Add tab color attribute if specified
-        if let style, let tabColor = style.tabColor {
-            xml += " tabColor=\"\(tabColor.argbHexString)\""
-        }
-
         xml += ">"
 
         // Generate other XML content

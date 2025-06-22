@@ -39,7 +39,6 @@ import Foundation
  let style = SheetStyle()
      .defaultRowHeight(20)
      .showGridlines(false)
-     .tabColor(.blue)
  ```
 
  ### Advanced Styling
@@ -310,8 +309,6 @@ public struct SheetStyle: Equatable, Hashable, Sendable {
     /// Whether to display page break indicators
     public var showPageBreaks: Bool = false
 
-    /// Color for the worksheet tab (appears at bottom of Excel)
-    public var tabColor: Color?
 
     /// Freeze panes configuration for fixed row/column display
     public var freezePanes: FreezePanes?
@@ -675,27 +672,6 @@ extension SheetStyle {
         return newSelf
     }
 
-    /**
-     Sets the color for the worksheet tab.
-
-     The tab color appears at the bottom of Excel and helps distinguish
-     between different worksheets in a workbook. This is purely visual
-     and doesn't affect functionality.
-
-     - Parameter color: The color for the worksheet tab
-     - Returns: A new `SheetStyle` instance with the updated tab color
-
-     ## Usage
-     ```swift
-     let style = SheetStyle()
-         .tabColor(.blue) // Blue tab for identification
-     ```
-     */
-    public func tabColor(_ color: Color) -> Self {
-        var newSelf = self
-        newSelf.tabColor = color
-        return newSelf
-    }
 
     /**
      Configures freeze panes for the worksheet.
@@ -831,7 +807,6 @@ extension SheetStyle {
         // Merge optional properties: use additional if non-nil, otherwise fall back to base
         merged.printSettings = additional.printSettings ?? base.printSettings
         merged.pageSetup = additional.pageSetup ?? base.pageSetup
-        merged.tabColor = additional.tabColor ?? base.tabColor
         merged.freezePanes = additional.freezePanes ?? base.freezePanes
         merged.zoom = additional.zoom ?? base.zoom
         merged.dataRange = additional.dataRange ?? base.dataRange

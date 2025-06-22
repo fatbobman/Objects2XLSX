@@ -110,18 +110,14 @@ struct SheetStyleMergeTests {
     @Test("Optional properties merge")
     func optionalPropertiesMerge() {
         var baseStyle = SheetStyle()
-        baseStyle.tabColor = Color.red
         baseStyle.freezePanes = SheetStyle.FreezePanes.freezeTopRow()
         baseStyle.zoom = SheetStyle.Zoom.custom(150)
         baseStyle.dataRange = SheetStyle.DataRange(startRow: 1, startColumn: 1, endRow: 10, endColumn: 5)
 
         var additionalStyle = SheetStyle()
-        additionalStyle.tabColor = Color.blue
         additionalStyle.zoom = SheetStyle.Zoom.custom(200)
 
         let merged = SheetStyle.merge(base: baseStyle, additional: additionalStyle)
-
-        #expect(merged?.tabColor == Color.blue) // additional 覆盖
         #expect(merged?.freezePanes?.freezeTopRow == true) // base 保留
         #expect(merged?.zoom?.scale == 200) // additional 覆盖
         #expect(merged?.dataRange?.startRow == 1) // base 保留

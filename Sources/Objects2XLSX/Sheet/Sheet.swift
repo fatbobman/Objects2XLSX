@@ -464,7 +464,6 @@ extension Sheet {
      let customStyle = SheetStyle()
          .defaultRowHeight(20.0)
          .showGridlines(false)
-         .tabColor(.blue)
 
      sheet.sheetStyle(customStyle)
      ```

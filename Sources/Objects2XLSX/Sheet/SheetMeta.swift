@@ -115,13 +115,6 @@ public struct SheetMeta: Sendable {
      */
     public let filePath: String
 
-    /**
-     The tab color for the worksheet in Excel.
-
-     This color appears on the worksheet tab at the bottom of Excel.
-     When `nil`, Excel uses the default tab appearance.
-     */
-    public let tabColor: Color?
 
     /**
      Information about the data range in Excel coordinates.
@@ -181,7 +174,6 @@ public struct SheetMeta: Sendable {
         - estimatedDataRowCount: The estimated number of data rows
         - activeColumnCount: The number of active columns to be generated
         - dataRange: Optional data range information
-        - tabColor: Optional tab color for the worksheet
 
      The total row count and file path are calculated automatically based on the provided parameters.
      */
@@ -192,8 +184,7 @@ public struct SheetMeta: Sendable {
         hasHeader: Bool,
         estimatedDataRowCount: Int,
         activeColumnCount: Int,
-        dataRange: DataRangeInfo?,
-        tabColor: Color? = nil)
+        dataRange: DataRangeInfo?)
     {
         self.name = name
         self.sheetId = sheetId
@@ -203,7 +194,6 @@ public struct SheetMeta: Sendable {
         self.activeColumnCount = activeColumnCount
         totalRowCount = estimatedDataRowCount + (hasHeader ? 1 : 0)
         self.dataRange = dataRange
-        self.tabColor = tabColor
         filePath = "xl/worksheets/sheet\(sheetId).xml"
     }
 }
@@ -253,8 +243,7 @@ extension Sheet {
             hasHeader: hasHeader,
             estimatedDataRowCount: dataRowCount,
             activeColumnCount: activeColumnCount,
-            dataRange: dataRange,
-            tabColor: style.tabColor)
+            dataRange: dataRange)
     }
 
     /**

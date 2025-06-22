@@ -30,14 +30,6 @@ struct SheetXMLTest {
         #expect(!xml.contains("<sheetViews>"))
     }
 
-    @Test("Sheet XML with tab color")
-    func sheetXMLWithTabColor() throws {
-        let style = SheetStyle().tabColor(.red)
-        let sheetXML = SheetXML(name: "TestSheet", rows: [], style: style)
-        let xml = sheetXML.generateXML()
-
-        #expect(xml.contains("tabColor=\"FFFF0000\""))
-    }
 
     @Test("Sheet XML with sheet format properties")
     func sheetXMLWithSheetFormat() throws {
@@ -137,7 +129,6 @@ struct SheetXMLTest {
             .defaultRowHeight(18.0)
             .defaultColumnWidth(12.0)
             .showGridlines(false)
-            .tabColor(.blue)
             .freezePanes(.freeze(rows: 2, columns: 1))
             .zoom(.custom(120))
 
@@ -147,7 +138,6 @@ struct SheetXMLTest {
         let xml = sheetXML.generateXML()
 
         // 验证所有属性都存在
-        #expect(xml.contains("tabColor=\"FF0000FF\""))
         #expect(xml.contains("<sheetFormatPr defaultRowHeight=\"18.0\" defaultColWidth=\"12.0\"/>"))
         #expect(xml.contains("<cols>"))
         #expect(xml.contains("<col min=\"1\" max=\"1\" width=\"15.0\" customWidth=\"1\"/>"))
