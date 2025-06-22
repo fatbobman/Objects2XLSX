@@ -115,7 +115,6 @@ public struct SheetMeta: Sendable {
      */
     public let filePath: String
 
-
     /**
      Information about the data range in Excel coordinates.
 

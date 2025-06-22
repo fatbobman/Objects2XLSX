@@ -309,7 +309,6 @@ public struct SheetStyle: Equatable, Hashable, Sendable {
     /// Whether to display page break indicators
     public var showPageBreaks: Bool = false
 
-
     /// Freeze panes configuration for fixed row/column display
     public var freezePanes: FreezePanes?
 
@@ -671,7 +670,6 @@ extension SheetStyle {
         newSelf.showPageBreaks = show
         return newSelf
     }
-
 
     /**
      Configures freeze panes for the worksheet.

@@ -30,7 +30,6 @@ struct SheetXMLTest {
         #expect(!xml.contains("<sheetViews>"))
     }
 
-
     @Test("Sheet XML with sheet format properties")
     func sheetXMLWithSheetFormat() throws {
         let style = SheetStyle()
