@@ -121,11 +121,13 @@ swift run Objects2XLSXDemo -s large -t mixed -v -b output.xlsx
 ```
 
 The demo generates a professional Excel workbook with three worksheets showcasing:
+
 - **Employee data** with corporate styling and data transformations
 - **Product catalog** with modern styling and conditional formatting  
 - **Order history** with default styling and calculated fields
 
 **Demo Features:**
+
 - 🎨 Three professional styling themes (Corporate, Modern, Default)
 - 📊 Multiple data sizes (small: 30, medium: 150, large: 600 records)
 - 🔧 All column types and advanced features demonstrated
