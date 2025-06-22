@@ -81,7 +81,7 @@ public final class Book {
     public private(set) var sheets: [AnySheet]
 
     /// Logger instance for debugging and monitoring (supports custom implementations)
-    public let logger: LoggerManagerProtocol
+    public var logger: LoggerManagerProtocol
 
     /// AsyncStream for real-time progress reporting during XLSX generation
     public let progressStream: AsyncStream<BookGenerationProgress>
@@ -122,7 +122,7 @@ public final class Book {
     /// Default logger implementation (console in debug, system logger in release)
     private static let defaultLogger: LoggerManagerProtocol = {
         #if DEBUG
-            return .console()
+            return .console(verbosity: .minimal)
         #else
             return .default(subsystem: "com.objects2xlsx.fatbobman", category: "generation")
         #endif
@@ -472,6 +472,12 @@ extension Book {
     /// - Parameter sheets: Array of sheets to append to the workbook
     public func append(sheets: [AnySheet]) {
         self.sheets.append(contentsOf: sheets)
+    }
+
+    /// Sets the logger for the workbook
+    /// - Parameter logger: The logger to be used for the workbook
+    public func setLogger(_ logger: LoggerManagerProtocol) {
+        self.logger = logger
     }
 }
 
