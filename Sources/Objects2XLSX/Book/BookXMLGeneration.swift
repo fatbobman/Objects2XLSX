@@ -167,7 +167,14 @@ extension Book {
 
         // 为每个工作表添加 sheet 节点
         for meta in metas {
-            xml += "<sheet name=\"\(meta.name.xmlEscaped)\" sheetId=\"\(meta.sheetId)\" r:id=\"\(meta.relationshipId)\"/>"
+            var sheetAttributes = "name=\"\(meta.name.xmlEscaped)\" sheetId=\"\(meta.sheetId)\" r:id=\"\(meta.relationshipId)\""
+            
+            // Add tab color if specified
+            if let tabColor = meta.tabColor {
+                sheetAttributes += " tabColor=\"\(tabColor.argbHexString)\""
+            }
+            
+            xml += "<sheet \(sheetAttributes)/>"
         }
 
         xml += "</sheets>"
