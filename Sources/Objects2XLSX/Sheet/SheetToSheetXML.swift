@@ -562,6 +562,20 @@ extension Sheet {
                 if let actualURL = urlValue {
                     sharedStringID = shareStringRegistor.register(actualURL.absoluteString)
                 }
+            case let .booleanValue(boolean, booleanExpressions, caseStrategy):
+                // Optimize boolean storage: use SharedString for multi-character expressions
+                if booleanExpressions.shouldUseSharedString {
+                    let boolText = boolean ? booleanExpressions.trueString : booleanExpressions.falseString
+                    let finalText = caseStrategy.apply(to: boolText)
+                    sharedStringID = shareStringRegistor.register(finalText)
+                }
+            case let .optionalBoolean(boolean, booleanExpressions, caseStrategy):
+                // Optimize optional boolean storage: use SharedString for multi-character expressions
+                if let boolean, booleanExpressions.shouldUseSharedString {
+                    let boolText = boolean ? booleanExpressions.trueString : booleanExpressions.falseString
+                    let finalText = caseStrategy.apply(to: boolText)
+                    sharedStringID = shareStringRegistor.register(finalText)
+                }
             default:
                 break // Other types don't use shared strings
         }

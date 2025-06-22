@@ -129,7 +129,11 @@ extension Cell {
                     xml += " t=\"inlineStr\""
                 }
             case .booleanValue, .optionalBoolean:
-                xml += " t=\"b\""
+                if sharedStringID != nil {
+                    xml += " t=\"s\""  // Use shared string type for optimized boolean expressions
+                } else {
+                    xml += " t=\"b\""  // Use boolean type for inline storage (oneAndZero)
+                }
             case .empty:
                 // Empty cells don't need type attributes
                 break
@@ -176,18 +180,30 @@ extension Cell {
                     xml += "<is><t>\(url?.absoluteString ?? "")</t></is>"
                 }
             case let .booleanValue(boolean, booleanExpressions, caseStrategy):
-                // Non-optional boolean - guaranteed to have value, optimized path
-                let boolText = boolean ? booleanExpressions.trueString : booleanExpressions.falseString
-                let finalText = caseStrategy.apply(to: boolText)
-                let boolValue = finalText.lowercased() == "true" || finalText == "1" || finalText.lowercased() == "yes" ? "1" : "0"
-                xml += "<v>\(boolValue)</v>"
-            case let .optionalBoolean(boolean, booleanExpressions, caseStrategy):
-                // Optional boolean - handle nil case
-                if let boolean {
+                // Non-optional boolean - use SharedString if available, otherwise inline boolean
+                if let sharedStringID {
+                    // Use SharedString reference for optimized multi-character boolean expressions
+                    xml += "<v>\(sharedStringID)</v>"
+                } else {
+                    // Use inline boolean storage for single-character expressions (oneAndZero)
                     let boolText = boolean ? booleanExpressions.trueString : booleanExpressions.falseString
                     let finalText = caseStrategy.apply(to: boolText)
                     let boolValue = finalText.lowercased() == "true" || finalText == "1" || finalText.lowercased() == "yes" ? "1" : "0"
                     xml += "<v>\(boolValue)</v>"
+                }
+            case let .optionalBoolean(boolean, booleanExpressions, caseStrategy):
+                // Optional boolean - use SharedString if available, otherwise inline boolean
+                if let boolean {
+                    if let sharedStringID {
+                        // Use SharedString reference for optimized multi-character boolean expressions
+                        xml += "<v>\(sharedStringID)</v>"
+                    } else {
+                        // Use inline boolean storage for single-character expressions (oneAndZero)
+                        let boolText = boolean ? booleanExpressions.trueString : booleanExpressions.falseString
+                        let finalText = caseStrategy.apply(to: boolText)
+                        let boolValue = finalText.lowercased() == "true" || finalText == "1" || finalText.lowercased() == "yes" ? "1" : "0"
+                        xml += "<v>\(boolValue)</v>"
+                    }
                 } else {
                     xml += "<v></v>"
                 }
@@ -435,6 +451,35 @@ extension Cell {
                     "NO"
                 case let .custom(_, falseString):
                     falseString
+            }
+        }
+        
+        /// Determines whether this boolean expression should use SharedString optimization.
+        ///
+        /// Returns `true` for boolean expressions that benefit from SharedString optimization
+        /// due to their text length (2+ characters). Single-character expressions like 
+        /// `oneAndZero` ("1"/"0") provide no space savings since SharedString references 
+        /// also consume similar space.
+        ///
+        /// ## Optimization Strategy
+        /// - **oneAndZero**: Use inline storage (Excel recognizes "1"/"0" as boolean)
+        /// - **trueAndFalse, yesAndNo**: Use SharedString (Excel recognizes but more efficient as shared)
+        /// - **tAndF**: Use SharedString (Excel doesn't recognize "T"/"F" as boolean type)
+        /// - **custom**: Use SharedString (Excel boolean type has limited recognition)
+        ///
+        /// - Returns: `true` if SharedString should be used, `false` for inline storage
+        public var shouldUseSharedString: Bool {
+            switch self {
+                case .oneAndZero:
+                    false // Standard Excel boolean values - safe for inline storage
+                case .trueAndFalse, .yesAndNo:
+                    true // Multi-character - SharedString beneficial
+                case .tAndF:
+                    true // Force SharedString: "T"/"F" not recognized by Excel boolean type
+                case .custom:
+                    // Force SharedString for custom expressions to ensure correct display
+                    // Excel boolean type only recognizes specific values (1/0, TRUE/FALSE, YES/NO)
+                    true
             }
         }
     }
