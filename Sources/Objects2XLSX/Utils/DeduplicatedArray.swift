@@ -10,13 +10,13 @@ import Foundation
 
 /// A lightweight collection that maintains insertion order while ensuring element uniqueness.
 ///
-/// `DeduplicatedArray` combines the benefits of Array (ordered access, indexing) and Set (uniqueness)
+/// `DeduplicatedArray` combines the benefits of Array (ordered access, indexing) and Dictionary (fast lookup)
 /// to provide an efficient container for storing unique elements in their insertion order.
 ///
 /// ## Key Features
 /// - **Automatic Deduplication**: Duplicate elements are rejected, returning existing index
 /// - **Insertion Order**: Elements maintain their original insertion sequence
-/// - **Efficient Lookup**: O(1) uniqueness checking via internal Set
+/// - **O(1) Operations**: Fast uniqueness checking and index lookup via internal Dictionary
 /// - **Standard Protocols**: Supports Collection, Sequence, and index-based access
 ///
 /// ## Usage
@@ -31,18 +31,24 @@ import Foundation
 /// ```
 ///
 /// ## Performance
-/// - **Append**: O(1) for uniqueness check, O(n) for finding existing index of duplicates
+/// - **Append**: O(1) for both new elements and duplicates
 /// - **Access**: O(1) for index-based access
-/// - **Contains**: O(1) via internal Set
+/// - **Contains**: O(1) via internal Dictionary
+/// - **Index Lookup**: O(1) via internal Dictionary
+///
+/// ## Memory Usage
+/// Uses approximately 1.5-2x memory compared to a plain Array due to the additional
+/// Dictionary for fast lookups. This trade-off provides significant performance benefits
+/// for scenarios with frequent duplicate checking and index lookups.
 ///
 /// This type is particularly useful for style registries, string deduplication, and other
-/// scenarios where both uniqueness and order matter.
+/// scenarios where both uniqueness and order matter with frequent lookups.
 public struct DeduplicatedArray<Element: Hashable> {
     /// Internal array maintaining insertion order
     private var elements: [Element] = []
 
-    /// Internal set for fast uniqueness checking
-    private var uniqueElements: Set<Element> = []
+    /// Internal dictionary mapping elements to their indices for O(1) lookup
+    private var elementToIndex: [Element: Int] = [:]
 
     /// The number of elements in the collection
     public var count: Int { elements.count }
@@ -66,20 +72,15 @@ public struct DeduplicatedArray<Element: Hashable> {
     /// - Returns: A tuple containing the element's index and whether it was newly inserted
     @discardableResult
     public mutating func append(_ element: Element) -> (index: Int, inserted: Bool) {
-        // Fast uniqueness check using Set (O(1))
-        if uniqueElements.contains(element) {
-            // Element exists, find its index in the array (O(n))
-            if let existingIndex = elements.firstIndex(of: element) {
-                return (index: existingIndex, inserted: false)
-            }
-            // This should never happen if our data structures are in sync
-            fatalError("Internal consistency error: element in Set but not in Array")
+        // Fast O(1) lookup using Dictionary
+        if let existingIndex = elementToIndex[element] {
+            return (index: existingIndex, inserted: false)
         }
 
         // New element - add to both structures
         let newIndex = elements.count
         elements.append(element)
-        uniqueElements.insert(element)
+        elementToIndex[element] = newIndex
         return (index: newIndex, inserted: true)
     }
 
@@ -94,14 +95,14 @@ public struct DeduplicatedArray<Element: Hashable> {
     /// - Parameter element: The element to find
     /// - Returns: The index of the element, or nil if not found
     public func firstIndex(of element: Element) -> Int? {
-        elements.firstIndex(of: element)
+        elementToIndex[element]
     }
 
     /// Checks whether the collection contains the specified element
     /// - Parameter element: The element to check for
     /// - Returns: true if the element is present, false otherwise
     public func contains(_ element: Element) -> Bool {
-        uniqueElements.contains(element)
+        elementToIndex.keys.contains(element)
     }
 
     /// Returns all elements as an array, maintaining insertion order
