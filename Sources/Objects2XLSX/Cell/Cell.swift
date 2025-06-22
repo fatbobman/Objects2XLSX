@@ -130,9 +130,9 @@ extension Cell {
                 }
             case .booleanValue, .optionalBoolean:
                 if sharedStringID != nil {
-                    xml += " t=\"s\""  // Use shared string type for optimized boolean expressions
+                    xml += " t=\"s\"" // Use shared string type for optimized boolean expressions
                 } else {
-                    xml += " t=\"b\""  // Use boolean type for inline storage (oneAndZero)
+                    xml += " t=\"b\"" // Use boolean type for inline storage (oneAndZero)
                 }
             case .empty:
                 // Empty cells don't need type attributes
@@ -453,12 +453,12 @@ extension Cell {
                     falseString
             }
         }
-        
+
         /// Determines whether this boolean expression should use SharedString optimization.
         ///
         /// Returns `true` for boolean expressions that benefit from SharedString optimization
-        /// due to their text length (2+ characters). Single-character expressions like 
-        /// `oneAndZero` ("1"/"0") provide no space savings since SharedString references 
+        /// due to their text length (2+ characters). Single-character expressions like
+        /// `oneAndZero` ("1"/"0") provide no space savings since SharedString references
         /// also consume similar space.
         ///
         /// ## Optimization Strategy
