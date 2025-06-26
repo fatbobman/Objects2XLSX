@@ -16,5 +16,5 @@ struct Student: Sendable {
 
 let students = [
     Student(name: "John", age: 18, score: 90),
-    Student(name: "Jane", age: 20, score: 95),
+    Student(name: "Jane", age: 20, score: 95)
 ]

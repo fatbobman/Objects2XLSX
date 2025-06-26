@@ -102,7 +102,7 @@ struct PercentageTypeEnhancementTests {
         let data = [
             TestModel(name: "Project A", successRate: 0.85, optionalGrowthRate: 0.15, accuracy: 0.95),
             TestModel(name: "Project B", successRate: 0.60, optionalGrowthRate: nil, accuracy: nil),
-            TestModel(name: "Project C", successRate: 0.92, optionalGrowthRate: -0.05, accuracy: nil),
+            TestModel(name: "Project C", successRate: 0.92, optionalGrowthRate: -0.05, accuracy: nil)
         ]
 
         let sheet = Sheet<TestModel>(name: "Test", dataProvider: { data }) {
@@ -144,7 +144,7 @@ struct PercentageTypeEnhancementTests {
         let defaultValue = 1.0
 
         let data = [
-            TestModel(name: "Project", successRate: 0.85, optionalGrowthRate: nil, accuracy: nil),
+            TestModel(name: "Project", successRate: 0.85, optionalGrowthRate: nil, accuracy: nil)
         ]
 
         let sheet = Sheet<TestModel>(name: "Test", dataProvider: { data }) {
@@ -174,7 +174,7 @@ struct PercentageTypeEnhancementTests {
     @Test("Percentage Column toString transformation")
     func percentageColumnToStringTransformation() throws {
         let data = [
-            TestModel(name: "Project", successRate: 0.756, optionalGrowthRate: -0.125, accuracy: nil),
+            TestModel(name: "Project", successRate: 0.756, optionalGrowthRate: -0.125, accuracy: nil)
         ]
 
         let sheet = Sheet<TestModel>(name: "Test", dataProvider: { data }) {
@@ -216,7 +216,7 @@ struct PercentageTypeEnhancementTests {
         let data = [
             ScoreModel(score: 85, optionalBonus: 10),
             ScoreModel(score: 72, optionalBonus: nil),
-            ScoreModel(score: 96, optionalBonus: 5),
+            ScoreModel(score: 96, optionalBonus: 5)
         ]
 
         let sheet = Sheet<ScoreModel>(name: "Test", dataProvider: { data }) {
@@ -274,7 +274,7 @@ struct PercentageTypeEnhancementTests {
         let data = [
             PercentageModel(rateString: "75.5%", optionalRateString: "12.8%"),
             PercentageModel(rateString: "invalid", optionalRateString: nil),
-            PercentageModel(rateString: "100%", optionalRateString: "0%"),
+            PercentageModel(rateString: "100%", optionalRateString: "0%")
         ]
 
         let sheet = Sheet<PercentageModel>(name: "Test", dataProvider: { data }) {

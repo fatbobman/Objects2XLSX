@@ -28,7 +28,7 @@ struct BookXMLGenerationTests {
                 hasHeader: false,
                 estimatedDataRowCount: 5,
                 activeColumnCount: 2,
-                dataRange: nil),
+                dataRange: nil)
         ]
 
         // Create book and generate XML
@@ -77,7 +77,7 @@ struct BookXMLGenerationTests {
                 hasHeader: true,
                 estimatedDataRowCount: 0,
                 activeColumnCount: 0,
-                dataRange: nil),
+                dataRange: nil)
         ]
 
         let book = Book(style: BookStyle())
@@ -102,7 +102,7 @@ struct BookXMLGenerationTests {
                 hasHeader: true,
                 estimatedDataRowCount: 5,
                 activeColumnCount: 2,
-                dataRange: nil),
+                dataRange: nil)
         ]
 
         // Create temp directory
@@ -296,7 +296,7 @@ struct BookXMLGenerationTests {
                 hasHeader: false,
                 estimatedDataRowCount: 5,
                 activeColumnCount: 2,
-                dataRange: nil),
+                dataRange: nil)
         ]
 
         let book = Book(style: BookStyle())
@@ -348,7 +348,7 @@ struct BookXMLGenerationTests {
                 hasHeader: true,
                 estimatedDataRowCount: 5,
                 activeColumnCount: 2,
-                dataRange: nil),
+                dataRange: nil)
         ]
 
         // Create temp directory
@@ -447,7 +447,7 @@ struct BookXMLGenerationTests {
                 hasHeader: true,
                 estimatedDataRowCount: 50,
                 activeColumnCount: 3,
-                dataRange: nil),
+                dataRange: nil)
         ]
 
         let book = Book(style: BookStyle())
@@ -503,7 +503,7 @@ struct BookXMLGenerationTests {
                 hasHeader: true,
                 estimatedDataRowCount: 10,
                 activeColumnCount: 2,
-                dataRange: nil),
+                dataRange: nil)
         ]
 
         // Create temp directory

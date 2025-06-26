@@ -74,7 +74,7 @@ struct BorderXMLTests {
     func differentBorderStyles() async throws {
         let styles: [BorderStyle] = [
             .thin, .medium, .thick, .dashed, .dotted, .double,
-            .hair, .mediumDashed, .dashDot, .mediumDashDot,
+            .hair, .mediumDashed, .dashDot, .mediumDashDot
         ]
 
         for style in styles {
@@ -97,7 +97,7 @@ struct BorderXMLTests {
             (.green, "green", "FF00FF00"),
             (.blue, "blue", "FF0000FF"),
             (.black, "black", "FF000000"),
-            (.white, "white", "FFFFFFFF"),
+            (.white, "white", "FFFFFFFF")
         ]
 
         for (color, name, expectedHex) in colors {
@@ -200,7 +200,7 @@ struct BorderXMLTests {
             .outline(style: .medium, color: .blue),
             .horizontal(style: .dashed, color: .red),
             .vertical(style: .dotted, color: .green),
-            Border(diagonal: Border.Side(style: .double, color: .gray)),
+            Border(diagonal: Border.Side(style: .double, color: .gray))
         ]
 
         for border in borders {

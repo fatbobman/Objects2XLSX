@@ -43,7 +43,7 @@ struct SimpleZipTests {
         let entries = [
             SimpleZip.Entry(path: "file1.txt", data: "Content 1".data(using: .utf8)!),
             SimpleZip.Entry(path: "dir/file2.txt", data: "Content 2".data(using: .utf8)!),
-            SimpleZip.Entry(path: "file3.xml", data: "<?xml version=\"1.0\"?><root/>".data(using: .utf8)!),
+            SimpleZip.Entry(path: "file3.xml", data: "<?xml version=\"1.0\"?><root/>".data(using: .utf8)!)
         ]
 
         let zipData = try SimpleZip.create(entries: entries)
@@ -61,7 +61,7 @@ struct SimpleZipTests {
         let entries = [
             SimpleZip.Entry(path: "中文文件.txt", data: "中文内容".data(using: .utf8)!),
             SimpleZip.Entry(path: "file with spaces.txt", data: "Content with spaces".data(using: .utf8)!),
-            SimpleZip.Entry(path: "special!@#$%^&*().txt", data: "Special chars".data(using: .utf8)!),
+            SimpleZip.Entry(path: "special!@#$%^&*().txt", data: "Special chars".data(using: .utf8)!)
         ]
 
         let zipData = try SimpleZip.create(entries: entries)
@@ -151,7 +151,7 @@ struct SimpleZipTests {
             SimpleZip.Entry(path: "xl/_rels/workbook.xml.rels", data: "<?xml version=\"1.0\"?><Relationships/>".data(using: .utf8)!),
             SimpleZip.Entry(path: "xl/styles.xml", data: "<?xml version=\"1.0\"?><styleSheet/>".data(using: .utf8)!),
             SimpleZip.Entry(path: "xl/sharedStrings.xml", data: "<?xml version=\"1.0\"?><sst/>".data(using: .utf8)!),
-            SimpleZip.Entry(path: "xl/worksheets/sheet1.xml", data: "<?xml version=\"1.0\"?><worksheet/>".data(using: .utf8)!),
+            SimpleZip.Entry(path: "xl/worksheets/sheet1.xml", data: "<?xml version=\"1.0\"?><worksheet/>".data(using: .utf8)!)
         ]
 
         let zipData = try SimpleZip.create(entries: entries)

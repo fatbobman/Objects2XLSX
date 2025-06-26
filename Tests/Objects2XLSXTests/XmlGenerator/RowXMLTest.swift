@@ -17,7 +17,7 @@ struct RowXMLTest {
         let cells = [
             Cell(row: 1, column: 1, value: .stringValue("A1")),
             Cell(row: 1, column: 2, value: .intValue(42)),
-            Cell(row: 1, column: 3, value: .doubleValue(3.14)),
+            Cell(row: 1, column: 3, value: .doubleValue(3.14))
         ]
 
         let row = Row(index: 1, cells: cells)
@@ -33,7 +33,7 @@ struct RowXMLTest {
     func rowWithCustomHeight() throws {
         let cells = [
             Cell(row: 2, column: 1, value: .stringValue("Header")),
-            Cell(row: 2, column: 2, value: .stringValue("Value")),
+            Cell(row: 2, column: 2, value: .stringValue("Value"))
         ]
 
         let row = Row(index: 2, cells: cells, height: 25.0)
@@ -60,7 +60,7 @@ struct RowXMLTest {
         let cells = [
             Cell(row: 4, column: 1, value: .stringValue("Name"), styleID: 1),
             Cell(row: 4, column: 2, value: .stringValue("Age"), styleID: 1),
-            Cell(row: 4, column: 3, value: .stringValue("Email"), styleID: 1),
+            Cell(row: 4, column: 3, value: .stringValue("Email"), styleID: 1)
         ]
 
         let row = Row(index: 4, cells: cells, height: 20.0)
@@ -79,7 +79,7 @@ struct RowXMLTest {
             Cell(row: 5, column: 2, value: .intValue(100), styleID: 2),
             Cell(row: 5, column: 3, value: .doubleValue(19.99), styleID: 2),
             Cell(row: 5, column: 4, value: .booleanValue(true), styleID: 3),
-            Cell(row: 5, column: 5, value: .urlValue(URL(string: "https://example.com")!), styleID: 4),
+            Cell(row: 5, column: 5, value: .urlValue(URL(string: "https://example.com")!), styleID: 4)
         ]
 
         let row = Row(index: 5, cells: cells)
@@ -98,7 +98,7 @@ struct RowXMLTest {
             Cell(row: 5, column: 2, value: .intValue(100)),
             Cell(row: 5, column: 3, value: .doubleValue(19.99)),
             Cell(row: 5, column: 4, value: .booleanValue(true)),
-            Cell(row: 5, column: 5, value: .urlValue(URL(string: "https://example.com")!)),
+            Cell(row: 5, column: 5, value: .urlValue(URL(string: "https://example.com")!))
         ]
 
         let row = Row(index: 5, cells: cells)
@@ -114,7 +114,7 @@ struct RowXMLTest {
     func rowWithSharedStrings() throws {
         let cells = [
             Cell(row: 6, column: 1, value: .stringValue("Header"), styleID: 1, sharedStringID: 0),
-            Cell(row: 6, column: 2, value: .stringValue("Data"), styleID: 1, sharedStringID: 1),
+            Cell(row: 6, column: 2, value: .stringValue("Data"), styleID: 1, sharedStringID: 1)
         ]
 
         let row = Row(index: 6, cells: cells, height: 18.0)
@@ -135,7 +135,7 @@ struct RowXMLTest {
                 row: 7,
                 column: 2,
                 value: .dateValue(date, timeZone: TimeZone(identifier: "UTC")!),
-                styleID: 2),
+                styleID: 2)
         ]
 
         let row = Row(index: 7, cells: cells)
@@ -170,7 +170,7 @@ struct RowXMLTest {
         let cells = [
             Cell(row: 8, column: 1, value: .optionalString(nil)),
             Cell(row: 8, column: 2, value: .optionalInt(nil)),
-            Cell(row: 8, column: 3, value: .optionalDouble(nil)),
+            Cell(row: 8, column: 3, value: .optionalDouble(nil))
         ]
 
         let row = Row(index: 8, cells: cells)

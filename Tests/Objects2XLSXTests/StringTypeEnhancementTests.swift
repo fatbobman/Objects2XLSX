@@ -87,7 +87,7 @@ struct StringTypeEnhancementTests {
         let data = [
             TestModel(name: "Product A", description: "Description A", code: "PA001"),
             TestModel(name: "Product B", description: nil, code: nil),
-            TestModel(name: "Product C", description: "Description C", code: "PC003"),
+            TestModel(name: "Product C", description: "Description C", code: "PC003")
         ]
 
         let sheet = Sheet<TestModel>(name: "Test", dataProvider: { data }) {
@@ -119,7 +119,7 @@ struct StringTypeEnhancementTests {
     @Test("String Column toString with defaultValue")
     func stringColumnToStringWithDefault() throws {
         let data = [
-            TestModel(name: "Product", description: "Desc", code: nil),
+            TestModel(name: "Product", description: "Desc", code: nil)
         ]
 
         let sheet = Sheet<TestModel>(name: "Test", dataProvider: { data }) {

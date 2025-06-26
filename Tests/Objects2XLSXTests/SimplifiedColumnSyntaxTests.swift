@@ -31,7 +31,7 @@ struct SimplifiedColumnSyntaxTests {
     func simplifiedNonOptionalDouble() throws {
         let employees = [
             TestEmployee(name: "Alice", age: 30, salary: 50000.0, bonus: 5000.0, isManager: true),
-            TestEmployee(name: "Bob", age: 25, salary: 45000.0, bonus: nil, isManager: false),
+            TestEmployee(name: "Bob", age: 25, salary: 45000.0, bonus: nil, isManager: false)
         ]
 
         // Test simplified column creation
@@ -58,7 +58,7 @@ struct SimplifiedColumnSyntaxTests {
     func simplifiedOptionalDouble() throws {
         let employees = [
             TestEmployee(name: "Alice", age: 30, salary: 50000.0, bonus: 5000.0, isManager: true),
-            TestEmployee(name: "Bob", age: 25, salary: 45000.0, bonus: nil, isManager: false),
+            TestEmployee(name: "Bob", age: 25, salary: 45000.0, bonus: nil, isManager: false)
         ]
 
         // Test simplified column creation for optional type
@@ -90,7 +90,7 @@ struct SimplifiedColumnSyntaxTests {
     func chainableDefaultValue() throws {
         let products = [
             TestProduct(name: "Laptop", price: 999.99, discount: 0.1, stockCount: 50, isActive: true),
-            TestProduct(name: "Mouse", price: 29.99, discount: nil, stockCount: 100, isActive: true),
+            TestProduct(name: "Mouse", price: 29.99, discount: nil, stockCount: 100, isActive: true)
         ]
 
         // Test chainable defaultValue method
@@ -203,7 +203,7 @@ struct SimplifiedColumnSyntaxTests {
     func toStringTransformation() throws {
         let products = [
             TestProduct(name: "Laptop", price: 999.99, discount: 0.1, stockCount: 50, isActive: true),
-            TestProduct(name: "Mouse", price: 29.99, discount: nil, stockCount: 100, isActive: true),
+            TestProduct(name: "Mouse", price: 29.99, discount: nil, stockCount: 100, isActive: true)
         ]
 
         // Test toString transformation from Double to String
@@ -238,7 +238,7 @@ struct SimplifiedColumnSyntaxTests {
     func toStringWithChaining() throws {
         let products = [
             TestProduct(name: "Laptop", price: 999.99, discount: 0.1, stockCount: 50, isActive: true),
-            TestProduct(name: "Monitor", price: 299.99, discount: nil, stockCount: 25, isActive: false),
+            TestProduct(name: "Monitor", price: 299.99, discount: nil, stockCount: 25, isActive: false)
         ]
 
         // Test toString chaining with optional input and defaultValue
@@ -278,7 +278,7 @@ struct SimplifiedColumnSyntaxTests {
         let products = [
             TestProduct(name: "Laptop", price: 999.99, discount: 0.1, stockCount: 50, isActive: true),
             TestProduct(name: "Mouse", price: 29.99, discount: nil, stockCount: 100, isActive: true),
-            TestProduct(name: "Keyboard", price: 79.99, discount: 0.05, stockCount: 5, isActive: true),
+            TestProduct(name: "Keyboard", price: 79.99, discount: 0.05, stockCount: 5, isActive: true)
         ]
 
         // Test toString transformation from Int to String
@@ -320,7 +320,7 @@ struct SimplifiedColumnSyntaxTests {
     func toStringForBoolType() throws {
         let products = [
             TestProduct(name: "Laptop", price: 999.99, discount: 0.1, stockCount: 50, isActive: true),
-            TestProduct(name: "Monitor", price: 299.99, discount: nil, stockCount: 25, isActive: false),
+            TestProduct(name: "Monitor", price: 299.99, discount: nil, stockCount: 25, isActive: false)
         ]
 
         // Test toString transformation from Bool to String
@@ -355,7 +355,7 @@ struct SimplifiedColumnSyntaxTests {
         let employees = [
             TestEmployee(name: "Alice", age: 30, salary: 50000.0, bonus: 5000.0, isManager: true), // 有奖金
             TestEmployee(name: "Bob", age: 25, salary: 45000.0, bonus: nil, isManager: false), // 无奖金
-            TestEmployee(name: "Carol", age: 28, salary: 60000.0, bonus: 3000.0, isManager: false), // 有奖金
+            TestEmployee(name: "Carol", age: 28, salary: 60000.0, bonus: 3000.0, isManager: false) // 有奖金
         ]
 
         // 测试 defaultValue 不会覆盖非 nil 值（使用 bonus 字段测试 Double?）
@@ -397,7 +397,7 @@ struct SimplifiedColumnSyntaxTests {
     func integrationWithSheet() throws {
         let employees = [
             TestEmployee(name: "Alice", age: 30, salary: 50000.0, bonus: 5000.0, isManager: true),
-            TestEmployee(name: "Bob", age: 25, salary: 45000.0, bonus: nil, isManager: false),
+            TestEmployee(name: "Bob", age: 25, salary: 45000.0, bonus: nil, isManager: false)
         ]
 
         // Create sheet with simplified column syntax
@@ -460,7 +460,7 @@ struct SimplifiedColumnSyntaxTests {
     @Test("Backward compatibility with old syntax")
     func backwardCompatibility() throws {
         let employees = [
-            TestEmployee(name: "Alice", age: 30, salary: 50000.0, bonus: 5000.0, isManager: true),
+            TestEmployee(name: "Alice", age: 30, salary: 50000.0, bonus: 5000.0, isManager: true)
         ]
 
         // Old verbose syntax should still work

@@ -110,7 +110,7 @@ struct BoolTypeEnhancementTests {
         let data = [
             TestModel(name: "User A", isActive: true, optionalActive: true, isPremium: true),
             TestModel(name: "User B", isActive: false, optionalActive: nil, isPremium: nil),
-            TestModel(name: "User C", isActive: true, optionalActive: false, isPremium: nil),
+            TestModel(name: "User C", isActive: true, optionalActive: false, isPremium: nil)
         ]
 
         let sheet = Sheet<TestModel>(name: "Test", dataProvider: { data }) {
@@ -146,7 +146,7 @@ struct BoolTypeEnhancementTests {
         let defaultValue = true
 
         let data = [
-            TestModel(name: "User", isActive: true, optionalActive: nil, isPremium: nil),
+            TestModel(name: "User", isActive: true, optionalActive: nil, isPremium: nil)
         ]
 
         let sheet = Sheet<TestModel>(name: "Test", dataProvider: { data }) {
@@ -176,7 +176,7 @@ struct BoolTypeEnhancementTests {
     @Test("Bool Column toString transformation")
     func boolColumnToStringTransformation() throws {
         let data = [
-            TestModel(name: "User", isActive: true, optionalActive: false, isPremium: nil),
+            TestModel(name: "User", isActive: true, optionalActive: false, isPremium: nil)
         ]
 
         let sheet = Sheet<TestModel>(name: "Test", dataProvider: { data }) {
@@ -211,7 +211,7 @@ struct BoolTypeEnhancementTests {
         let data = [
             BoolTestModel(status: "active", optionalStatus: "yes"),
             BoolTestModel(status: "inactive", optionalStatus: nil),
-            BoolTestModel(status: "ACTIVE", optionalStatus: "true"),
+            BoolTestModel(status: "ACTIVE", optionalStatus: "true")
         ]
 
         let sheet = Sheet<BoolTestModel>(name: "Test", dataProvider: { data }) {
@@ -291,7 +291,7 @@ struct BoolTypeEnhancementTests {
             .oneAndZero,
             .tAndF,
             .yesAndNo,
-            .custom(true: "On", false: "Off"),
+            .custom(true: "On", false: "Off")
         ]
 
         let expectedTrue = ["TRUE", "1", "T", "YES", "ON"]

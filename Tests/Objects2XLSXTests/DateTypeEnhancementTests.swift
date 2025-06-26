@@ -100,7 +100,7 @@ struct DateTypeEnhancementTests {
         let data = [
             TestModel(name: "Item A", createdDate: testDate, modifiedDate: testDate, expiryDate: testDate),
             TestModel(name: "Item B", createdDate: testDate, modifiedDate: nil, expiryDate: nil),
-            TestModel(name: "Item C", createdDate: testDate, modifiedDate: testDate, expiryDate: nil),
+            TestModel(name: "Item C", createdDate: testDate, modifiedDate: testDate, expiryDate: nil)
         ]
 
         let sheet = Sheet<TestModel>(name: "Test", dataProvider: { data }) {
@@ -135,7 +135,7 @@ struct DateTypeEnhancementTests {
         let defaultDate = Date(timeIntervalSince1970: 1_609_459_200) // 2021-01-01 00:00:00 UTC
 
         let data = [
-            TestModel(name: "Item", createdDate: testDate, modifiedDate: nil, expiryDate: nil),
+            TestModel(name: "Item", createdDate: testDate, modifiedDate: nil, expiryDate: nil)
         ]
 
         let sheet = Sheet<TestModel>(name: "Test", dataProvider: { data }) {
@@ -169,7 +169,7 @@ struct DateTypeEnhancementTests {
         let testDate = Date(timeIntervalSince1970: 1_640_995_200) // 2022-01-01 00:00:00 UTC
 
         let data = [
-            TestModel(name: "Item", createdDate: testDate, modifiedDate: testDate, expiryDate: nil),
+            TestModel(name: "Item", createdDate: testDate, modifiedDate: testDate, expiryDate: nil)
         ]
 
         let sheet = Sheet<TestModel>(name: "Test", dataProvider: { data }) {

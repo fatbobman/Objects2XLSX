@@ -26,7 +26,7 @@ struct XMLEscapingTests {
                 description: "Description with <tag> and 'quotes'",
                 url: URL(string: "https://example.com?param=value&other=test"),
                 isActive: true,
-                notes: "Notes with \"double quotes\" and < > & symbols"),
+                notes: "Notes with \"double quotes\" and < > & symbols")
         ]
 
         // Create columns for different string types
@@ -83,7 +83,7 @@ struct XMLEscapingTests {
                 description: nil,
                 url: URL(string: "https://example.com/path?param1=value&param2=%3Ctest%3E"),
                 isActive: true,
-                notes: ""),
+                notes: "")
         ]
 
         let urlColumn = Column<TestData, URL?, URLColumnType>(name: "URL", keyPath: \.url)
@@ -105,7 +105,7 @@ struct XMLEscapingTests {
     @Test("Boolean values with XML escaping")
     func booleanXMLEscaping() throws {
         let data = [
-            TestData(name: "Test", description: nil, url: nil, isActive: true, notes: ""),
+            TestData(name: "Test", description: nil, url: nil, isActive: true, notes: "")
         ]
 
         // Test with custom boolean expressions that might need escaping
@@ -134,7 +134,7 @@ struct XMLEscapingTests {
                 description: "Team <Lead>",
                 url: URL(string: "https://example.com?id=123&type=user"),
                 isActive: true,
-                notes: "Special \"notes\" with <important> tags"),
+                notes: "Special \"notes\" with <important> tags")
         ]
 
         let sheet = Sheet<TestData>(name: "Test & Data", dataProvider: { employees }) {

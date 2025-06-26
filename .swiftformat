@@ -20,8 +20,8 @@
 # 指定闭合括号与前一行在同一行
 --closurevoid remove 
 # 移除闭包的 void 类型
---commas always 
-# 始终在参数列表中使用逗号
+--commas inline 
+# 仅在内联时使用逗号（避免尾随逗号以兼容 Linux Swift 6.0）
 --complexattrs preserve 
 # 保留复杂属性
 --computedvarattrs preserve 
@@ -96,8 +96,7 @@
 # 设置最大宽度为 200 字符
 --modifierorder 
 # 设置修饰符顺序
---nevertrailing 
-# 禁用尾随逗号（兼容 Linux Swift 6.0）
+# --nevertrailing 选项不存在，使用 --commas inline 代替
 --nilinit remove 
 # 移除 nil 初始化
 --nospaceoperators 

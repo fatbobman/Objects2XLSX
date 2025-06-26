@@ -104,7 +104,7 @@ struct SheetMetaTests {
         let testObjects = [
             TestPerson(name: "John", age: 30, email: "john@test.com"),
             TestPerson(name: "Jane", age: 25, email: "jane@test.com"),
-            TestPerson(name: "Bob", age: 35, email: "bob@test.com"),
+            TestPerson(name: "Bob", age: 35, email: "bob@test.com")
         ]
 
         // Create sheet with data provider
@@ -146,7 +146,7 @@ struct SheetMetaTests {
         // Create test data
         let testObjects = [
             TestPerson(name: "Alice", age: 28, email: "alice@test.com"),
-            TestPerson(name: "Charlie", age: 32, email: "charlie@test.com"),
+            TestPerson(name: "Charlie", age: 32, email: "charlie@test.com")
         ]
 
         // Create sheet and convert to AnySheet
@@ -187,13 +187,13 @@ struct SheetMetaTests {
         // Create test data
         let people = [
             TestPerson(name: "Person1", age: 20, email: "p1@test.com"),
-            TestPerson(name: "Person2", age: 25, email: "p2@test.com"),
+            TestPerson(name: "Person2", age: 25, email: "p2@test.com")
         ]
 
         let products = [
             TestProduct(name: "Product1", price: 10.0),
             TestProduct(name: "Product2", price: 20.0),
-            TestProduct(name: "Product3", price: 30.0),
+            TestProduct(name: "Product3", price: 30.0)
         ]
 
         // Create sheets
@@ -210,7 +210,7 @@ struct SheetMetaTests {
         // Create book
         let book = Book(style: BookStyle(), sheets: [
             peopleSheet.eraseToAnySheet(),
-            productsSheet.eraseToAnySheet(),
+            productsSheet.eraseToAnySheet()
         ])
 
         // For testing, we'll test through the sheets directly since collectSheetMetas() is private

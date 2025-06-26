@@ -494,7 +494,7 @@ struct SheetXMLGenerateTests {
             "Shanghai",
             "Guangzhou",
             "Shenzhen",
-            "https://www.google.com",
+            "https://www.google.com"
         ]
         let missingStrings = expectedStrings.filter { !allSharedStrings.contains($0) }
         #expect(missingStrings.isEmpty, "Missing shared strings: \(missingStrings)")

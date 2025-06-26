@@ -100,7 +100,7 @@ struct BookGenerationProgressTests {
             .generatingStyles,
             .generatingSharedStrings,
             .generatingCoreProperties,
-            .generatingAppProperties,
+            .generatingAppProperties
         ]
 
         // 验证进度递增
@@ -154,7 +154,7 @@ struct BookGenerationProgressTests {
             .generatingAppProperties,
             .preparingPackage,
             .cleaningUp,
-            .completed,
+            .completed
         ]
 
         // 验证整个流程的进度是递增的

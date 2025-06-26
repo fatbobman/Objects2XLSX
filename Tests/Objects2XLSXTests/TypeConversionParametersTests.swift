@@ -30,7 +30,7 @@ struct TypeConversionParametersTests {
                 timestampSeconds: 1_702_914_000, // 2023-12-18 17:00:00 UTC
                 statusCode: 200,
                 discountRate: 0.15,
-                isPublished: "yes"),
+                isPublished: "yes")
         ]
 
         let utcTimeZone = TimeZone(identifier: "UTC")!
@@ -71,7 +71,7 @@ struct TypeConversionParametersTests {
                 timestampSeconds: 1_702_914_000,
                 statusCode: 200,
                 discountRate: nil,
-                isPublished: "yes"),
+                isPublished: "yes")
         ]
 
         let nycTimeZone = TimeZone(identifier: "America/New_York")!
@@ -111,7 +111,7 @@ struct TypeConversionParametersTests {
                 timestampSeconds: 0,
                 statusCode: 404,
                 discountRate: nil,
-                isPublished: "no"),
+                isPublished: "no")
         ]
 
         // Test with yesAndNo + firstLetterUpper
@@ -181,7 +181,7 @@ struct TypeConversionParametersTests {
                 timestampSeconds: 0,
                 statusCode: 404,
                 discountRate: nil,
-                isPublished: "no"),
+                isPublished: "no")
         ]
 
         // Test optional discount to boolean
@@ -225,7 +225,7 @@ struct TypeConversionParametersTests {
                 timestampSeconds: 0,
                 statusCode: 200,
                 discountRate: 0.12345,
-                isPublished: "yes"),
+                isPublished: "yes")
         ]
 
         // Test with precision 1
@@ -278,7 +278,7 @@ struct TypeConversionParametersTests {
                 timestampSeconds: 85,
                 statusCode: 200,
                 discountRate: nil,
-                isPublished: "yes"),
+                isPublished: "yes")
         ]
 
         // Convert status code to percentage (85/100)
@@ -311,7 +311,7 @@ struct TypeConversionParametersTests {
                 timestampSeconds: 1,
                 statusCode: 200,
                 discountRate: 0.2567,
-                isPublished: "yes"),
+                isPublished: "yes")
         ]
 
         let sheet = Sheet<TestProduct>(name: "Products", dataProvider: { data }) {

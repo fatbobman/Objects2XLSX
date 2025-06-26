@@ -6,18 +6,13 @@ disabled_rules:
   - opening_brace
 
 included:
-  - Domain/Sources
-  - Persistent/Sources
-  # 如果需要包含测试，添加：
-  # - Domain/Tests
-  # - Persistent/Tests
+  - Sources
+  - Tests
 
 excluded:
   - .build
   - .swiftpm
   - Generated
-  - Domain/Tests
-  - Persistent/Test
 
 missing_docs:
   severity: warning

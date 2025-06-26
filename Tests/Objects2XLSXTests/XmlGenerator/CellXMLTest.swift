@@ -321,7 +321,7 @@ struct CellXMLTest {
             Cell(row: 13, column: 6, value: .optionalDouble(nil)),
             Cell(row: 13, column: 7, value: .doubleValue(1.618)),
             Cell(row: 13, column: 8, value: .optionalDouble(nil)),
-            Cell(row: 13, column: 9, value: .empty),
+            Cell(row: 13, column: 9, value: .empty)
         ]
 
         let row = Row(index: 13, cells: cells)

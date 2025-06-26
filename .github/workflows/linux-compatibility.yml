@@ -2,7 +2,7 @@ name: Linux Compatibility Tests
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [ main, develop, fix-linux-trailing-comma ]
   pull_request:
     branches: [ main, develop ]
 

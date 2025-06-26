@@ -22,7 +22,7 @@ struct XMLOutputVerificationTests {
     func columnWidthsXMLGeneration() throws {
         let records = [
             TestRecord(id: 1, title: "Task A", status: "Active", priority: 1.0),
-            TestRecord(id: 2, title: "Task B", status: "Pending", priority: 2.5),
+            TestRecord(id: 2, title: "Task B", status: "Pending", priority: 2.5)
         ]
 
         let columns: [AnyColumn<TestRecord>] = [
@@ -37,7 +37,7 @@ struct XMLOutputVerificationTests {
                 .eraseToAnyColumn(),
             Column<TestRecord, Double, DoubleColumnType>(name: "Priority", keyPath: \.priority)
                 .width(10)
-                .eraseToAnyColumn(),
+                .eraseToAnyColumn()
         ]
 
         let sheet = Sheet(name: "Records", dataProvider: { records }, columns: { columns })
@@ -88,14 +88,14 @@ struct XMLOutputVerificationTests {
         let records = [
             TestRecord(id: 1, title: "Short task", status: "Active", priority: 1.0),
             TestRecord(id: 2, title: "Medium length task description", status: "Pending", priority: 2.0),
-            TestRecord(id: 3, title: "Very long task description that requires multiple lines and takes up more space", status: "Complete", priority: 3.0),
+            TestRecord(id: 3, title: "Very long task description that requires multiple lines and takes up more space", status: "Complete", priority: 3.0)
         ]
 
         let columns: [AnyColumn<TestRecord>] = [
             Column<TestRecord, String, TextColumnType>(name: "Title", keyPath: \.title)
                 .eraseToAnyColumn(),
             Column<TestRecord, String, TextColumnType>(name: "Status", keyPath: \.status)
-                .eraseToAnyColumn(),
+                .eraseToAnyColumn()
         ]
 
         var sheetStyle = SheetStyle()
@@ -147,7 +147,7 @@ struct XMLOutputVerificationTests {
     func combinedWidthsAndHeightsXMLGeneration() throws {
         let records = [
             TestRecord(id: 1, title: "Task One", status: "Active", priority: 1.0),
-            TestRecord(id: 2, title: "Task Two", status: "Pending", priority: 2.0),
+            TestRecord(id: 2, title: "Task Two", status: "Pending", priority: 2.0)
         ]
 
         let columns: [AnyColumn<TestRecord>] = [
@@ -159,7 +159,7 @@ struct XMLOutputVerificationTests {
                 .eraseToAnyColumn(),
             Column<TestRecord, Double, DoubleColumnType>(name: "Priority", keyPath: \.priority)
                 .width(15)
-                .eraseToAnyColumn(),
+                .eraseToAnyColumn()
         ]
 
         var sheetStyle = SheetStyle()
@@ -216,12 +216,12 @@ struct XMLOutputVerificationTests {
     @Test("XML output without custom dimensions uses defaults")
     func defaultDimensionsXMLGeneration() throws {
         let records = [
-            TestRecord(id: 1, title: "Task", status: "Active", priority: 1.0),
+            TestRecord(id: 1, title: "Task", status: "Active", priority: 1.0)
         ]
 
         let columns: [AnyColumn<TestRecord>] = [
             Column<TestRecord, String, TextColumnType>(name: "Title", keyPath: \.title)
-                .eraseToAnyColumn(),
+                .eraseToAnyColumn()
             // No width specified
         ]
 
@@ -258,13 +258,13 @@ struct XMLOutputVerificationTests {
     @Test("XML escaping in dimensions")
     func xmlEscapingInDimensions() throws {
         let records = [
-            TestRecord(id: 1, title: "Test", status: "Active", priority: 1.0),
+            TestRecord(id: 1, title: "Test", status: "Active", priority: 1.0)
         ]
 
         let columns: [AnyColumn<TestRecord>] = [
             Column<TestRecord, String, TextColumnType>(name: "Title", keyPath: \.title)
                 .width(20)
-                .eraseToAnyColumn(),
+                .eraseToAnyColumn()
         ]
 
         var sheetStyle = SheetStyle()

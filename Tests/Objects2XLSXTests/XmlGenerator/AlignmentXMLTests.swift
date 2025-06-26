@@ -23,7 +23,7 @@ struct AlignmentXMLTests {
     @Test("Horizontal Alignment XML Generation")
     func horizontalAlignmentXMLGeneration() async throws {
         let alignments: [HorizontalAlignment] = [
-            .general, .left, .center, .right, .fill, .justify, .centerContinuous, .distributed,
+            .general, .left, .center, .right, .fill, .justify, .centerContinuous, .distributed
         ]
 
         for horizontalAlign in alignments {
@@ -42,7 +42,7 @@ struct AlignmentXMLTests {
     @Test("Vertical Alignment XML Generation")
     func verticalAlignmentXMLGeneration() async throws {
         let alignments: [VerticalAlignment] = [
-            .top, .center, .bottom, .justify, .distributed,
+            .top, .center, .bottom, .justify, .distributed
         ]
 
         for verticalAlign in alignments {
@@ -285,7 +285,7 @@ struct AlignmentXMLTests {
             .verticalText,
             .leftIndented(3),
             .rotated(45),
-            Alignment(horizontal: .center, vertical: .center, wrapText: true, textRotation: 30),
+            Alignment(horizontal: .center, vertical: .center, wrapText: true, textRotation: 30)
         ]
 
         for alignment in alignments {
@@ -319,7 +319,7 @@ struct AlignmentXMLTests {
         let mixedValidInvalid = Alignment(
             horizontal: .center, // 有效
             indent: -10, // 无效（负数且center不支持）
-            textRotation: 500, // 无效（超出范围）
+            textRotation: 500 // 无效（超出范围）
         )
         let mixedXML = mixedValidInvalid.xmlContent
         #expect(mixedXML.contains("horizontal=\"center\""), "Expected valid horizontal alignment")

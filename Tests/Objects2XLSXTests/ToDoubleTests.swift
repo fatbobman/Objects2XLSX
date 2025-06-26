@@ -40,7 +40,7 @@ struct ToDoubleTests {
                 count: 5,
                 optionalCount: nil,
                 score: 5.0,
-                optionalScore: nil),
+                optionalScore: nil)
         ]
 
         let sheet = Sheet<TestModel>(name: "Test", dataProvider: { data }) {
@@ -115,7 +115,7 @@ struct ToDoubleTests {
                 count: 42,
                 optionalCount: 100,
                 score: 1.0,
-                optionalScore: nil),
+                optionalScore: nil)
         ]
 
         let sheet = Sheet<TestModel>(name: "Test", dataProvider: { data }) {
@@ -170,7 +170,7 @@ struct ToDoubleTests {
                 count: 10,
                 optionalCount: nil,
                 score: 4.5,
-                optionalScore: nil),
+                optionalScore: nil)
         ]
 
         let sheet = Sheet<TestModel>(name: "Test", dataProvider: { data }) {

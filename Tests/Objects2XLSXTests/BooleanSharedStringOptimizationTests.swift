@@ -27,7 +27,7 @@ struct BooleanSharedStringOptimizationTests {
         let people = [
             TestPerson(name: "Alice", isActive: true, hasPermission: true),
             TestPerson(name: "Bob", isActive: false, hasPermission: false),
-            TestPerson(name: "Charlie", isActive: true, hasPermission: nil),
+            TestPerson(name: "Charlie", isActive: true, hasPermission: nil)
         ]
 
         let sheet = Sheet<TestPerson>(name: "People", dataProvider: { people }) {
@@ -72,7 +72,7 @@ struct BooleanSharedStringOptimizationTests {
         let people = [
             TestPerson(name: "Alice", isActive: true, hasPermission: true),
             TestPerson(name: "Bob", isActive: false, hasPermission: false),
-            TestPerson(name: "Charlie", isActive: true, hasPermission: nil),
+            TestPerson(name: "Charlie", isActive: true, hasPermission: nil)
         ]
 
         let sheet = Sheet<TestPerson>(name: "People", dataProvider: { people }) {
@@ -112,7 +112,7 @@ struct BooleanSharedStringOptimizationTests {
     func yesAndNoUsesSharedString() throws {
         let people = [
             TestPerson(name: "Alice", isActive: true, hasPermission: true),
-            TestPerson(name: "Bob", isActive: false, hasPermission: false),
+            TestPerson(name: "Bob", isActive: false, hasPermission: false)
         ]
 
         let sheet = Sheet<TestPerson>(name: "People", dataProvider: { people }) {
@@ -145,7 +145,7 @@ struct BooleanSharedStringOptimizationTests {
     @Test("tAndF expressions should use SharedString")
     func tAndFUsesSharedString() throws {
         let people = [
-            TestPerson(name: "Alice", isActive: true, hasPermission: false),
+            TestPerson(name: "Alice", isActive: true, hasPermission: false)
         ]
 
         let sheet = Sheet<TestPerson>(name: "People", dataProvider: { people }) {
@@ -181,7 +181,7 @@ struct BooleanSharedStringOptimizationTests {
     func customExpressionsAlwaysSharedString() throws {
         let people = [
             TestPerson(name: "Alice", isActive: true, hasPermission: false),
-            TestPerson(name: "Bob", isActive: false, hasPermission: true),
+            TestPerson(name: "Bob", isActive: false, hasPermission: true)
         ]
 
         // Test short custom expressions (now use SharedString for Excel compatibility)
@@ -208,7 +208,7 @@ struct BooleanSharedStringOptimizationTests {
         // Test long custom expressions (should use SharedString)
         let longPeople = [
             TestPerson(name: "Alice", isActive: true, hasPermission: false),
-            TestPerson(name: "Bob", isActive: false, hasPermission: true),
+            TestPerson(name: "Bob", isActive: false, hasPermission: true)
         ]
         let longSheet = Sheet<TestPerson>(name: "Long", dataProvider: { longPeople }) {
             Column(

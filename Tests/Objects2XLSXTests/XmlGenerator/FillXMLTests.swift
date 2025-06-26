@@ -85,7 +85,7 @@ struct FillXMLTests {
     func differentPatternTypes() async throws {
         let patterns: [PatternType] = [
             .gray125, .gray0625, .darkHorizontal, .darkVertical,
-            .darkDown, .darkUp, .darkGrid, .darkTrellis,
+            .darkDown, .darkUp, .darkGrid, .darkTrellis
         ]
 
         for pattern in patterns {
@@ -164,7 +164,7 @@ struct FillXMLTests {
             .none,
             .solid(.green),
             .pattern(.gray125, foreground: .black, background: .white),
-            .gradient(.linear(angle: 45), colors: [.red, .yellow, .blue]),
+            .gradient(.linear(angle: 45), colors: [.red, .yellow, .blue])
         ]
 
         for fill in fills {

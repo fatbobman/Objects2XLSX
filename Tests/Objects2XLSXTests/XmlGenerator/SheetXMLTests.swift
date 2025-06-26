@@ -160,7 +160,7 @@ struct SheetXMLTest {
             (26, "AA"),
             (27, "AB"),
             (701, "ZZ"),
-            (702, "AAA"),
+            (702, "AAA")
         ]
 
         for (index, expected) in testCases {

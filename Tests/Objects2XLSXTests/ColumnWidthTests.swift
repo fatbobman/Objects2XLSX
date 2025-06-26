@@ -23,7 +23,7 @@ struct ColumnWidthTests {
         let products = [
             TestProductWithDesc(id: 1, name: "Product A", price: 99.99, description: "A very long description that requires more space"),
             TestProductWithDesc(id: 2, name: "Product B", price: 149.99, description: nil),
-            TestProductWithDesc(id: 3, name: "Product C", price: 199.99, description: "Short desc"),
+            TestProductWithDesc(id: 3, name: "Product C", price: 199.99, description: "Short desc")
         ]
 
         let columns: [AnyColumn<TestProductWithDesc>] = [
@@ -38,7 +38,7 @@ struct ColumnWidthTests {
                 .eraseToAnyColumn(),
             Column<TestProductWithDesc, String?, TextColumnType>(name: "Description", keyPath: \.description, mapping: { TextColumnType(TextColumnConfig(value: $0)) }, nilHandling: .keepEmpty)
                 .width(40)
-                .eraseToAnyColumn(),
+                .eraseToAnyColumn()
         ]
 
         let sheet = Sheet(name: "Products", dataProvider: { products }, columns: { columns })
@@ -78,7 +78,7 @@ struct ColumnWidthTests {
     @Test("Mixed column width sources - Column and SheetStyle")
     func mixedColumnWidthSources() throws {
         let products = [
-            TestProductWithDesc(id: 1, name: "Product A", price: 99.99, description: "Description A"),
+            TestProductWithDesc(id: 1, name: "Product A", price: 99.99, description: "Description A")
         ]
 
         let columns: [AnyColumn<TestProductWithDesc>] = [
@@ -93,7 +93,7 @@ struct ColumnWidthTests {
                 .eraseToAnyColumn(),
             Column<TestProductWithDesc, String?, TextColumnType>(name: "Description", keyPath: \.description, mapping: { TextColumnType(TextColumnConfig(value: $0)) }, nilHandling: .keepEmpty)
                 // No width specified in Column
-                    .eraseToAnyColumn(),
+                    .eraseToAnyColumn()
         ]
 
         // Set some widths directly in SheetStyle
@@ -128,14 +128,14 @@ struct ColumnWidthTests {
         let products = [
             TestProductWithDesc(id: 1, name: "Product A", price: 99.99, description: "Description A"),
             TestProductWithDesc(id: 2, name: "Product B", price: 149.99, description: "Description B"),
-            TestProductWithDesc(id: 3, name: "Product C", price: 199.99, description: "Description C"),
+            TestProductWithDesc(id: 3, name: "Product C", price: 199.99, description: "Description C")
         ]
 
         let columns: [AnyColumn<TestProductWithDesc>] = [
             Column<TestProductWithDesc, String, TextColumnType>(name: "Name", keyPath: \.name)
                 .eraseToAnyColumn(),
             Column<TestProductWithDesc, Double, DoubleColumnType>(name: "Price", keyPath: \.price)
-                .eraseToAnyColumn(),
+                .eraseToAnyColumn()
         ]
 
         var sheetStyle = SheetStyle()
@@ -187,7 +187,7 @@ struct ColumnWidthTests {
         let columns: [AnyColumn<TestProductWithDesc>] = [
             Column<TestProductWithDesc, String, TextColumnType>(name: "Name", keyPath: \.name)
                 .width(20) // Default unit is characters
-                .eraseToAnyColumn(),
+                .eraseToAnyColumn()
         ]
 
         var sheetStyle = SheetStyle()
@@ -226,7 +226,7 @@ struct ColumnWidthTests {
                 .eraseToAnyColumn(),
             Column<TestProductWithDesc, Double, DoubleColumnType>(name: "Price", keyPath: \.price)
                 .width(15)
-                .eraseToAnyColumn(),
+                .eraseToAnyColumn()
         ]
 
         let sheet = Sheet(name: "Products", dataProvider: { products }, columns: { columns })

@@ -22,14 +22,14 @@ struct RowHeightTests {
     func defaultRowHeight() throws {
         let items = [
             TestItem(id: 1, name: "Item A", description: "Description A", value: 100.0),
-            TestItem(id: 2, name: "Item B", description: "Description B", value: 200.0),
+            TestItem(id: 2, name: "Item B", description: "Description B", value: 200.0)
         ]
 
         let columns: [AnyColumn<TestItem>] = [
             Column<TestItem, String, TextColumnType>(name: "Name", keyPath: \.name)
                 .eraseToAnyColumn(),
             Column<TestItem, Double, DoubleColumnType>(name: "Value", keyPath: \.value)
-                .eraseToAnyColumn(),
+                .eraseToAnyColumn()
         ]
 
         // Create sheet without custom row heights
@@ -61,14 +61,14 @@ struct RowHeightTests {
         let items = [
             TestItem(id: 1, name: "Item A", description: "Description A", value: 100.0),
             TestItem(id: 2, name: "Item B", description: "Description B", value: 200.0),
-            TestItem(id: 3, name: "Item C", description: "Description C", value: 300.0),
+            TestItem(id: 3, name: "Item C", description: "Description C", value: 300.0)
         ]
 
         let columns: [AnyColumn<TestItem>] = [
             Column<TestItem, String, TextColumnType>(name: "Name", keyPath: \.name)
                 .eraseToAnyColumn(),
             Column<TestItem, String, TextColumnType>(name: "Description", keyPath: \.description)
-                .eraseToAnyColumn(),
+                .eraseToAnyColumn()
         ]
 
         var sheetStyle = SheetStyle()
@@ -103,14 +103,14 @@ struct RowHeightTests {
             TestItem(id: 1, name: "Item A", description: "Short", value: 100.0),
             TestItem(id: 2, name: "Item B", description: "Very long description that might need more space", value: 200.0),
             TestItem(id: 3, name: "Item C", description: "Normal", value: 300.0),
-            TestItem(id: 4, name: "Item D", description: "Another long description with multiple lines of text", value: 400.0),
+            TestItem(id: 4, name: "Item D", description: "Another long description with multiple lines of text", value: 400.0)
         ]
 
         let columns: [AnyColumn<TestItem>] = [
             Column<TestItem, String, TextColumnType>(name: "Name", keyPath: \.name)
                 .eraseToAnyColumn(),
             Column<TestItem, String, TextColumnType>(name: "Description", keyPath: \.description)
-                .eraseToAnyColumn(),
+                .eraseToAnyColumn()
         ]
 
         var sheetStyle = SheetStyle()
@@ -160,14 +160,14 @@ struct RowHeightTests {
     func rowHeightsWithNoHeader() throws {
         let items = [
             TestItem(id: 1, name: "Item A", description: "Description A", value: 100.0),
-            TestItem(id: 2, name: "Item B", description: "Description B", value: 200.0),
+            TestItem(id: 2, name: "Item B", description: "Description B", value: 200.0)
         ]
 
         let columns: [AnyColumn<TestItem>] = [
             Column<TestItem, String, TextColumnType>(name: "Name", keyPath: \.name)
                 .eraseToAnyColumn(),
             Column<TestItem, Double, DoubleColumnType>(name: "Value", keyPath: \.value)
-                .eraseToAnyColumn(),
+                .eraseToAnyColumn()
         ]
 
         var sheetStyle = SheetStyle()
@@ -210,7 +210,7 @@ struct RowHeightTests {
             Column<TestItem, String, TextColumnType>(name: "Name", keyPath: \.name)
                 .eraseToAnyColumn(),
             Column<TestItem, String, TextColumnType>(name: "Description", keyPath: \.description)
-                .eraseToAnyColumn(),
+                .eraseToAnyColumn()
         ]
 
         var sheetStyle = SheetStyle()
@@ -255,7 +255,7 @@ struct RowHeightTests {
             Column<TestItem, String, TextColumnType>(name: "Name", keyPath: \.name)
                 .eraseToAnyColumn(),
             Column<TestItem, String, TextColumnType>(name: "Description", keyPath: \.description)
-                .eraseToAnyColumn(),
+                .eraseToAnyColumn()
         ]
 
         var sheetStyle = SheetStyle()
@@ -302,12 +302,12 @@ struct RowHeightTests {
     @Test("Row height precision")
     func rowHeightPrecision() throws {
         let items = [
-            TestItem(id: 1, name: "Item", description: "Test", value: 100.0),
+            TestItem(id: 1, name: "Item", description: "Test", value: 100.0)
         ]
 
         let columns: [AnyColumn<TestItem>] = [
             Column<TestItem, String, TextColumnType>(name: "Name", keyPath: \.name)
-                .eraseToAnyColumn(),
+                .eraseToAnyColumn()
         ]
 
         var sheetStyle = SheetStyle()

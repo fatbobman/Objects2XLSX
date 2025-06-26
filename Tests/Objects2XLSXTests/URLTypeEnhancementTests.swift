@@ -98,7 +98,7 @@ struct URLTypeEnhancementTests {
         let data = [
             TestModel(name: "Company A", website: testURL, optionalWebsite: testURL, homepage: testURL),
             TestModel(name: "Company B", website: testURL, optionalWebsite: nil, homepage: nil),
-            TestModel(name: "Company C", website: testURL, optionalWebsite: testURL, homepage: nil),
+            TestModel(name: "Company C", website: testURL, optionalWebsite: testURL, homepage: nil)
         ]
 
         let sheet = Sheet<TestModel>(name: "Test", dataProvider: { data }) {
@@ -135,7 +135,7 @@ struct URLTypeEnhancementTests {
         let defaultURL = URL(string: "https://default.com")!
 
         let data = [
-            TestModel(name: "Company", website: testURL, optionalWebsite: nil, homepage: nil),
+            TestModel(name: "Company", website: testURL, optionalWebsite: nil, homepage: nil)
         ]
 
         let sheet = Sheet<TestModel>(name: "Test", dataProvider: { data }) {
@@ -167,7 +167,7 @@ struct URLTypeEnhancementTests {
         let testURL = URL(string: "https://example.com/path?param=value")!
 
         let data = [
-            TestModel(name: "Company", website: testURL, optionalWebsite: testURL, homepage: nil),
+            TestModel(name: "Company", website: testURL, optionalWebsite: testURL, homepage: nil)
         ]
 
         let sheet = Sheet<TestModel>(name: "Test", dataProvider: { data }) {
@@ -201,7 +201,7 @@ struct URLTypeEnhancementTests {
 
         let data = [
             UrlTestModel(domain: "example.com", optionalDomain: "test.com"),
-            UrlTestModel(domain: "invalid domain", optionalDomain: nil),
+            UrlTestModel(domain: "invalid domain", optionalDomain: nil)
         ]
 
         let sheet = Sheet<UrlTestModel>(name: "Test", dataProvider: { data }) {

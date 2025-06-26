@@ -14,7 +14,7 @@ struct BookWriteTests {
         // Create test data
         let testData = [
             TestPerson(name: "Alice", age: 30, email: "alice@test.com"),
-            TestPerson(name: "Bob", age: 25, email: "bob@test.com"),
+            TestPerson(name: "Bob", age: 25, email: "bob@test.com")
         ]
 
         // Create sheet
@@ -102,13 +102,13 @@ struct BookWriteTests {
         // Create test data for multiple sheets
         let people = [
             TestPerson(name: "John", age: 30, email: "john@test.com"),
-            TestPerson(name: "Jane", age: 25, email: "jane@test.com"),
+            TestPerson(name: "Jane", age: 25, email: "jane@test.com")
         ]
 
         let products = [
             TestProduct(name: "iPhone", price: 999.0),
             TestProduct(name: "MacBook", price: 1999.0),
-            TestProduct(name: "iPad", price: 599.0),
+            TestProduct(name: "iPad", price: 599.0)
         ]
 
         // Create sheets
@@ -126,7 +126,7 @@ struct BookWriteTests {
         // Create book
         let book = Book(style: BookStyle(), sheets: [
             peopleSheet.eraseToAnySheet(),
-            productsSheet.eraseToAnySheet(),
+            productsSheet.eraseToAnySheet()
         ])
 
         // Test complete write flow

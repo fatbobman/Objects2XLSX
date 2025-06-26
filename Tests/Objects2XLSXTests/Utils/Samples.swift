@@ -55,6 +55,6 @@ struct People: Sendable {
             country: "China",
             weight: 60.1,
             email: URL(string: "https://www.google.com")!,
-            birthday: Date(timeIntervalSince1970: 1_718_851_200)),
+            birthday: Date(timeIntervalSince1970: 1_718_851_200))
     ]
 }

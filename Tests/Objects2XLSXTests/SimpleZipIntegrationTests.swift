@@ -18,7 +18,7 @@ struct SimpleZipIntegrationTests {
         let testData = [
             TestZipPerson(name: "Alice", age: 25, email: "alice@example.com"),
             TestZipPerson(name: "Bob", age: 30, email: "bob@example.com"),
-            TestZipPerson(name: "Charlie", age: 35, email: "charlie@example.com"),
+            TestZipPerson(name: "Charlie", age: 35, email: "charlie@example.com")
         ]
 
         let sheet = Sheet<TestZipPerson>(name: "People", dataProvider: { testData }) {
