@@ -24,40 +24,29 @@ jobs:
       continue-on-error: true
       id: swift-setup
     
-    - name: Manual Swift installation (fallback)
+    - name: Install Swift using Swiftly (fallback)
       if: steps.swift-setup.outcome == 'failure'
       run: |
-        echo "Swift setup failed, attempting manual installation..."
+        echo "Swift setup failed, installing Swift using Swiftly..."
         
-        # Install dependencies
-        sudo apt-get update
-        sudo apt-get install -y curl
+        # Install Swiftly (official Swift installer)
+        curl -L https://swiftlang.github.io/swiftly/swiftly-install.sh | bash
         
-        # Try Swift 6.0.2 (more stable release)
-        SWIFT_URL="https://download.swift.org/swift-6.0.2-release/ubuntu2004/swift-6.0.2-RELEASE-ubuntu20.04.tar.gz"
-        echo "Downloading Swift from: $SWIFT_URL"
+        # Add Swiftly to PATH for current session
+        export PATH="$HOME/.local/bin:$PATH"
         
-        # Download with better error handling
-        if ! curl -fsSL -o swift.tar.gz "$SWIFT_URL"; then
-          echo "Failed to download Swift, trying alternative version..."
-          # Try Swift 6.0.1 as fallback
-          SWIFT_URL="https://download.swift.org/swift-6.0.1-release/ubuntu2004/swift-6.0.1-RELEASE-ubuntu20.04.tar.gz"
-          curl -fsSL -o swift.tar.gz "$SWIFT_URL"
-        fi
+        # Install Swift 6.0 using Swiftly
+        echo "Installing Swift 6.0 using Swiftly..."
+        $HOME/.local/bin/swiftly install 6.0
         
-        # Extract Swift
-        echo "Extracting Swift..."
-        tar xzf swift.tar.gz
+        # Use Swift 6.0
+        $HOME/.local/bin/swiftly use 6.0
         
-        # Find the extracted directory
-        SWIFT_DIR=$(find . -maxdepth 1 -name "swift-6.0*-ubuntu20.04" -type d | head -1)
-        echo "Swift directory: $SWIFT_DIR"
-        
-        # Add to PATH
-        echo "$PWD/$SWIFT_DIR/usr/bin" >> $GITHUB_PATH
+        # Add Swift to PATH permanently
+        echo "$HOME/.local/share/swiftly/toolchains/6.0/usr/bin" >> $GITHUB_PATH
         
         # Verify installation
-        "$PWD/$SWIFT_DIR/usr/bin/swift" --version
+        $HOME/.local/share/swiftly/toolchains/6.0/usr/bin/swift --version
     
     - name: Verify Swift installation
       run: |
