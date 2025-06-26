@@ -658,7 +658,12 @@ This project includes the following third-party software:
 
 ## 📖 Documentation
 
-For detailed API documentation, examples, and advanced usage patterns, visit our [documentation site](https://github.com/fatbobman/Objects2XLSX/wiki) or explore the inline documentation in Xcode.
+- **[📚 Complete Documentation](https://fatbobman.github.io/Objects2XLSX/)** - Comprehensive API reference and guides
+- **[🚀 Quick Start Guide](https://fatbobman.github.io/Objects2XLSX/documentation/objects2xlsx/gettingstarted)** - Get up and running quickly
+- **[🎨 Styling Guide](https://fatbobman.github.io/Objects2XLSX/documentation/objects2xlsx/stylingworkbooks)** - Create professional-looking documents
+- **[⚡ Performance Tips](https://fatbobman.github.io/Objects2XLSX/documentation/objects2xlsx/performanceoptimization)** - Optimize for large datasets
+
+The documentation is automatically built and deployed using Swift DocC. You can also explore the inline documentation directly in Xcode.
 
 ---
 
