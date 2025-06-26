@@ -53,6 +53,17 @@ A powerful, type-safe Swift library for converting Swift objects to Excel (.xlsx
 - **Extensive Testing**: 340+ tests ensuring reliability across all features
 - **SwiftFormat Integration**: Consistent code formatting with Git hooks
 
+## 📋 Requirements
+
+- **Swift**: 6.0+
+- **iOS**: 15.0+
+- **macOS**: 12.0+
+- **tvOS**: 15.0+
+- **watchOS**: 8.0+
+- **Linux**: Ubuntu 20.04+ (with Swift 6.0+)
+
+> **Note**: Current testing covers iOS 15+ and macOS 12+. If you have access to older system versions and would like to test compatibility, please let us know so we can adjust the minimum version requirements accordingly.
+
 ## 📦 Installation
 
 ### Swift Package Manager

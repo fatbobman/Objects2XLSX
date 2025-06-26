@@ -161,19 +161,19 @@ struct CellValueStringEnhancementsTests {
 
     // MARK: - URL type tests
 
-//    @Test("URL cellValueString with XML escaping")
-//    func urlCellValueString() throws {
-//        let simpleURL = URL(string: "https://example.com")!
-//        #expect(simpleURL.cellValueString == "https://example.com", "Simple URL should be unchanged")
-//
-//        let complexURL = URL(string: "https://example.com/path?param1=value&param2=<test>")!
-//        // URL special characters get URL-encoded by URL.absoluteString, then XML-escaped
-//        #expect(complexURL.cellValueString == "https://example.com/path?param1=value&amp;param2=%3Ctest%3E", "URL with special characters should be URL encoded then XML escaped")
-//
-//        let urlWithQuotes = URL(string: "https://example.com/search?q=\"hello\"")!
-//        // Quotes get URL-encoded to %22 by URL.absoluteString
-//        #expect(urlWithQuotes.cellValueString == "https://example.com/search?q=%22hello%22", "URL with quotes should be URL encoded")
-//    }
+    @Test("URL cellValueString with XML escaping")
+    func urlCellValueString() throws {
+        let simpleURL = URL(string: "https://example.com")!
+        #expect(simpleURL.cellValueString == "https://example.com", "Simple URL should be unchanged")
+
+        let complexURL = URL(string: "https://example.com/path?param1=value&param2=%3Ctest%3E")!
+        // URL special characters get URL-encoded by URL.absoluteString, then XML-escaped
+        #expect(complexURL.cellValueString == "https://example.com/path?param1=value&amp;param2=%3Ctest%3E", "URL with special characters should be URL encoded then XML escaped")
+
+        let urlWithQuotes = URL(string: "https://example.com/search?q=%22hello%22")!
+        // Quotes get URL-encoded to %22 by URL.absoluteString
+        #expect(urlWithQuotes.cellValueString == "https://example.com/search?q=%22hello%22", "URL with quotes should be URL encoded")
+    }
 
     @Test("Optional URL cellValueString")
     func optionalURLCellValueString() throws {

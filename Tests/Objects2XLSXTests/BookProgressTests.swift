@@ -133,40 +133,39 @@ struct BookProgressTests {
         }
     }
 
-//    @available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *)
-//    @Test(.timeLimit(.minutes(1)))
-//    func progressStreamWithError() async throws {
-//        // 创建一个简单的错误场景测试 - 直接测试错误处理
-//        let book = Book(style: BookStyle())
-//
-//        // 添加一个简单的 sheet
-//        let testData = [TestProgressPerson(name: "Test", age: 25)]
-//        let sheet = Sheet<TestProgressPerson>(name: "Test Sheet", dataProvider: { testData }) {
-//            Column(name: "Name", keyPath: \.name)
-//        }
-//        book.append(sheet: sheet)
-//
-//        // 使用一个无效路径快速触发错误
-//        let invalidURL = URL(fileURLWithPath: "/dev/null/impossible/path/test.xlsx")
-//
-//        // 简单直接的测试：直接尝试写入并捕获错误
-//        do {
-//            try book.write(to: invalidURL)
-//            #expect(Bool(false), "应该抛出错误但没有抛出")
-//        } catch {
-//            // 这是预期的错误
-//            print("Expected error occurred: \(error.localizedDescription)")
-//        }
-//
-//        // 验证 progressStream 可以访问（基本功能测试）
-//        let stream = book.progressStream
-//        _ = stream.makeAsyncIterator()
-//
-//        // 确保我们可以访问进度流
-//        #expect(Bool(true), "进度流应该可以访问")
-//
-//        print("✓ Error handling test completed successfully")
-//    }
+    @Test
+    func progressStreamWithError() async throws {
+        // 创建一个简单的错误场景测试 - 直接测试错误处理
+        let book = Book(style: BookStyle())
+
+        // 添加一个简单的 sheet
+        let testData = [TestProgressPerson(name: "Test", age: 25)]
+        let sheet = Sheet<TestProgressPerson>(name: "Test Sheet", dataProvider: { testData }) {
+            Column(name: "Name", keyPath: \.name)
+        }
+        book.append(sheet: sheet)
+
+        // 使用一个无效路径快速触发错误
+        let invalidURL = URL(fileURLWithPath: "/dev/null/impossible/path/test.xlsx")
+
+        // 简单直接的测试：直接尝试写入并捕获错误
+        do {
+            try book.write(to: invalidURL)
+            #expect(Bool(false), "应该抛出错误但没有抛出")
+        } catch {
+            // 这是预期的错误
+            print("Expected error occurred: \(error.localizedDescription)")
+        }
+
+        // 验证 progressStream 可以访问（基本功能测试）
+        let stream = book.progressStream
+        _ = stream.makeAsyncIterator()
+
+        // 确保我们可以访问进度流
+        #expect(Bool(true), "进度流应该可以访问")
+
+        print("✓ Error handling test completed successfully")
+    }
 
     @Test func progressPercentageIncreasing() async throws {
         let book = Book(style: BookStyle())

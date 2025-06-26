@@ -7,10 +7,10 @@ let package = Package(
     name: "Objects2XLSX",
     platforms: [
         // The platforms that this package supports.
-        .macOS(.v13), // Minimum macOS version
-        .iOS(.v14), // Minimum iOS version
-        .tvOS(.v16), // Minimum tvOS version
-        .watchOS(.v9), // Minimum watchOS version
+        .macOS(.v12),
+        .iOS(.v15),
+        .tvOS(.v15),
+        .watchOS(.v8),
     ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to
