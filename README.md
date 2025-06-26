@@ -18,6 +18,7 @@ A powerful, type-safe Swift library for converting Swift objects to Excel (.xlsx
 
 ### 📊 **Comprehensive Excel Support**
 
+- **Excel-Compliant Output**: Generated XLSX files strictly conform to Excel specifications with no warnings or compatibility issues
 - **Enhanced Column API**: Simplified, type-safe column declarations with automatic type inference
 - **Smart Nil Handling**: `.defaultValue()` method for elegant optional value management
 - **Type Conversions**: Powerful `.toString()` method for custom data transformations
@@ -35,6 +36,7 @@ A powerful, type-safe Swift library for converting Swift objects to Excel (.xlsx
 
 ### 🚀 **Performance & Usability**
 
+- **Standards Compliant**: Generated files open seamlessly in Excel, Numbers, Google Sheets, and LibreOffice without warnings
 - **Memory Efficient**: Stream-based processing for large datasets
 - **Progress Tracking**: Real-time progress updates with AsyncStream
 - **Cross-Platform**: Pure Swift implementation supporting macOS, iOS, tvOS, watchOS, and Linux
@@ -618,18 +620,19 @@ We welcome contributions! Please see our contributing guidelines:
 
 - Blog: [https://fatbobman.com](https://fatbobman.com)
 - GitHub: [@fatbobman](https://github.com/fatbobman)
+- X: [@fatbobman](https://x.com/fatbobman)
+- LinkedIn: [@fatbobman](https://www.linkedin.com/in/fatbobman/)
+- Mastodon: [@fatbobman@mastodon.social](https://mastodon.social/@fatbobman)
+- BlueSky: [@fatbobman.com](https://bsky.app/profile/fatbobman.com)
 
 ### 📰 Stay Connected
 
 Don't miss out on the latest updates and excellent articles about Swift, SwiftUI, Core Data, and SwiftData. Subscribe to **[Fatbobman's Swift Weekly](https://weekly.fatbobman.com)** and receive weekly insights and valuable content directly to your inbox.
 
-**[Fatbobman.com](https://fatbobman.com)** - Dive deep into advanced Swift and SwiftUI topics with comprehensive tutorials, best practices, and real-world solutions.
-
 ## 💖 Support the Project
 
 If you find Objects2XLSX useful and want to support its continued development:
 
-- [🎉 Subscribe to my Swift Weekly](https://weekly.fatbobman.com) - Stay updated with the latest Swift and SwiftUI insights
 - [☕️ Buy Me A Coffee](https://buymeacoffee.com/fatbobman) - Support development with a small donation
 - [💳 PayPal](https://www.paypal.com/paypalme/fatbobman) - Alternative donation method
 
