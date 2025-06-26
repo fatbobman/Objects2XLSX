@@ -28,7 +28,7 @@ jobs:
         path: |
           .build
           ~/.cache/org.swift.swiftpm
-        key: ${{ runner.os }}-swift-6.0-${{ hashFiles('**/Package.resolved') }}
+        key: ${{ runner.os }}-swift-6.0-${{ github.sha }}
         restore-keys: |
           ${{ runner.os }}-swift-6.0-
           ${{ runner.os }}-swift-
