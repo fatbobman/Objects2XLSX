@@ -8,7 +8,7 @@ let package = Package(
     platforms: [
         // The platforms that this package supports.
         .macOS(.v13), // Minimum macOS version
-        .iOS(.v16), // Minimum iOS version
+        .iOS(.v14), // Minimum iOS version
         .tvOS(.v16), // Minimum tvOS version
         .watchOS(.v9), // Minimum watchOS version
     ],

@@ -274,6 +274,7 @@ struct AlignmentXMLTests {
         #expect(alignment1.id != alignment4.id, "Expected different alignment configs to have different IDs")
     }
 
+    @available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *)
     @Test("Alignment XML Structure Validation")
     func alignmentXMLStructureValidation() async throws {
         let alignments: [Alignment] = [
@@ -318,7 +319,7 @@ struct AlignmentXMLTests {
         let mixedValidInvalid = Alignment(
             horizontal: .center, // 有效
             indent: -10, // 无效（负数且center不支持）
-            textRotation: 500 // 无效（超出范围）
+            textRotation: 500, // 无效（超出范围）
         )
         let mixedXML = mixedValidInvalid.xmlContent
         #expect(mixedXML.contains("horizontal=\"center\""), "Expected valid horizontal alignment")

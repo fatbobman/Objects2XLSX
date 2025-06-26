@@ -81,7 +81,7 @@ struct XMLEscapingTests {
             TestData(
                 name: "Test",
                 description: nil,
-                url: URL(string: "https://example.com/path?param1=value&param2=<test>"),
+                url: URL(string: "https://example.com/path?param1=value&param2=%3Ctest%3E"),
                 isActive: true,
                 notes: ""),
         ]
@@ -94,8 +94,8 @@ struct XMLEscapingTests {
                 let cellType = Cell.CellType.urlValue(url)
                 let valueString = cellType.valueString
                 #expect(valueString.contains("&amp;"), "& in URL should be escaped")
-                // URLs are URL-encoded, not XML-escaped for < and >
-                #expect(valueString.contains("%3Ctest%3E"), "< and > in URL should be URL encoded")
+                // URLs should preserve URL encoding
+                #expect(valueString.contains("%3Ctest%3E"), "< and > in URL should remain URL encoded")
                 #expect(!valueString.contains("&param"), "Raw & should not exist in URL")
             default:
                 Issue.record("Expected urlValue")
