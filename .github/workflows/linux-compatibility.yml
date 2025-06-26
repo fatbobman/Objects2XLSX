@@ -1,0 +1,51 @@
+name: Linux Compatibility Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        swift-version: ['5.10', '6.0']
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Swift ${{ matrix.swift-version }}
+      uses: swift-actions/setup-swift@v2
+      with:
+        swift-version: ${{ matrix.swift-version }}
+    
+    - name: Cache Swift packages
+      uses: actions/cache@v4
+      with:
+        path: |
+          .build
+          ~/.cache/org.swift.swiftpm
+        key: ${{ runner.os }}-swift-${{ matrix.swift-version }}-${{ hashFiles('**/Package.resolved') }}
+        restore-keys: |
+          ${{ runner.os }}-swift-${{ matrix.swift-version }}-
+          ${{ runner.os }}-swift-
+    
+    - name: Build project
+      run: swift build --verbose
+    
+    - name: Run tests
+      run: swift test --verbose
+    
+    - name: Build demo project
+      run: |
+        cd Demo
+        swift build --verbose
+    
+    - name: Test demo execution
+      run: |
+        cd Demo
+        swift run Objects2XLSXDemo -s small -v /tmp/demo_test.xlsx
+        ls -la /tmp/demo_test.xlsx
