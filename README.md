@@ -6,6 +6,8 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/fatbobman/Objects2XLSX)
 
+**Languages**: [English](README.md) | [中文](README_CN.md) | [日本語](README_JP.md)
+
 A powerful, type-safe Swift library for converting Swift objects to Excel (.xlsx) files. Objects2XLSX provides a modern, declarative API for creating professional Excel spreadsheets with full styling support, multiple worksheets, and real-time progress tracking.
 
 ## ✨ Features
