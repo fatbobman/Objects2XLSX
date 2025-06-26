@@ -29,15 +29,15 @@ jobs:
       run: |
         echo "Swift setup failed, installing Swift using Swiftly..."
         
-        # Install Swiftly (official Swift installer)
-        curl -L https://swiftlang.github.io/swiftly/swiftly-install.sh | bash
+        # Install Swiftly with non-interactive setup
+        echo "1" | curl -L https://swiftlang.github.io/swiftly/swiftly-install.sh | bash
         
         # Add Swiftly to PATH for current session
         export PATH="$HOME/.local/bin:$PATH"
         
-        # Install Swift 6.0 using Swiftly
+        # Install Swift 6.0 using Swiftly with Ubuntu 22.04 platform
         echo "Installing Swift 6.0 using Swiftly..."
-        $HOME/.local/bin/swiftly install 6.0
+        $HOME/.local/bin/swiftly install 6.0 --platform ubuntu2204
         
         # Use Swift 6.0
         $HOME/.local/bin/swiftly use 6.0
