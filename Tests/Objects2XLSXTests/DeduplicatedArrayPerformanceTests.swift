@@ -10,6 +10,10 @@ import Foundation
 @testable import Objects2XLSX
 import Testing
 
+#if canImport(CoreFoundation)
+import CoreFoundation
+#endif
+
 /// Performance tests to verify the O(1) optimization improvements for DeduplicatedArray.
 ///
 /// These tests compare the performance characteristics of the optimized implementation
@@ -28,7 +32,7 @@ struct DeduplicatedArrayPerformanceTests {
             array.append(element)
         }
 
-        let startTime = CFAbsoluteTimeGetCurrent()
+        let startTime = Date()
 
         // Simulate heavy duplicate checking (90% duplicates)
         for _ in 0 ..< 10000 {
@@ -41,8 +45,8 @@ struct DeduplicatedArrayPerformanceTests {
             #expect(result.index >= 0 && result.index < 100)
         }
 
-        let endTime = CFAbsoluteTimeGetCurrent()
-        let duration = endTime - startTime
+        let endTime = Date()
+        let duration = endTime.timeIntervalSince(startTime)
 
         // With O(1) optimization, this should complete very quickly
         // Even 10,000 operations should take less than 0.1 seconds
@@ -65,7 +69,7 @@ struct DeduplicatedArrayPerformanceTests {
             array.append(i)
         }
 
-        let startTime = CFAbsoluteTimeGetCurrent()
+        let startTime = Date()
 
         // Perform many index lookups
         for _ in 0 ..< 10000 {
@@ -77,8 +81,8 @@ struct DeduplicatedArrayPerformanceTests {
             }
         }
 
-        let endTime = CFAbsoluteTimeGetCurrent()
-        let duration = endTime - startTime
+        let endTime = Date()
+        let duration = endTime.timeIntervalSince(startTime)
 
         print("Large collection index lookup test completed in \(String(format: "%.4f", duration)) seconds")
 
@@ -98,7 +102,7 @@ struct DeduplicatedArrayPerformanceTests {
             array.append(pattern)
         }
 
-        let startTime = CFAbsoluteTimeGetCurrent()
+        let startTime = Date()
 
         // Perform many contains checks
         for _ in 0 ..< 20000 {
@@ -109,8 +113,8 @@ struct DeduplicatedArrayPerformanceTests {
             #expect(exists == true)
         }
 
-        let endTime = CFAbsoluteTimeGetCurrent()
-        let duration = endTime - startTime
+        let endTime = Date()
+        let duration = endTime.timeIntervalSince(startTime)
 
         print("Frequent contains operations test completed in \(String(format: "%.4f", duration)) seconds")
 
@@ -160,7 +164,7 @@ struct DeduplicatedArrayPerformanceTests {
             array.append("unique_style_\(i)")
         }
 
-        let startTime = CFAbsoluteTimeGetCurrent()
+        let startTime = Date()
 
         // Now repeatedly try to add the last element (always a duplicate)
         // This would be worst-case O(n) lookup with the old implementation
@@ -172,8 +176,8 @@ struct DeduplicatedArrayPerformanceTests {
             #expect(result.index == uniqueElementCount - 1)
         }
 
-        let endTime = CFAbsoluteTimeGetCurrent()
-        let duration = endTime - startTime
+        let endTime = Date()
+        let duration = endTime.timeIntervalSince(startTime)
 
         print("Worst case scenario test completed in \(String(format: "%.4f", duration)) seconds")
 
@@ -205,7 +209,7 @@ struct DeduplicatedArrayPerformanceTests {
             borderArray.append(border)
         }
 
-        let startTime = CFAbsoluteTimeGetCurrent()
+        let startTime = Date()
 
         // Simulate processing 5000 cells, each needing style registration
         for i in 0 ..< 5000 {
@@ -241,8 +245,8 @@ struct DeduplicatedArrayPerformanceTests {
             }
         }
 
-        let endTime = CFAbsoluteTimeGetCurrent()
-        let duration = endTime - startTime
+        let endTime = Date()
+        let duration = endTime.timeIntervalSince(startTime)
 
         print("StyleRegister usage pattern benchmark completed in \(String(format: "%.4f", duration)) seconds")
         print("Final counts - Fonts: \(fontArray.count), Fills: \(fillArray.count), Borders: \(borderArray.count)")
