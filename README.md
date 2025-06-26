@@ -3,6 +3,8 @@
 [![Swift](https://img.shields.io/badge/Swift-6.0+-orange.svg)](https://swift.org)
 [![Platform](https://img.shields.io/badge/Platform-macOS%20%7C%20iOS%20%7C%20tvOS%20%7C%20watchOS%20%7C%20Linux-lightgrey.svg)](https://swift.org)
 [![Swift Package Manager](https://img.shields.io/badge/SPM-Compatible-brightgreen.svg)](https://swift.org/package-manager)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/fatbobman/Objects2XLSX)
 
 A powerful, type-safe Swift library for converting Swift objects to Excel (.xlsx) files. Objects2XLSX provides a modern, declarative API for creating professional Excel spreadsheets with full styling support, multiple worksheets, and real-time progress tracking.
 
@@ -616,6 +618,34 @@ We welcome contributions! Please see our contributing guidelines:
 
 - Blog: [https://fatbobman.com](https://fatbobman.com)
 - GitHub: [@fatbobman](https://github.com/fatbobman)
+
+### 📰 Stay Connected
+
+Don't miss out on the latest updates and excellent articles about Swift, SwiftUI, Core Data, and SwiftData. Subscribe to **[Fatbobman's Swift Weekly](https://weekly.fatbobman.com)** and receive weekly insights and valuable content directly to your inbox.
+
+**[Fatbobman.com](https://fatbobman.com)** - Dive deep into advanced Swift and SwiftUI topics with comprehensive tutorials, best practices, and real-world solutions.
+
+## 💖 Support the Project
+
+If you find Objects2XLSX useful and want to support its continued development:
+
+- [🎉 Subscribe to my Swift Weekly](https://weekly.fatbobman.com) - Stay updated with the latest Swift and SwiftUI insights
+- [☕️ Buy Me A Coffee](https://buymeacoffee.com/fatbobman) - Support development with a small donation
+- [💳 PayPal](https://www.paypal.com/paypalme/fatbobman) - Alternative donation method
+
+Your support helps maintain and improve this open-source project. Thank you! 🙏
+
+## 📄 License
+
+Objects2XLSX is released under the Apache License 2.0. See [LICENSE](LICENSE) for details.
+
+### Third-Party Dependencies
+
+This project includes the following third-party software:
+
+- **[SimpleLogger](https://github.com/fatbobman/SimpleLogger)** - MIT License
+  - A lightweight logging library for Swift
+  - Copyright (c) 2024 Fatbobman
 
 ## 🙏 Acknowledgments
 
