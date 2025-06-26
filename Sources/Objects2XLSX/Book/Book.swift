@@ -92,13 +92,17 @@ public final class Book {
     /// Internal storage for sheet metadata (populated during processing)
     var sheetMetas: [SheetMeta] = []
 
+    /// ZIP archiver implementation (defaults to SimpleZip)
+    private let zipArchiver: ZipArchiver
+
     /// Creates a new Book instance with the specified configuration.
     ///
     /// - Parameters:
     ///   - style: The styling configuration for the entire workbook
     ///   - sheets: Initial collection of worksheets (defaults to empty)
     ///   - logger: Custom logger implementation (uses default if not provided)
-    public init(style: BookStyle, sheets: [AnySheet] = [], logger: LoggerManagerProtocol? = nil) {
+    ///   - zipArchiver: Custom ZIP archiver implementation (uses SimpleZip if not provided)
+    public init(style: BookStyle, sheets: [AnySheet] = [], logger: LoggerManagerProtocol? = nil, zipArchiver: ZipArchiver? = nil) {
         // Create AsyncStream for progress reporting
         let (stream, continuation) = AsyncStream.makeStream(of: BookGenerationProgress.self)
         progressStream = stream
@@ -107,6 +111,7 @@ public final class Book {
         self.style = style
         self.sheets = sheets
         self.logger = logger ?? Self.defaultLogger
+        self.zipArchiver = zipArchiver ?? SimpleZipArchiver()
     }
 
     /// Convenience initializer using the SheetBuilder pattern for declarative sheet configuration.
@@ -114,9 +119,10 @@ public final class Book {
     /// - Parameters:
     ///   - style: The styling configuration for the entire workbook
     ///   - logger: Custom logger implementation (uses default if not provided)
+    ///   - zipArchiver: Custom ZIP archiver implementation (uses SimpleZip if not provided)
     ///   - sheets: Closure that returns an array of sheets using the @SheetBuilder
-    public convenience init(style: BookStyle, logger: LoggerManagerProtocol? = nil, @SheetBuilder sheets: () -> [AnySheet]) {
-        self.init(style: style, sheets: sheets(), logger: logger)
+    public convenience init(style: BookStyle, logger: LoggerManagerProtocol? = nil, zipArchiver: ZipArchiver? = nil, @SheetBuilder sheets: () -> [AnySheet]) {
+        self.init(style: style, sheets: sheets(), logger: logger, zipArchiver: zipArchiver)
     }
 
     /// Default logger implementation (console in debug, system logger in release)
@@ -424,14 +430,14 @@ public final class Book {
         }
     }
 
-    /// Creates XLSX file using SimpleZip compression
+    /// Creates XLSX file using the configured ZIP archiver
     /// - Parameters:
     ///   - tempDir: Source directory containing XLSX package structure
     ///   - outputURL: Target URL for the final XLSX file
     /// - Throws: BookError.fileWriteError if ZIP creation fails
     func createZipArchive(from tempDir: URL, to outputURL: URL) throws(BookError) {
         do {
-            let stats = try SimpleZip.createFromDirectoryWithStats(directoryURL: tempDir, outputURL: outputURL)
+            let stats = try zipArchiver.createArchiveWithStats(from: tempDir, to: outputURL)
 
             let fileSize = try FileManager.default.attributesOfItem(atPath: outputURL.path)[.size] as? Int ?? 0
             logger.info("Created XLSX file: \(outputURL.path) - Size: \(fileSize) bytes")
@@ -443,11 +449,8 @@ public final class Book {
                         "Compression stats: \(ByteCountFormatter.string(fromByteCount: Int64(stats.originalSize), countStyle: .file)) → \(ByteCountFormatter.string(fromByteCount: Int64(stats.compressedSize), countStyle: .file)) (\(String(format: "%.1f", stats.compressionPercentage))% compression)")
             }
 
-        } catch let zipError as SimpleZip.ZipError {
-            logger.error("ZIP creation failed: \(zipError)")
-            throw BookError.fileWriteError(zipError)
         } catch {
-            logger.error("Unexpected error during ZIP creation: \(error)")
+            logger.error("ZIP creation failed: \(error)")
             throw BookError.fileWriteError(error)
         }
     }
