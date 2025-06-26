@@ -257,7 +257,7 @@ struct CellStyleMergeTests {
             font: Font(size: 16, name: "Arial"), // override font
             fill: nil, // keep base fill
             alignment: Alignment.center, // override alignment
-            border: nil // keep base border
+            border: nil, // keep base border
         )
 
         let merged = CellStyle.merge(base: base, additional: additional)

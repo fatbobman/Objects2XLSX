@@ -28,7 +28,7 @@ missing_docs:
     - property
 
 trailing_comma:
-  mandatory_comma: true # ✅ 多行结构必须添加尾随逗号
+  mandatory_comma: false # 不强制要求尾随逗号，以兼容 Linux Swift 6.0
   severity: warning # or error
 
 line_length:

@@ -96,8 +96,8 @@
 # 设置最大宽度为 200 字符
 --modifierorder 
 # 设置修饰符顺序
-#--nevertrailing 
-# 禁用尾随逗号
+--nevertrailing 
+# 禁用尾随逗号（兼容 Linux Swift 6.0）
 --nilinit remove 
 # 移除 nil 初始化
 --nospaceoperators 
