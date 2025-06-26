@@ -8,63 +8,14 @@ on:
 
 jobs:
   test-linux:
+    name: Test on Linux
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        swift-version: ['6.0']
+    container:
+      image: swift:6.0
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-    
-    - name: Setup Swift ${{ matrix.swift-version }}
-      uses: swift-actions/setup-swift@v2
-      with:
-        swift-version: ${{ matrix.swift-version }}
-      continue-on-error: true
-      id: swift-setup
-    
-    - name: Manual Swift installation (fallback)
-      if: steps.swift-setup.outcome == 'failure'
-      run: |
-        echo "Swift setup failed, attempting manual installation..."
-        
-        # Install required dependencies
-        sudo apt-get update
-        sudo apt-get install -y binutils git gnupg2 libc6-dev libcurl4-openssl-dev libedit2 libgcc-9-dev libpython3.8 libsqlite3-0 libstdc++-9-dev libxml2-dev libz3-dev pkg-config tzdata unzip zlib1g-dev
-        
-        # Try Swift 6.0.1 for Ubuntu 22.04 (should work on 24.04)
-        SWIFT_URL="https://download.swift.org/swift-6.0.1-release/ubuntu2204/swift-6.0.1-RELEASE-ubuntu22.04.tar.gz"
-        echo "Downloading Swift from: $SWIFT_URL"
-        
-        if curl -fsSL -o swift.tar.gz "$SWIFT_URL"; then
-          echo "Successfully downloaded Swift 6.0.1 for Ubuntu 22.04"
-        else
-          echo "Failed to download Swift 6.0.1, trying 6.0.2..."
-          SWIFT_URL="https://download.swift.org/swift-6.0.2-release/ubuntu2204/swift-6.0.2-RELEASE-ubuntu22.04.tar.gz"
-          if curl -fsSL -o swift.tar.gz "$SWIFT_URL"; then
-            echo "Successfully downloaded Swift 6.0.2 for Ubuntu 22.04"
-          else
-            echo "Failed to download Swift 6.0.2, trying 5.10..."
-            SWIFT_URL="https://download.swift.org/swift-5.10.1-release/ubuntu2204/swift-5.10.1-RELEASE-ubuntu22.04.tar.gz"
-            curl -fsSL -o swift.tar.gz "$SWIFT_URL"
-            echo "Downloaded Swift 5.10.1 as fallback"
-          fi
-        fi
-        
-        # Extract Swift
-        echo "Extracting Swift..."
-        tar xzf swift.tar.gz
-        
-        # Find the extracted directory
-        SWIFT_DIR=$(find . -maxdepth 1 -name "swift-*-ubuntu22.04" -type d | head -1)
-        echo "Swift directory: $SWIFT_DIR"
-        
-        # Add to PATH
-        echo "$PWD/$SWIFT_DIR/usr/bin" >> $GITHUB_PATH
-        
-        # Verify installation
-        "$PWD/$SWIFT_DIR/usr/bin/swift" --version
     
     - name: Verify Swift installation
       run: |
@@ -77,9 +28,9 @@ jobs:
         path: |
           .build
           ~/.cache/org.swift.swiftpm
-        key: ${{ runner.os }}-swift-${{ matrix.swift-version }}-${{ hashFiles('**/Package.resolved') }}
+        key: ${{ runner.os }}-swift-6.0-${{ hashFiles('**/Package.resolved') }}
         restore-keys: |
-          ${{ runner.os }}-swift-${{ matrix.swift-version }}-
+          ${{ runner.os }}-swift-6.0-
           ${{ runner.os }}-swift-
     
     - name: Build project
