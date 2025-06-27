@@ -10,17 +10,17 @@ let package = Package(
         .macOS(.v12),
         .iOS(.v15),
         .tvOS(.v15),
-        .watchOS(.v8),
+        .watchOS(.v8)
     ],
     products: [
         // Products define the executables and libraries a package produces, making them visible to
         // other packages.
         .library(
             name: "Objects2XLSX",
-            targets: ["Objects2XLSX"]),
+            targets: ["Objects2XLSX"])
     ],
     dependencies: [
-        .package(url: "https://github.com/fatbobman/SimpleLogger.git", from: "0.0.1"),
+        .package(url: "https://github.com/fatbobman/SimpleLogger.git", from: "0.7.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -28,10 +28,10 @@ let package = Package(
         .target(
             name: "Objects2XLSX",
             dependencies: [
-                .product(name: "SimpleLogger", package: "SimpleLogger"),
+                .product(name: "SimpleLogger", package: "SimpleLogger")
             ]),
         .testTarget(
             name: "Objects2XLSXTests",
-            dependencies: ["Objects2XLSX"]),
+            dependencies: ["Objects2XLSX"])
     ],
     swiftLanguageModes: [.v6])
