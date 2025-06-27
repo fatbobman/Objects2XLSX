@@ -348,7 +348,7 @@ public final class Book {
                 "xl",
                 "xl/_rels",
                 "xl/worksheets",
-                "xl/theme",
+                "xl/theme"
             ]
 
             for dir in directories {

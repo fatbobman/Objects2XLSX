@@ -188,7 +188,7 @@ extension Fill {
     /// These fills are automatically included in every Excel workbook's style registry.
     static let defaultFills: [Fill] = [
         .none, // index 0: Excel requires at least one fill
-        .none, // index 1: transparent fill
+        .none // index 1: transparent fill
     ]
 
     /// Create a solid color fill with RGB values
