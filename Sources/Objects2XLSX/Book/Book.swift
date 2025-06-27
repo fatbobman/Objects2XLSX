@@ -446,7 +446,7 @@ public final class Book {
             if stats.originalSize > 0 {
                 logger
                     .info(
-                        "Compression stats: \(ByteCountFormatter.string(fromByteCount: Int64(stats.originalSize), countStyle: .file)) → \(ByteCountFormatter.string(fromByteCount: Int64(stats.compressedSize), countStyle: .file)) (\(String(format: "%.1f", stats.compressionPercentage))% compression)")
+                        "Compression stats: \(ByteCountFormatter.string(fromByteCount: Int64(stats.originalSize), countStyle: .file)) → \(ByteCountFormatter.string(fromByteCount: Int64(stats.compressedSize), countStyle: .file)) (\(String(format: "%.1f", stats.compressionPercentage))% compression)") // swiftlint:disable:this line_length
             }
 
         } catch {

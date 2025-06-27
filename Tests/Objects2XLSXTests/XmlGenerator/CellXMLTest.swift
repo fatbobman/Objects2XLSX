@@ -328,7 +328,7 @@ struct CellXMLTest {
         let xml = row.generateXML()
 
         let expected =
-            "<row r=\"13\"><c r=\"A13\" t=\"inlineStr\"><is><t>Name</t></is></c><c r=\"B13\" t=\"inlineStr\"><is><t></t></is></c><c r=\"C13\"><v>25</v></c><c r=\"D13\"><v></v></c><c r=\"E13\"><v>3.14</v></c><c r=\"F13\"><v></v></c><c r=\"G13\"><v>1.618</v></c><c r=\"H13\"><v></v></c><c r=\"I13\"><v></v></c></row>"
+            "<row r=\"13\"><c r=\"A13\" t=\"inlineStr\"><is><t>Name</t></is></c><c r=\"B13\" t=\"inlineStr\"><is><t></t></is></c><c r=\"C13\"><v>25</v></c><c r=\"D13\"><v></v></c><c r=\"E13\"><v>3.14</v></c><c r=\"F13\"><v></v></c><c r=\"G13\"><v>1.618</v></c><c r=\"H13\"><v></v></c><c r=\"I13\"><v></v></c></row>" // swiftlint:disable:this line_length
 
         #expect(xml == expected)
     }

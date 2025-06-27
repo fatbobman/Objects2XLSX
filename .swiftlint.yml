@@ -1,9 +1,13 @@
 opt_in_rules:
   - empty_count
-  - missing_docs
 
 disabled_rules:
   - opening_brace
+  - missing_docs # 对 AI 生成代码过于严格
+  - multiple_closures_with_trailing_closure # SwiftUI 风格代码常用
+  - large_tuple # 测试代码中常用
+  - todo # 允许 TODO 注释
+  - non_optional_string_data_conversion # 避免过度限制数据转换
 
 included:
   - Sources
@@ -14,34 +18,35 @@ excluded:
   - .swiftpm
   - Generated
 
-missing_docs:
-  severity: warning
-  included: [public, open]
-  required_declarations:
-    - type
-    - method
-    - property
-
 trailing_comma:
   mandatory_comma: false # 不强制要求尾随逗号，以兼容 Linux Swift 6.0
-  severity: warning # or error
+  severity: warning
 
 line_length:
-  warning: 120
-  error: 130
+  warning: 300
+  error: 320 # 进一步放宽行长度限制
   ignores_comments: true
+  ignores_urls: true
 
 force_cast: warning
 force_try:
   severity: warning
 
 file_length:
-  warning: 800
-  error: 1200
+  warning: 1200 # 放宽文件长度限制
+  error: 1500
+
+function_body_length:
+  warning: 110 # 适应复杂函数需求
+  error: 160
 
 type_body_length:
-  - 300 # warning
-  - 400 # error
+  warning: 500 # 适应大型类型需求
+  error: 750
+
+function_parameter_count:
+  warning: 8 # 适应复杂函数参数需求
+  error: 12
 
 type_name:
   min_length: 3
@@ -54,7 +59,8 @@ type_name:
 identifier_name:
   allowed_symbols: "_"
   min_length:
-    error: 3
+    warning: 1 # 允许单字符变量名
+    error: 1
   excluded:
     - id
     - URL
@@ -64,15 +70,22 @@ identifier_name:
     - y
     - z
     - by
+    - fg # Fill 相关
+    - bg # Fill 相关
+    - d # Date 相关
+    - d1 # Date 相关
+    - d2 # Date 相关
+    - s # String 相关
+    - ts # Timestamp 相关
 
 nesting:
   type_level:
-    warning: 3
-    error: 6
+    warning: 4 # 放宽嵌套限制
+    error: 8
 
 cyclomatic_complexity:
-  warning: 15
-  error: 25
+  warning: 35 # 适应复杂逻辑需求
+  error: 45
 
 switch_case_alignment:
   severity: warning

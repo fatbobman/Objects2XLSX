@@ -326,7 +326,8 @@ extension Book {
 
         // 添加工作表关系
         for meta in metas {
-            xml += "<Relationship Id=\"rId\(relationshipId)\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet\(meta.sheetId).xml\"/>"
+            xml +=
+                "<Relationship Id=\"rId\(relationshipId)\" Type=\"http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet\" Target=\"worksheets/sheet\(meta.sheetId).xml\"/>"
             relationshipId += 1
         }
 
@@ -574,7 +575,6 @@ extension Book {
             </a:themeElements>
             </a:theme>
             """
-
         return xml
     }
 

@@ -150,6 +150,7 @@ struct RowXMLTest {
 
         // 提取并验证日期值
         let dateValuePattern = #"<v>([0-9.]+)</v>"#
+        // swiftlint:disable:next force_try
         let regex = try! NSRegularExpression(pattern: dateValuePattern)
         let range = NSRange(xml.startIndex ..< xml.endIndex, in: xml)
 

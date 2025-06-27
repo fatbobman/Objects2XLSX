@@ -548,7 +548,7 @@ extension Sheet {
         let cellValue = column.generateCellValue(for: object)
 
         // Handle shared string registration for text-based values
-        var sharedStringID: Int? = nil
+        var sharedStringID: Int?
         switch cellValue {
             case let .stringValue(stringValue):
                 sharedStringID = shareStringRegistor.register(stringValue)
