@@ -17,7 +17,7 @@ struct SheetAsyncTests {
     }
 
     @Test("Create sheet with async data provider")
-    func testAsyncDataProviderInitialization() async {
+    func asyncDataProviderInitialization() async {
         // Create sheet with async data provider
         let sheet = Sheet<AsyncPerson>(
             name: "Async People",
@@ -26,7 +26,7 @@ struct SheetAsyncTests {
                 try? await Task.sleep(nanoseconds: 100_000) // 0.1ms
                 return [
                     AsyncPerson(id: 1, name: "Alice", age: 30),
-                    AsyncPerson(id: 2, name: "Bob", age: 25),
+                    AsyncPerson(id: 2, name: "Bob", age: 25)
                 ]
             }) {
                 Column(name: "ID", keyPath: \.id)
@@ -46,7 +46,7 @@ struct SheetAsyncTests {
     }
 
     @Test("Set async data provider via method")
-    func testAsyncDataProviderMethod() async {
+    func asyncDataProviderMethod() async {
         // Create sheet without data provider
         let sheet = Sheet<AsyncPerson>(name: "People") {
             Column(name: "ID", keyPath: \.id)
@@ -59,7 +59,7 @@ struct SheetAsyncTests {
         sheet.asyncDataProvider {
             [
                 AsyncPerson(id: 1, name: "Charlie", age: 35),
-                AsyncPerson(id: 2, name: "Diana", age: 28),
+                AsyncPerson(id: 2, name: "Diana", age: 28)
             ]
         }
 
@@ -73,7 +73,7 @@ struct SheetAsyncTests {
     }
 
     @Test("Async data provider clears sync provider")
-    func testAsyncClearsSyncProvider() async {
+    func asyncClearsSyncProvider() async {
         let sheet = Sheet<AsyncPerson>(name: "People") {
             Column(name: "Name", keyPath: \.name)
         }
@@ -95,7 +95,7 @@ struct SheetAsyncTests {
     }
 
     @Test("Sync data provider clears async provider")
-    func testSyncClearsAsyncProvider() {
+    func syncClearsAsyncProvider() {
         let sheet = Sheet<AsyncPerson>(name: "People") {
             Column(name: "Name", keyPath: \.name)
         }
@@ -119,7 +119,7 @@ struct SheetAsyncTests {
     }
 
     @Test("LoadDataAsync falls back to sync provider")
-    func testLoadDataAsyncFallback() async {
+    func loadDataAsyncFallback() async {
         let sheet = Sheet<AsyncPerson>(name: "People") {
             Column(name: "Name", keyPath: \.name)
         }
