@@ -39,6 +39,7 @@ Swift オブジェクトを Excel (.xlsx) ファイルに変換するための�
 ### 🚀 **パフォーマンスと使いやすさ**
 
 - **標準準拠**: 生成されたファイルは Excel、Numbers、Google Sheets、LibreOffice で警告なくシームレスに開けます
+- **非同期データサポート**: `@Sendable` 非同期データプロバイダーによる安全なクロススレッドデータ取得
 - **メモリ効率**: 大規模データセット用のストリームベース処理
 - **進捗追跡**: AsyncStream によるリアルタイム進捗更新
 - **クロスプラットフォーム**: macOS、iOS、tvOS、watchOS、Linux をサポートする純粋な Swift 実装
@@ -121,6 +122,72 @@ let book = Book(style: BookStyle()) {
 let outputURL = URL(fileURLWithPath: "/path/to/employees.xlsx")
 try book.write(to: outputURL)
 ```
+
+### 非同期データプロバイダー（新機能！）
+
+Objects2XLSX は Core Data、SwiftData、API コールとのスレッドセーフ操作のための非同期データ取得をサポートします：
+
+```swift
+import Objects2XLSX
+
+// Sendable データ転送オブジェクトを定義
+struct PersonData: Sendable {
+    let name: String
+    let department: String
+    let salary: Double
+    let hireDate: Date
+}
+
+// 非同期取得機能付きのデータサービスを作成
+class DataService {
+    private let persistentContainer: NSPersistentContainer
+    
+    @Sendable
+    func fetchEmployees() async -> [PersonData] {
+        await withCheckedContinuation { continuation in
+            // Core Data のスレッドで実行
+            persistentContainer.viewContext.perform {
+                let employees = // ... Core Data オブジェクトを取得
+                
+                // Sendable オブジェクトに変換
+                let data = employees.map { employee in
+                    PersonData(
+                        name: employee.name ?? "",
+                        department: employee.department?.name ?? "",
+                        salary: employee.salary,
+                        hireDate: employee.hireDate ?? Date()
+                    )
+                }
+                continuation.resume(returning: data)
+            }
+        }
+    }
+}
+
+// 非同期データプロバイダー付きのシートを作成
+let dataService = DataService(persistentContainer: container)
+
+let sheet = Sheet<PersonData>(
+    name: "非同期従業員",
+    asyncDataProvider: dataService.fetchEmployees  // 🚀 非同期でスレッドセーフ！
+) {
+    Column(name: "氏名", keyPath: \.name)
+    Column(name: "部署", keyPath: \.department)
+    Column(name: "給与", keyPath: \.salary)
+    Column(name: "入社日", keyPath: \.hireDate)
+}
+
+let book = Book(style: BookStyle()) { sheet }
+
+// 非同期で Excel ファイルを生成
+let outputURL = try await book.writeAsync(to: URL(fileURLWithPath: "/path/to/report.xlsx"))
+```
+
+**主な利点：**
+- ✅ **スレッドセーフティ**: データ取得は正しいスレッドコンテキストで実行
+- ✅ **型安全性**: `@Sendable` 制約により安全なデータ転送を保証
+- ✅ **混合ソース**: 同じワークブックで同期・非同期シートを組み合わせ
+- ✅ **進捗追跡**: 完全な非同期進捗監視サポート
 
 ### ライブデモを試す
 
@@ -397,11 +464,20 @@ try book.write(to: outputURL)
 
 ## 📊 進捗追跡
 
-大規模データセットの Excel 生成進捗を監視：
+同期・非同期操作の Excel 生成進捗を監視：
 
 ```swift
 let book = Book(style: BookStyle()) {
-    // ... シートを追加
+    // 同期・非同期シートの混合
+    Sheet<Product>(name: "製品", dataProvider: { products }) {
+        Column(name: "名前", keyPath: \.name)
+        Column(name: "価格", keyPath: \.price)
+    }
+    
+    Sheet<Employee>(name: "従業員", asyncDataProvider: fetchEmployeesAsync) {
+        Column(name: "氏名", keyPath: \.name)
+        Column(name: "部署", keyPath: \.department)
+    }
 }
 
 // 進捗を監視
@@ -417,7 +493,7 @@ Task {
     }
 }
 
-// ファイルを非同期生成
+// 同期でファイルを生成
 Task {
     do {
         try book.write(to: outputURL)
@@ -426,7 +502,77 @@ Task {
         print("❌ エラー: \(error)")
     }
 }
+
+// または非同期でファイルを生成（非同期データプロバイダーサポート）
+Task {
+    do {
+        let outputURL = try await book.writeAsync(to: outputURL)
+        print("📁 非同期ファイルが保存されました: \(outputURL.path)")
+    } catch {
+        print("❌ エラー: \(error)")
+    }
+}
 ```
+
+## 🔧 高度な設定
+
+### 非同期データ読み込み＆スレッドセーフティ
+
+Objects2XLSX は複雑なシナリオ向けのスレッドセーフな非同期データ読み込みを提供：
+
+```swift
+// スレッドセーフな非同期データ取得
+class EmployeeDataService {
+    private let coreDataStack: CoreDataStack
+    
+    @Sendable
+    func fetchEmployeesAsync() async -> [EmployeeData] {
+        await withCheckedContinuation { continuation in
+            // Core Data のスレッドに切り替え
+            coreDataStack.viewContext.perform {
+                do {
+                    let request: NSFetchRequest<Employee> = Employee.fetchRequest()
+                    let employees = try self.coreDataStack.viewContext.fetch(request)
+                    
+                    // Sendable DTO に変換
+                    let employeeData = employees.map { EmployeeData(from: $0) }
+                    continuation.resume(returning: employeeData)
+                } catch {
+                    continuation.resume(returning: [])
+                }
+            }
+        }
+    }
+}
+
+// 非同期データプロバイダーを使用
+let service = EmployeeDataService(coreDataStack: stack)
+
+let book = Book(style: BookStyle()) {
+    // 同期シート
+    Sheet<Product>(name: "製品", dataProvider: { loadProducts() }) {
+        Column(name: "名前", keyPath: \.name)
+        Column(name: "価格", keyPath: \.price)
+    }
+    
+    // 非同期シート - Core Data スレッドでデータを取得
+    Sheet<EmployeeData>(name: "従業員", asyncDataProvider: service.fetchEmployeesAsync) {
+        Column(name: "氏名", keyPath: \.name)
+        Column(name: "部署", keyPath: \.department)
+        Column(name: "給与", keyPath: \.salary)
+    }
+}
+
+// 非同期サポートで生成
+let outputURL = try await book.writeAsync(to: URL(fileURLWithPath: "/path/to/report.xlsx"))
+```
+
+**スレッドセーフティガイドライン：**
+
+- ✅ **任意のスレッドで Book を作成** - Book の作成はスレッドセーフ
+- ✅ **正しいコンテキストでデータ取得** - 非同期プロバイダーがスレッド切り替えを処理
+- ✅ **同期/非同期シートの混合** - 両タイプをシームレスに組み合わせ
+- ⚠️ **非同期プロバイダーには `writeAsync()` を使用** - 適切な非同期データ読み込みを保証
 
 ## 📋 要件
 

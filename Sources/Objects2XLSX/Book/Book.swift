@@ -237,7 +237,7 @@ public final class Book {
     /// maintaining reasonable memory consumption.
     @discardableResult
     public func write(to url: URL) throws(BookError) -> URL {
-        return try generateXLSX(to: url, useAsync: false)
+        try generateXLSX(to: url, useAsync: false)
     }
 
     /// Asynchronously writes the workbook to an XLSX file at the specified URL.
@@ -301,7 +301,7 @@ public final class Book {
     /// thread
     @discardableResult
     public func writeAsync(to url: URL) async throws(BookError) -> URL {
-        return try await generateXLSXAsync(to: url, useAsync: true)
+        try await generateXLSXAsync(to: url, useAsync: true)
     }
 
     /// Core XLSX generation logic (synchronous version)
@@ -346,14 +346,9 @@ public final class Book {
 
         } catch {
             // Send error status and complete stream
-            let bookError: BookError = if let existingBookError = error as? BookError {
-                existingBookError
-            } else {
-                BookError.xmlGenerationError("Unknown error: \(error)")
-            }
-            sendProgress(.failed(error: bookError))
+            sendProgress(.failed(error: error))
             completeProgress()
-            throw bookError
+            throw error
         }
     }
 
@@ -398,14 +393,9 @@ public final class Book {
 
         } catch {
             // Send error status and complete stream
-            let bookError: BookError = if let existingBookError = error as? BookError {
-                existingBookError
-            } else {
-                BookError.xmlGenerationError("Unknown error: \(error)")
-            }
-            sendProgress(.failed(error: bookError))
+            sendProgress(.failed(error: error))
             completeProgress()
-            throw bookError
+            throw error
         }
     }
 
@@ -589,7 +579,7 @@ public final class Book {
                 "xl",
                 "xl/_rels",
                 "xl/worksheets",
-                "xl/theme",
+                "xl/theme"
             ]
 
             for dir in directories {
@@ -669,7 +659,7 @@ public final class Book {
                 domain: "Objects2XLSX",
                 code: 1,
                 userInfo: [
-                    NSLocalizedDescriptionKey: "Parent path exists but is not a directory: \(parentDirectory.path)",
+                    NSLocalizedDescriptionKey: "Parent path exists but is not a directory: \(parentDirectory.path)"
                 ])
             logger.error("Parent path is not a directory: \(parentDirectory.path)")
             throw BookError.fileWriteError(error)

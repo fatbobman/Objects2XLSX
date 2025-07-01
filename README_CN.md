@@ -39,6 +39,7 @@
 ### 🚀 **性能与可用性**
 
 - **标准兼容**：生成的文件可在 Excel、Numbers、Google Sheets 和 LibreOffice 中无缝打开，无警告
+- **异步数据支持**：通过 `@Sendable` 异步数据提供器支持安全的跨线程数据获取
 - **内存高效**：基于流的处理，适用于大型数据集
 - **进度跟踪**：通过 AsyncStream 实时进度更新
 - **跨平台**：支持 macOS、iOS、tvOS、watchOS 和 Linux 的纯 Swift 实现
@@ -121,6 +122,72 @@ let book = Book(style: BookStyle()) {
 let outputURL = URL(fileURLWithPath: "/path/to/employees.xlsx")
 try book.write(to: outputURL)
 ```
+
+### 异步数据提供器（新功能！）
+
+Objects2XLSX 现在支持异步数据获取，实现与 Core Data、SwiftData 和 API 调用的线程安全操作：
+
+```swift
+import Objects2XLSX
+
+// 定义 Sendable 数据传输对象
+struct PersonData: Sendable {
+    let name: String
+    let department: String
+    let salary: Double
+    let hireDate: Date
+}
+
+// 创建具有异步获取功能的数据服务
+class DataService {
+    private let persistentContainer: NSPersistentContainer
+    
+    @Sendable
+    func fetchEmployees() async -> [PersonData] {
+        await withCheckedContinuation { continuation in
+            // 在 Core Data 的线程中执行
+            persistentContainer.viewContext.perform {
+                let employees = // ... 获取 Core Data 对象
+                
+                // 转换为 Sendable 对象
+                let data = employees.map { employee in
+                    PersonData(
+                        name: employee.name ?? "",
+                        department: employee.department?.name ?? "",
+                        salary: employee.salary,
+                        hireDate: employee.hireDate ?? Date()
+                    )
+                }
+                continuation.resume(returning: data)
+            }
+        }
+    }
+}
+
+// 创建具有异步数据提供器的工作表
+let dataService = DataService(persistentContainer: container)
+
+let sheet = Sheet<PersonData>(
+    name: "异步员工",
+    asyncDataProvider: dataService.fetchEmployees  // 🚀 异步且线程安全！
+) {
+    Column(name: "姓名", keyPath: \.name)
+    Column(name: "部门", keyPath: \.department)
+    Column(name: "薪资", keyPath: \.salary)
+    Column(name: "入职日期", keyPath: \.hireDate)
+}
+
+let book = Book(style: BookStyle()) { sheet }
+
+// 异步生成 Excel 文件
+let outputURL = try await book.writeAsync(to: URL(fileURLWithPath: "/path/to/report.xlsx"))
+```
+
+**主要优势：**
+- ✅ **线程安全**：数据获取在正确的线程上下文中进行
+- ✅ **类型安全**：`@Sendable` 约束确保安全的数据传输
+- ✅ **混合数据源**：在同一工作簿中结合同步和异步工作表
+- ✅ **进度跟踪**：完整的异步进度监控支持
 
 ### 尝试实时演示
 
@@ -397,11 +464,20 @@ try book.write(to: outputURL)
 
 ## 📊 进度跟踪
 
-监控大型数据集的 Excel 生成进度：
+监控同步和异步操作的 Excel 生成进度：
 
 ```swift
 let book = Book(style: BookStyle()) {
-    // ... 添加你的工作表
+    // 混合同步和异步工作表
+    Sheet<Product>(name: "产品", dataProvider: { products }) {
+        Column(name: "名称", keyPath: \.name)
+        Column(name: "价格", keyPath: \.price)
+    }
+    
+    Sheet<Employee>(name: "员工", asyncDataProvider: fetchEmployeesAsync) {
+        Column(name: "姓名", keyPath: \.name)
+        Column(name: "部门", keyPath: \.department)
+    }
 }
 
 // 监控进度
@@ -417,7 +493,7 @@ Task {
     }
 }
 
-// 异步生成文件
+// 同步生成文件
 Task {
     do {
         try book.write(to: outputURL)
@@ -426,7 +502,77 @@ Task {
         print("❌ 错误: \(error)")
     }
 }
+
+// 或异步生成文件（支持异步数据提供器）
+Task {
+    do {
+        let outputURL = try await book.writeAsync(to: outputURL)
+        print("📁 异步文件已保存到: \(outputURL.path)")
+    } catch {
+        print("❌ 错误: \(error)")
+    }
+}
 ```
+
+## 🔧 高级配置
+
+### 异步数据加载与线程安全
+
+Objects2XLSX 为复杂场景提供线程安全的异步数据加载：
+
+```swift
+// 线程安全的异步数据获取
+class EmployeeDataService {
+    private let coreDataStack: CoreDataStack
+    
+    @Sendable
+    func fetchEmployeesAsync() async -> [EmployeeData] {
+        await withCheckedContinuation { continuation in
+            // 切换到 Core Data 的线程
+            coreDataStack.viewContext.perform {
+                do {
+                    let request: NSFetchRequest<Employee> = Employee.fetchRequest()
+                    let employees = try self.coreDataStack.viewContext.fetch(request)
+                    
+                    // 转换为 Sendable DTO
+                    let employeeData = employees.map { EmployeeData(from: $0) }
+                    continuation.resume(returning: employeeData)
+                } catch {
+                    continuation.resume(returning: [])
+                }
+            }
+        }
+    }
+}
+
+// 使用异步数据提供器
+let service = EmployeeDataService(coreDataStack: stack)
+
+let book = Book(style: BookStyle()) {
+    // 同步工作表
+    Sheet<Product>(name: "产品", dataProvider: { loadProducts() }) {
+        Column(name: "名称", keyPath: \.name)
+        Column(name: "价格", keyPath: \.price)
+    }
+    
+    // 异步工作表 - 在 Core Data 线程中获取数据
+    Sheet<EmployeeData>(name: "员工", asyncDataProvider: service.fetchEmployeesAsync) {
+        Column(name: "姓名", keyPath: \.name)
+        Column(name: "部门", keyPath: \.department)
+        Column(name: "薪资", keyPath: \.salary)
+    }
+}
+
+// 使用异步支持生成
+let outputURL = try await book.writeAsync(to: URL(fileURLWithPath: "/path/to/report.xlsx"))
+```
+
+**线程安全指南：**
+
+- ✅ **在任何线程创建 Book** - Book 创建是线程安全的
+- ✅ **在正确上下文中获取数据** - 异步提供器处理线程切换
+- ✅ **混合同步/异步工作表** - 无缝结合两种类型
+- ⚠️ **对异步提供器使用 `writeAsync()`** - 确保正确的异步数据加载
 
 ## 📋 要求
 

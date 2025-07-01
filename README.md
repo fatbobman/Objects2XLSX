@@ -39,6 +39,7 @@ A powerful, type-safe Swift library for converting Swift objects to Excel (.xlsx
 ### 🚀 **Performance & Usability**
 
 - **Standards Compliant**: Generated files open seamlessly in Excel, Numbers, Google Sheets, and LibreOffice without warnings
+- **Async Data Support**: Safe cross-thread data fetching with `@Sendable` async data providers
 - **Memory Efficient**: Stream-based processing for large datasets
 - **Progress Tracking**: Real-time progress updates with AsyncStream
 - **Cross-Platform**: Pure Swift implementation supporting macOS, iOS, tvOS, watchOS, and Linux
@@ -121,6 +122,72 @@ let book = Book(style: BookStyle()) {
 let outputURL = URL(fileURLWithPath: "/path/to/employees.xlsx")
 try book.write(to: outputURL)
 ```
+
+### Async Data Providers (NEW!)
+
+Objects2XLSX now supports asynchronous data fetching for thread-safe operations with Core Data, SwiftData, and API calls:
+
+```swift
+import Objects2XLSX
+
+// Define Sendable data transfer objects
+struct PersonData: Sendable {
+    let name: String
+    let department: String
+    let salary: Double
+    let hireDate: Date
+}
+
+// Create data service with async fetching
+class DataService {
+    private let persistentContainer: NSPersistentContainer
+    
+    @Sendable
+    func fetchEmployees() async -> [PersonData] {
+        await withCheckedContinuation { continuation in
+            // Execute in Core Data's thread
+            persistentContainer.viewContext.perform {
+                let employees = // ... fetch Core Data objects
+                
+                // Convert to Sendable objects
+                let data = employees.map { employee in
+                    PersonData(
+                        name: employee.name ?? "",
+                        department: employee.department?.name ?? "",
+                        salary: employee.salary,
+                        hireDate: employee.hireDate ?? Date()
+                    )
+                }
+                continuation.resume(returning: data)
+            }
+        }
+    }
+}
+
+// Create sheet with async data provider
+let dataService = DataService(persistentContainer: container)
+
+let sheet = Sheet<PersonData>(
+    name: "Async Employees",
+    asyncDataProvider: dataService.fetchEmployees  // 🚀 Async & thread-safe!
+) {
+    Column(name: "Name", keyPath: \.name)
+    Column(name: "Department", keyPath: \.department)
+    Column(name: "Salary", keyPath: \.salary)
+    Column(name: "Hire Date", keyPath: \.hireDate)
+}
+
+let book = Book(style: BookStyle()) { sheet }
+
+// Generate Excel file asynchronously
+let outputURL = try await book.writeAsync(to: URL(fileURLWithPath: "/path/to/report.xlsx"))
+```
+
+**Key Benefits:**
+- ✅ **Thread Safety**: Data fetching happens in the correct thread context
+- ✅ **Type Safety**: `@Sendable` constraints ensure safe data transfer
+- ✅ **Mixed Sources**: Combine sync and async sheets in the same workbook
+- ✅ **Progress Tracking**: Full async progress monitoring support
 
 ### Try the Live Demo
 
@@ -446,11 +513,20 @@ try book.write(to: outputURL)
 
 ## 📊 Progress Tracking
 
-Monitor Excel generation progress for large datasets:
+Monitor Excel generation progress for both synchronous and asynchronous operations:
 
 ```swift
 let book = Book(style: BookStyle()) {
-    // ... add your sheets
+    // Mix of sync and async sheets
+    Sheet<Product>(name: "Products", dataProvider: { products }) {
+        Column(name: "Name", keyPath: \.name)
+        Column(name: "Price", keyPath: \.price)
+    }
+    
+    Sheet<Employee>(name: "Employees", asyncDataProvider: fetchEmployeesAsync) {
+        Column(name: "Name", keyPath: \.name)
+        Column(name: "Department", keyPath: \.department)
+    }
 }
 
 // Monitor progress
@@ -466,11 +542,21 @@ Task {
     }
 }
 
-// Generate file asynchronously
+// Generate file synchronously
 Task {
     do {
         try book.write(to: outputURL)
         print("📁 File saved to: \(outputURL.path)")
+    } catch {
+        print("❌ Error: \(error)")
+    }
+}
+
+// OR generate file asynchronously (supports async data providers)
+Task {
+    do {
+        let outputURL = try await book.writeAsync(to: outputURL)
+        print("📁 Async file saved to: \(outputURL.path)")
     } catch {
         print("❌ Error: \(error)")
     }
@@ -515,17 +601,73 @@ let sheet = Sheet<Product>(name: "Products", dataProvider: { products }) {
 
 ```swift
 // Use lazy data loading for large datasets
-let largeDataSheet = Sheet<LargeDataModel>(name: "Big Data") {
-    dataProvider: {
-        // Load data only when needed
-        return fetchLargeDataset()
-    }
-} columns: {
+let largeDataSheet = Sheet<LargeDataModel>(name: "Big Data", dataProvider: {
+    // Load data only when needed
+    return fetchLargeDataset()
+}) {
     Column(name: "ID", keyPath: \.id)
     Column(name: "Value", keyPath: \.value)
     // ... more columns
 }
 ```
+
+### Async Data Loading & Thread Safety
+
+Objects2XLSX provides thread-safe async data loading for complex scenarios:
+
+```swift
+// Thread-safe async data fetching
+class EmployeeDataService {
+    private let coreDataStack: CoreDataStack
+    
+    @Sendable
+    func fetchEmployeesAsync() async -> [EmployeeData] {
+        await withCheckedContinuation { continuation in
+            // Switch to Core Data's thread
+            coreDataStack.viewContext.perform {
+                do {
+                    let request: NSFetchRequest<Employee> = Employee.fetchRequest()
+                    let employees = try self.coreDataStack.viewContext.fetch(request)
+                    
+                    // Convert to Sendable DTOs
+                    let employeeData = employees.map { EmployeeData(from: $0) }
+                    continuation.resume(returning: employeeData)
+                } catch {
+                    continuation.resume(returning: [])
+                }
+            }
+        }
+    }
+}
+
+// Use async data provider
+let service = EmployeeDataService(coreDataStack: stack)
+
+let book = Book(style: BookStyle()) {
+    // Sync sheet
+    Sheet<Product>(name: "Products", dataProvider: { loadProducts() }) {
+        Column(name: "Name", keyPath: \.name)
+        Column(name: "Price", keyPath: \.price)
+    }
+    
+    // Async sheet - data fetched in Core Data thread
+    Sheet<EmployeeData>(name: "Employees", asyncDataProvider: service.fetchEmployeesAsync) {
+        Column(name: "Name", keyPath: \.name)
+        Column(name: "Department", keyPath: \.department)
+        Column(name: "Salary", keyPath: \.salary)
+    }
+}
+
+// Generate with async support
+let outputURL = try await book.writeAsync(to: URL(fileURLWithPath: "/path/to/report.xlsx"))
+```
+
+**Thread Safety Guidelines:**
+
+- ✅ **Create Book on any thread** - Book creation is thread-safe
+- ✅ **Data fetching in correct context** - Async providers handle thread switching
+- ✅ **Mixed sync/async sheets** - Combine both types seamlessly
+- ⚠️ **Use `writeAsync()` for async providers** - Ensures proper async data loading
 
 ## 📚 Architecture Overview
 
