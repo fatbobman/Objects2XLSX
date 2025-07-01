@@ -32,7 +32,7 @@ struct SheetSendableCompatibilityTests {
     }
 
     @Test("Sendable person can use sync data provider")
-    func testSendablePersonSyncDataProvider() {
+    func sendablePersonSyncDataProvider() {
         let sheet = Sheet<SendablePerson>(name: "Sendable People") {
             Column(name: "ID", keyPath: \.id)
             Column(name: "Name", keyPath: \.name)
@@ -42,7 +42,7 @@ struct SheetSendableCompatibilityTests {
         sheet.dataProvider {
             [
                 SendablePerson(id: 1, name: "Alice", age: 30),
-                SendablePerson(id: 2, name: "Bob", age: 25),
+                SendablePerson(id: 2, name: "Bob", age: 25)
             ]
         }
 
@@ -52,7 +52,7 @@ struct SheetSendableCompatibilityTests {
     }
 
     @Test("Sendable person can use async data provider")
-    func testSendablePersonAsyncDataProvider() async {
+    func sendablePersonAsyncDataProvider() async {
         let sheet = Sheet<SendablePerson>(
             name: "Async Sendable People",
             asyncDataProvider: {
@@ -60,7 +60,7 @@ struct SheetSendableCompatibilityTests {
                 try? await Task.sleep(nanoseconds: 100_000) // 0.1ms
                 return [
                     SendablePerson(id: 1, name: "Charlie", age: 35),
-                    SendablePerson(id: 2, name: "Diana", age: 28),
+                    SendablePerson(id: 2, name: "Diana", age: 28)
                 ]
             }) {
                 Column(name: "ID", keyPath: \.id)
@@ -76,7 +76,7 @@ struct SheetSendableCompatibilityTests {
     }
 
     @Test("Non-Sendable person can use sync data provider")
-    func testNonSendablePersonSyncDataProvider() {
+    func nonSendablePersonSyncDataProvider() {
         let sheet = Sheet<NonSendablePerson>(name: "Non-Sendable People") {
             Column(name: "ID", keyPath: \.id)
             Column(name: "Name", keyPath: \.name)
@@ -94,7 +94,7 @@ struct SheetSendableCompatibilityTests {
                     id: 2,
                     name: "Frank",
                     age: 35,
-                    someClass: SomeClass(value: "test2")),
+                    someClass: SomeClass(value: "test2"))
             ]
         }
 
@@ -104,7 +104,7 @@ struct SheetSendableCompatibilityTests {
     }
 
     @Test("Non-Sendable person cannot use async data provider - compile time check")
-    func testNonSendablePersonAsyncDataProviderUnavailable() {
+    func nonSendablePersonAsyncDataProviderUnavailable() {
         // This test verifies that async APIs are not available for non-Sendable types
         // If this compiles, it means the conditional extensions are working correctly
 
@@ -120,7 +120,7 @@ struct SheetSendableCompatibilityTests {
     }
 
     @Test("Mixed Sendable and non-Sendable usage in same codebase")
-    func testMixedUsage() async {
+    func mixedUsage() async {
         // Create sheets for both types
         let sendableSheet = Sheet<SendablePerson>(name: "Sendable") {
             Column(name: "Name", keyPath: \.name)
@@ -152,7 +152,7 @@ struct SheetSendableCompatibilityTests {
     }
 
     @Test("AnyColumn type erasure works with both Sendable and non-Sendable")
-    func testAnyColumnTypeErasure() {
+    func anyColumnTypeErasure() {
         // Create columns for both types
         let sendableColumn = Column<SendablePerson, String, TextColumnType>(
             name: "Name",
