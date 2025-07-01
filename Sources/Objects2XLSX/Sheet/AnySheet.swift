@@ -70,6 +70,12 @@ public final class AnySheet {
     /// Closure to load data from the wrapped sheet
     private let _loadData: () -> Void
 
+    /// Closure to asynchronously load data from the wrapped sheet
+    private let _loadDataAsync: (() async -> Void)?
+
+    /// Indicates whether the wrapped sheet has an async data provider
+    private let _hasAsyncDataProvider: Bool
+
     /// Closure to estimate data row count from the wrapped sheet
     private let _estimatedDataRowCount: () -> Int
 
@@ -89,6 +95,14 @@ public final class AnySheet {
      data rows start immediately from row 1.
      */
     public var hasHeader: Bool { _hasHeader }
+
+    /**
+     Whether the wrapped sheet has an async data provider.
+
+     When `true`, the sheet supports asynchronous data loading.
+     When `false`, only synchronous data loading is available.
+     */
+    public var hasAsyncDataProvider: Bool { _hasAsyncDataProvider }
 
     // MARK: - Initialization
 
@@ -110,10 +124,21 @@ public final class AnySheet {
         _name = sheet.name
         _hasHeader = sheet.hasHeader
         _estimatedDataRowCount = sheet.estimatedDataRowCount
+        _hasAsyncDataProvider = sheet.hasAsyncDataProvider
 
         _loadData = {
             sheet.loadData()
         }
+
+        // Set up async data loading if the sheet has an async data provider
+        if sheet.hasAsyncDataProvider {
+            _loadDataAsync = {
+                await sheet.loadDataAsync()
+            }
+        } else {
+            _loadDataAsync = nil
+        }
+
         _makeSheetXML = { bookStyle, styleRegister, shareStringRegister in
             // Use already loaded data instead of calling dataProvider again
             let objects = sheet.data ?? []
@@ -142,6 +167,24 @@ public final class AnySheet {
      */
     func loadData() {
         _loadData()
+    }
+
+    /**
+     Asynchronously loads data from the wrapped sheet's async data provider.
+
+     This method is called explicitly by the `Book` class to ensure data is loaded
+     exactly once during the Excel generation process. It delegates to the wrapped
+     sheet's `loadDataAsync()` method if an async data provider is available,
+     otherwise falls back to the synchronous data provider.
+
+     - Note: This method is internal and called by the framework during async Excel generation
+     */
+    func loadDataAsync() async {
+        if let asyncLoader = _loadDataAsync {
+            await asyncLoader()
+        } else {
+            _loadData()
+        }
     }
 
     /**

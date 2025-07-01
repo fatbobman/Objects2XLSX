@@ -113,6 +113,14 @@ public final class Sheet<ObjectType>: SheetProtocol {
     public private(set) var dataProvider: (() -> [ObjectType])?
 
     /**
+     The async data provider closure for lazy data loading.
+
+     This closure is called when XML generation begins, allowing for
+     asynchronous data fetching. Only available when ObjectType is Sendable.
+     */
+    public private(set) var asyncDataProvider: (@Sendable () async -> [ObjectType])?
+
+    /**
      The loaded data objects for this sheet.
 
      Initially `nil` until `loadData()` is called during XML generation.
@@ -180,6 +188,7 @@ public final class Sheet<ObjectType>: SheetProtocol {
         self.hasHeader = hasHeader
         self.style = style
         self.dataProvider = dataProvider
+        asyncDataProvider = nil
     }
 
     // MARK: - Type Erasure
@@ -238,6 +247,34 @@ public final class Sheet<ObjectType>: SheetProtocol {
     }
 
     /**
+     Asynchronously loads data from the async data provider and updates the data range.
+
+     This method is called during XML generation to perform lazy data loading
+     when an async data provider is set. After loading, it automatically updates
+     the worksheet's data range for proper Excel dimension calculation.
+
+     - Note: This method is called internally during the Excel generation process
+     - Note: Only available when ObjectType is Sendable
+     */
+    func loadDataAsync() async {
+        if let asyncProvider = asyncDataProvider {
+            data = await asyncProvider()
+        } else if let syncProvider = dataProvider {
+            data = syncProvider()
+        }
+        updateDataRange()
+    }
+
+    /**
+     Indicates whether this sheet has an async data provider.
+
+     - Returns: true if an async data provider is set, false otherwise
+     */
+    var hasAsyncDataProvider: Bool {
+        asyncDataProvider != nil
+    }
+
+    /**
      Automatically calculates and sets the data range for worksheet dimensions.
 
      The data range is used by Excel to determine the worksheet's used area
@@ -275,7 +312,11 @@ public final class Sheet<ObjectType>: SheetProtocol {
      sheet.dataBorder(enabled: true, includeHeader: true, borderStyle: .medium)
      ```
      */
-    public func dataBorder(enabled: Bool = true, includeHeader: Bool = true, borderStyle: BorderStyle = .thin) -> Self {
+    public func dataBorder(
+        enabled: Bool = true,
+        includeHeader: Bool = true,
+        borderStyle: BorderStyle = .thin) -> Self
+    {
         style.dataBorder = SheetStyle.DataBorderSettings(
             enabled: enabled,
             includeHeader: includeHeader,
@@ -438,6 +479,7 @@ extension Sheet {
      */
     public func dataProvider(_ dataProvider: @escaping () -> [ObjectType]) {
         self.dataProvider = dataProvider
+        asyncDataProvider = nil
     }
 
     /**
@@ -507,6 +549,73 @@ func columnIndexToExcelColumn(_ index: Int) -> String {
     return result
 }
 
-// MARK: - Sendable Conformance
+extension Sheet where ObjectType: Sendable {
+    /**
+     Creates a new worksheet with async data provider support.
 
-extension Sheet: @unchecked Sendable where ObjectType: Sendable {}
+     This initializer is only available when ObjectType conforms to Sendable,
+     allowing for safe concurrent data fetching.
+
+     - Parameters:
+        - name: The worksheet name (will be sanitized for Excel compatibility)
+        - nameSanitizer: Function to sanitize the worksheet name
+        - hasHeader: Whether to include a header row with column names
+        - style: The initial styling configuration for the worksheet
+        - asyncDataProvider: Async closure for lazy data loading
+        - columns: Column definitions using the ColumnBuilder DSL
+
+     ## Example
+     ```swift
+     let sheet = Sheet(name: "Async Data", asyncDataProvider: {
+         await fetchDataFromAPI()
+     }) {
+         Column("ID", keyPath: \.id)
+         Column("Name", keyPath: \.name)
+     }
+     ```
+     */
+    public convenience init(
+        name: String,
+        nameSanitizer: SheetNameSanitizer = .default,
+        hasHeader: Bool = true,
+        style: SheetStyle = .default,
+        asyncDataProvider: @escaping @Sendable () async -> [ObjectType],
+        @ColumnBuilder<ObjectType> columns: () -> [AnyColumn<ObjectType>])
+    {
+        self.init(
+            name: name,
+            nameSanitizer: nameSanitizer,
+            hasHeader: hasHeader,
+            style: style,
+            dataProvider: nil,
+            columns: columns)
+        self.asyncDataProvider = asyncDataProvider
+    }
+
+    /**
+     Sets the async data provider for the worksheet.
+
+     The async data provider is a closure that asynchronously returns the objects
+     to be displayed in the worksheet. It's called lazily during Excel generation.
+     This method is only available when ObjectType conforms to Sendable.
+
+     - Parameter asyncDataProvider: An async closure that returns an array of objects
+
+     ## Example
+     ```swift
+     sheet.asyncDataProvider {
+         await apiClient.fetchUsers()
+     }
+     ```
+
+     - Note: The closure is called asynchronously during Excel generation
+     - Note: Setting this will clear any existing sync data provider
+     */
+    public func asyncDataProvider(
+        _ asyncDataProvider: @escaping @Sendable () async
+            -> [ObjectType])
+    {
+        self.asyncDataProvider = asyncDataProvider
+        dataProvider = nil
+    }
+}

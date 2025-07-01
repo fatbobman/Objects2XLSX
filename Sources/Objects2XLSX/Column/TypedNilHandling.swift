@@ -63,6 +63,11 @@ public enum TypedNilHandling<V: ColumnOutputTypeProtocol> {
     /// - **URL**: Placeholder URL or empty URL
     /// - **Percentage**: `0.0` for 0% or `Double.nan`
     ///
-    /// - Parameter value: The default value to substitute for nil (must match the column's value type)
+    /// - Parameter value: The default value to substitute for nil (must match the column's value
+    /// type)
     case defaultValue(V.Config.ValueType)
 }
+
+// MARK: - Sendable Conformance
+
+extension TypedNilHandling: Sendable where V: Sendable, V.Config.ValueType: Sendable {}

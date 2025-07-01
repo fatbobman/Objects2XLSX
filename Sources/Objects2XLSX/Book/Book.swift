@@ -11,8 +11,10 @@ import SimpleLogger
 
 /// Represents an Excel Workbook that contains multiple worksheets and manages XLSX file generation.
 ///
-/// `Book` is the main entry point for creating XLSX files from Swift objects. It manages a collection
-/// of worksheets, handles styling, and provides real-time progress reporting during file generation.
+/// `Book` is the main entry point for creating XLSX files from Swift objects. It manages a
+/// collection
+/// of worksheets, handles styling, and provides real-time progress reporting during file
+/// generation.
 /// The class follows a builder pattern for easy configuration and supports both synchronous and
 /// asynchronous operations.
 ///
@@ -102,7 +104,12 @@ public final class Book {
     ///   - sheets: Initial collection of worksheets (defaults to empty)
     ///   - logger: Custom logger implementation (uses default if not provided)
     ///   - zipArchiver: Custom ZIP archiver implementation (uses SimpleZip if not provided)
-    public init(style: BookStyle, sheets: [AnySheet] = [], logger: LoggerManagerProtocol? = nil, zipArchiver: ZipArchiver? = nil) {
+    public init(
+        style: BookStyle,
+        sheets: [AnySheet] = [],
+        logger: LoggerManagerProtocol? = nil,
+        zipArchiver: ZipArchiver? = nil)
+    {
         // Create AsyncStream for progress reporting
         let (stream, continuation) = AsyncStream.makeStream(of: BookGenerationProgress.self)
         progressStream = stream
@@ -121,7 +128,12 @@ public final class Book {
     ///   - logger: Custom logger implementation (uses default if not provided)
     ///   - zipArchiver: Custom ZIP archiver implementation (uses SimpleZip if not provided)
     ///   - sheets: Closure that returns an array of sheets using the @SheetBuilder
-    public convenience init(style: BookStyle, logger: LoggerManagerProtocol? = nil, zipArchiver: ZipArchiver? = nil, @SheetBuilder sheets: () -> [AnySheet]) {
+    public convenience init(
+        style: BookStyle,
+        logger: LoggerManagerProtocol? = nil,
+        zipArchiver: ZipArchiver? = nil,
+        @SheetBuilder sheets: () -> [AnySheet])
+    {
         self.init(style: style, sheets: sheets(), logger: logger, zipArchiver: zipArchiver)
     }
 
@@ -168,7 +180,8 @@ public final class Book {
     ///   have a `.xlsx` extension, it will be automatically appended. The parent directory will be
     ///   created if it doesn't exist.
     ///
-    /// - Returns: The actual URL where the XLSX file was written. This may differ from the input URL
+    /// - Returns: The actual URL where the XLSX file was written. This may differ from the input
+    /// URL
     ///   if the `.xlsx` extension was automatically added.
     ///
     /// - Throws: `BookError` if any step of the generation process fails, including:
@@ -213,7 +226,8 @@ public final class Book {
     /// - The `Book` instance and all its data objects are accessed from the same thread
     /// - For Core Data: Call this method within the appropriate `perform` or `performAndWait` block
     /// - For SwiftData: Call this method within a `@ModelActor` context
-    /// - Progress monitoring via `progressStream` is thread-safe and can be observed from any thread
+    /// - Progress monitoring via `progressStream` is thread-safe and can be observed from any
+    /// thread
     ///
     /// **Violating thread safety requirements may result in crashes or data corruption.**
     ///
@@ -223,6 +237,80 @@ public final class Book {
     /// maintaining reasonable memory consumption.
     @discardableResult
     public func write(to url: URL) throws(BookError) -> URL {
+        return try generateXLSX(to: url, useAsync: false)
+    }
+
+    /// Asynchronously writes the workbook to an XLSX file at the specified URL.
+    ///
+    /// This method generates a complete XLSX file by processing all sheets, creating the necessary
+    /// XML structure, and packaging everything into a standard XLSX format. It supports both
+    /// synchronous and asynchronous data providers, with async providers taking precedence.
+    /// The operation includes real-time progress reporting through the `progressStream` property.
+    ///
+    /// - Parameter url: The target URL where the XLSX file should be written. If the URL doesn't
+    ///   have a `.xlsx` extension, it will be automatically appended. The parent directory will be
+    ///   created if it doesn't exist.
+    ///
+    /// - Returns: The actual URL where the XLSX file was written. This may differ from the input
+    /// URL
+    ///   if the `.xlsx` extension was automatically added.
+    ///
+    /// - Throws: `BookError` if any step of the generation process fails, including:
+    ///   - `BookError.dataProviderError`: When sheet data cannot be loaded
+    ///   - `BookError.xmlGenerationError`: When XML content generation fails
+    ///   - `BookError.fileWriteError`: When file system operations fail
+    ///   - `BookError.encodingError`: When text encoding fails
+    ///   - `BookError.xmlValidationError`: When generated XML is invalid
+    ///
+    /// ## Usage Example
+    /// ```swift
+    /// let book = Book(style: BookStyle()) {
+    ///     Sheet<Person>(name: "People", asyncDataProvider: {
+    ///         await fetchPeopleFromAPI()
+    ///     }) {
+    ///         Column(name: "Name", keyPath: \.name)
+    ///         Column(name: "Age", keyPath: \.age)
+    ///     }
+    /// }
+    ///
+    /// // Write to a specific location asynchronously
+    /// let outputURL = try await book.writeAsync(to: URL(fileURLWithPath: "/path/to/report"))
+    /// // outputURL will be "/path/to/report.xlsx"
+    ///
+    /// // Monitor progress during generation
+    /// Task {
+    ///     for await progress in book.progressStream {
+    ///         print("Progress: \(Int(progress.progressPercentage * 100))%")
+    ///         if progress.isFinal { break }
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// ## Async Data Loading
+    /// When a sheet has an async data provider, this method will:
+    /// 1. Use the async data provider for data loading
+    /// 2. Fall back to sync data provider if no async provider is available
+    /// 3. Process sheets with mixed sync/async providers seamlessly
+    ///
+    /// ## Thread Safety
+    /// **CRITICAL**: While this method is async, the Book instance itself is NOT thread-safe.
+    /// You must ensure that:
+    /// - The `Book` instance and all its data objects are accessed from the same actor/thread
+    /// - For SwiftData: Call this method within a `@ModelActor` context
+    /// - Progress monitoring via `progressStream` is thread-safe and can be observed from any
+    /// thread
+    @discardableResult
+    public func writeAsync(to url: URL) async throws(BookError) -> URL {
+        return try await generateXLSXAsync(to: url, useAsync: true)
+    }
+
+    /// Core XLSX generation logic (synchronous version)
+    /// - Parameters:
+    ///   - url: Target URL for the XLSX file
+    ///   - useAsync: Whether to use async data loading (ignored in sync version)
+    /// - Returns: The actual URL where the XLSX file was written
+    /// - Throws: BookError if generation fails
+    private func generateXLSX(to url: URL, useAsync: Bool) throws(BookError) -> URL {
         // Ensure the URL has proper .xlsx extension and directory structure
         let outputURL = try prepareOutputURL(url)
 
@@ -239,77 +327,20 @@ public final class Book {
             let tempDir = outputURL.deletingPathExtension().appendingPathExtension("temp")
             try createXLSXDirectoryStructure(at: tempDir)
 
-            // Stream processing: complete data loading, metadata collection, and XML generation
-            sendProgress(.processingSheets(totalCount: sheets.count))
-            var collectedMetas: [SheetMeta] = []
+            // Process sheets and collect metadata
+            let collectedMetas = try processSheets(
+                tempDir: tempDir,
+                styleRegister: styleRegister,
+                shareStringRegister: shareStringRegister,
+                useAsync: false)
 
-            for (index, sheet) in sheets.enumerated() {
-                let sheetId = index + 1
-                let sheetName = sheet.name
-
-                // Send current sheet processing progress
-                sendProgress(.processingSheet(current: sheetId, total: sheets.count, sheetName: sheetName))
-
-                // Load data once
-                sheet.loadData()
-
-                // Generate metadata
-                let meta = sheet.makeSheetMeta(sheetId: sheetId)
-                collectedMetas.append(meta)
-
-                // Immediately generate and write XML
-                try generateAndWriteSheetXML(
-                    sheet: sheet,
-                    meta: meta,
-                    tempDir: tempDir,
-                    styleRegister: styleRegister,
-                    shareStringRegister: shareStringRegister)
-            }
-
-            // Complete sheet processing
-            sendProgress(.sheetsCompleted(totalCount: sheets.count))
-
-            // Generate global files using collected metadata
-            sendProgress(.generatingGlobalFiles)
-
-            sendProgress(.generatingContentTypes)
-            try writeContentTypesXML(to: tempDir, sheetCount: collectedMetas.count)
-
-            sendProgress(.generatingRootRelationships)
-            try writeRootRelsXML(to: tempDir)
-
-            sendProgress(.generatingWorkbook)
-            try writeWorkbookXML(to: tempDir, metas: collectedMetas)
-
-            sendProgress(.generatingWorkbookRelationships)
-            try writeWorkbookRelsXML(to: tempDir, metas: collectedMetas)
-
-            sendProgress(.generatingStyles)
-            try writeStylesXML(to: tempDir, styleRegister: styleRegister)
-
-            sendProgress(.generatingSharedStrings)
-            try writeSharedStringsXML(to: tempDir, shareStringRegister: shareStringRegister)
-
-            sendProgress(.generatingTheme)
-            try writeThemeXML(to: tempDir)
-
-            sendProgress(.generatingCoreProperties)
-            try writeCorePropsXML(to: tempDir)
-
-            sendProgress(.generatingAppProperties)
-            try writeAppPropsXML(to: tempDir, metas: collectedMetas)
-
-            // Package as ZIP file and rename to .xlsx
-            sendProgress(.preparingPackage)
-            try createZipArchive(from: tempDir, to: outputURL)
-
-            // Clean up temporary directory
-            sendProgress(.cleaningUp)
-            try FileManager.default.removeItem(at: tempDir)
-
-            // Complete all operations
-            sendProgress(.completed)
-            completeProgress()
+            // Generate global files and create final package
+            try finalizeXLSX(
+                outputURL: outputURL,
+                tempDir: tempDir,
+                collectedMetas: collectedMetas,
+                styleRegister: styleRegister,
+                shareStringRegister: shareStringRegister)
 
             return outputURL
 
@@ -324,6 +355,216 @@ public final class Book {
             completeProgress()
             throw bookError
         }
+    }
+
+    /// Core XLSX generation logic (asynchronous version)
+    /// - Parameters:
+    ///   - url: Target URL for the XLSX file
+    ///   - useAsync: Whether to use async data loading
+    /// - Returns: The actual URL where the XLSX file was written
+    /// - Throws: BookError if generation fails
+    private func generateXLSXAsync(to url: URL, useAsync: Bool) async throws(BookError) -> URL {
+        // Ensure the URL has proper .xlsx extension and directory structure
+        let outputURL = try prepareOutputURL(url)
+
+        // Begin progress reporting
+        sendProgress(.started)
+
+        do {
+            // Create registries for optimization
+            let styleRegister = StyleRegister()
+            let shareStringRegister = ShareStringRegister()
+
+            // Create temporary directory for building XLSX package structure
+            sendProgress(.creatingDirectory)
+            let tempDir = outputURL.deletingPathExtension().appendingPathExtension("temp")
+            try createXLSXDirectoryStructure(at: tempDir)
+
+            // Process sheets and collect metadata (async version)
+            let collectedMetas = try await processSheetsAsync(
+                tempDir: tempDir,
+                styleRegister: styleRegister,
+                shareStringRegister: shareStringRegister)
+
+            // Generate global files and create final package
+            try finalizeXLSX(
+                outputURL: outputURL,
+                tempDir: tempDir,
+                collectedMetas: collectedMetas,
+                styleRegister: styleRegister,
+                shareStringRegister: shareStringRegister)
+
+            return outputURL
+
+        } catch {
+            // Send error status and complete stream
+            let bookError: BookError = if let existingBookError = error as? BookError {
+                existingBookError
+            } else {
+                BookError.xmlGenerationError("Unknown error: \(error)")
+            }
+            sendProgress(.failed(error: bookError))
+            completeProgress()
+            throw bookError
+        }
+    }
+
+    /// Processes all sheets synchronously and collects their metadata
+    /// - Parameters:
+    ///   - tempDir: Temporary directory for XML files
+    ///   - styleRegister: Style registry for optimization
+    ///   - shareStringRegister: Shared string registry for optimization
+    ///   - useAsync: Whether to use async data loading (ignored in sync version)
+    /// - Returns: Array of collected sheet metadata
+    /// - Throws: BookError if sheet processing fails
+    private func processSheets(
+        tempDir: URL,
+        styleRegister: StyleRegister,
+        shareStringRegister: ShareStringRegister,
+        useAsync: Bool) throws(BookError) -> [SheetMeta]
+    {
+        // Stream processing: complete data loading, metadata collection, and XML generation
+        sendProgress(.processingSheets(totalCount: sheets.count))
+        var collectedMetas: [SheetMeta] = []
+
+        for (index, sheet) in sheets.enumerated() {
+            let sheetId = index + 1
+            let sheetName = sheet.name
+
+            // Send current sheet processing progress
+            sendProgress(.processingSheet(
+                current: sheetId,
+                total: sheets.count,
+                sheetName: sheetName))
+
+            // Load data once (synchronous)
+            sheet.loadData()
+
+            // Generate metadata
+            let meta = sheet.makeSheetMeta(sheetId: sheetId)
+            collectedMetas.append(meta)
+
+            // Immediately generate and write XML
+            try generateAndWriteSheetXML(
+                sheet: sheet,
+                meta: meta,
+                tempDir: tempDir,
+                styleRegister: styleRegister,
+                shareStringRegister: shareStringRegister)
+        }
+
+        // Complete sheet processing
+        sendProgress(.sheetsCompleted(totalCount: sheets.count))
+        return collectedMetas
+    }
+
+    /// Processes all sheets asynchronously and collects their metadata
+    /// - Parameters:
+    ///   - tempDir: Temporary directory for XML files
+    ///   - styleRegister: Style registry for optimization
+    ///   - shareStringRegister: Shared string registry for optimization
+    /// - Returns: Array of collected sheet metadata
+    /// - Throws: BookError if sheet processing fails
+    private func processSheetsAsync(
+        tempDir: URL,
+        styleRegister: StyleRegister,
+        shareStringRegister: ShareStringRegister) async throws(BookError) -> [SheetMeta]
+    {
+        // Stream processing: complete data loading, metadata collection, and XML generation
+        sendProgress(.processingSheets(totalCount: sheets.count))
+        var collectedMetas: [SheetMeta] = []
+
+        for (index, sheet) in sheets.enumerated() {
+            let sheetId = index + 1
+            let sheetName = sheet.name
+
+            // Send current sheet processing progress
+            sendProgress(.processingSheet(
+                current: sheetId,
+                total: sheets.count,
+                sheetName: sheetName))
+
+            // Load data once (asynchronous if available, falls back to sync)
+            await sheet.loadDataAsync()
+
+            // Generate metadata
+            let meta = sheet.makeSheetMeta(sheetId: sheetId)
+            collectedMetas.append(meta)
+
+            // Immediately generate and write XML
+            try generateAndWriteSheetXML(
+                sheet: sheet,
+                meta: meta,
+                tempDir: tempDir,
+                styleRegister: styleRegister,
+                shareStringRegister: shareStringRegister)
+        }
+
+        // Complete sheet processing
+        sendProgress(.sheetsCompleted(totalCount: sheets.count))
+        return collectedMetas
+    }
+
+    /// Finalizes XLSX generation by creating global files and packaging
+    /// - Parameters:
+    ///   - outputURL: Final output URL for the XLSX file
+    ///   - tempDir: Temporary directory containing generated files
+    ///   - collectedMetas: Array of sheet metadata
+    ///   - styleRegister: Style registry for optimization
+    ///   - shareStringRegister: Shared string registry for optimization
+    /// - Throws: BookError if finalization fails
+    private func finalizeXLSX(
+        outputURL: URL,
+        tempDir: URL,
+        collectedMetas: [SheetMeta],
+        styleRegister: StyleRegister,
+        shareStringRegister: ShareStringRegister) throws(BookError)
+    {
+        // Generate global files using collected metadata
+        sendProgress(.generatingGlobalFiles)
+
+        sendProgress(.generatingContentTypes)
+        try writeContentTypesXML(to: tempDir, sheetCount: collectedMetas.count)
+
+        sendProgress(.generatingRootRelationships)
+        try writeRootRelsXML(to: tempDir)
+
+        sendProgress(.generatingWorkbook)
+        try writeWorkbookXML(to: tempDir, metas: collectedMetas)
+
+        sendProgress(.generatingWorkbookRelationships)
+        try writeWorkbookRelsXML(to: tempDir, metas: collectedMetas)
+
+        sendProgress(.generatingStyles)
+        try writeStylesXML(to: tempDir, styleRegister: styleRegister)
+
+        sendProgress(.generatingSharedStrings)
+        try writeSharedStringsXML(to: tempDir, shareStringRegister: shareStringRegister)
+
+        sendProgress(.generatingTheme)
+        try writeThemeXML(to: tempDir)
+
+        sendProgress(.generatingCoreProperties)
+        try writeCorePropsXML(to: tempDir)
+
+        sendProgress(.generatingAppProperties)
+        try writeAppPropsXML(to: tempDir, metas: collectedMetas)
+
+        // Package as ZIP file and rename to .xlsx
+        sendProgress(.preparingPackage)
+        try createZipArchive(from: tempDir, to: outputURL)
+
+        // Clean up temporary directory
+        sendProgress(.cleaningUp)
+        do {
+            try FileManager.default.removeItem(at: tempDir)
+        } catch {
+            throw BookError.fileWriteError(error)
+        }
+
+        // Complete all operations
+        sendProgress(.completed)
+        completeProgress()
     }
 
     /// Creates the XLSX package directory structure
@@ -348,7 +589,7 @@ public final class Book {
                 "xl",
                 "xl/_rels",
                 "xl/worksheets",
-                "xl/theme"
+                "xl/theme",
             ]
 
             for dir in directories {
@@ -405,7 +646,9 @@ public final class Book {
 
         // Check if parent directory exists
         var isDirectory: ObjCBool = false
-        let exists = FileManager.default.fileExists(atPath: parentDirectory.path, isDirectory: &isDirectory)
+        let exists = FileManager.default.fileExists(
+            atPath: parentDirectory.path,
+            isDirectory: &isDirectory)
 
         if !exists {
             // Parent directory doesn't exist, create it
@@ -416,7 +659,8 @@ public final class Book {
                     attributes: nil)
                 logger.info("Created parent directory: \(parentDirectory.path)")
             } catch {
-                logger.error("Failed to create parent directory: \(parentDirectory.path) - \(error)")
+                logger
+                    .error("Failed to create parent directory: \(parentDirectory.path) - \(error)")
                 throw BookError.fileWriteError(error)
             }
         } else if !isDirectory.boolValue {
@@ -424,7 +668,9 @@ public final class Book {
             let error = NSError(
                 domain: "Objects2XLSX",
                 code: 1,
-                userInfo: [NSLocalizedDescriptionKey: "Parent path exists but is not a directory: \(parentDirectory.path)"])
+                userInfo: [
+                    NSLocalizedDescriptionKey: "Parent path exists but is not a directory: \(parentDirectory.path)",
+                ])
             logger.error("Parent path is not a directory: \(parentDirectory.path)")
             throw BookError.fileWriteError(error)
         }
@@ -439,7 +685,8 @@ public final class Book {
         do {
             let stats = try zipArchiver.createArchiveWithStats(from: tempDir, to: outputURL)
 
-            let fileSize = try FileManager.default.attributesOfItem(atPath: outputURL.path)[.size] as? Int ?? 0
+            let fileSize = try FileManager.default
+                .attributesOfItem(atPath: outputURL.path)[.size] as? Int ?? 0
             logger.info("Created XLSX file: \(outputURL.path) - Size: \(fileSize) bytes")
 
             // Log compression statistics
