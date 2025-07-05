@@ -73,7 +73,7 @@ Add Objects2XLSX to your project using Xcode's Package Manager or by adding it t
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/fatbobman/Objects2XLSX.git", from: "1.0.0")
+    .package(url: "https://github.com/fatbobman/Objects2XLSX.git", from: "1.2.1")
 ]
 ```
 

@@ -20,7 +20,7 @@ let package = Package(
             targets: ["Objects2XLSX"])
     ],
     dependencies: [
-        .package(url: "https://github.com/fatbobman/SimpleLogger.git", from: "0.7.0")
+        .package(url: "https://github.com/fatbobman/SimpleLogger.git", from: "0.8.0")
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
