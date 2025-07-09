@@ -365,3 +365,303 @@ public struct PercentageColumnType: ColumnOutputTypeProtocol {
         PercentageColumnType(PercentageColumnConfig(value: config.value ?? value, precision: config.precision))
     }
 }
+
+extension ColumnOutputTypeProtocol where Self == TextColumnType {
+    /// Creates a TextColumnType from a non-optional String value.
+    ///
+    /// This convenience factory method provides a cleaner syntax for creating
+    /// text column types in custom mappings.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Status", keyPath: \.status) { status in
+    ///     .string(status.rawValue.uppercased())
+    /// }
+    /// ```
+    ///
+    /// - Parameter text: The non-optional String value to display in the cell
+    /// - Returns: A configured TextColumnType instance
+    public static func string(_ text: String) -> TextColumnType {
+        .init(TextColumnConfig(value: text))
+    }
+}
+
+extension ColumnOutputTypeProtocol where Self == DateColumnType {
+    /// Creates a DateColumnType from a non-optional Date value with timezone configuration.
+    ///
+    /// This convenience factory method simplifies date column creation in custom mappings
+    /// while providing timezone control for accurate date representation.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Last Modified", keyPath: \.timestamp) { timestamp in
+    ///     .date(timestamp, timeZone: .utc)
+    /// }
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - date: The non-optional Date value to display
+    ///   - timeZone: The timezone for date interpretation (default: current system timezone)
+    /// - Returns: A configured DateColumnType instance
+    public static func date(_ date: Date, timeZone: TimeZone = .current) -> DateColumnType {
+        .init(DateColumnConfig(value: date, timeZone: timeZone))
+    }
+}
+
+extension ColumnOutputTypeProtocol where Self == BoolColumnType {
+    /// Creates a BoolColumnType from a non-optional Bool value.
+    ///
+    /// This convenience factory method provides a cleaner syntax for creating
+    /// boolean column types in custom mappings. Uses default boolean expressions
+    /// and case strategy settings.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Is Premium", keyPath: \.subscriptionLevel) { level in
+    ///     .bool(level == .premium)
+    /// }
+    /// ```
+    ///
+    /// - Parameter value: The non-optional Bool value to display
+    /// - Returns: A configured BoolColumnType instance with default formatting
+    public static func bool(_ value: Bool) -> BoolColumnType {
+        .init(BoolColumnConfig(value: value))
+    }
+}
+
+extension ColumnOutputTypeProtocol where Self == URLColumnType {
+    /// Creates a URLColumnType from a non-optional URL value.
+    ///
+    /// This convenience factory method provides a cleaner syntax for creating
+    /// URL column types in custom mappings. URLs are displayed as their absolute
+    /// string representation.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Documentation", keyPath: \.productId) { id in
+    ///     .url(URL(string: "https://docs.example.com/\(id)")!)
+    /// }
+    /// ```
+    ///
+    /// - Parameter url: The non-optional URL value to display
+    /// - Returns: A configured URLColumnType instance
+    public static func url(_ url: URL) -> URLColumnType {
+        .init(URLColumnConfig(value: url))
+    }
+}
+
+extension ColumnOutputTypeProtocol where Self == DoubleColumnType {
+    /// Creates a DoubleColumnType from a non-optional Double value.
+    ///
+    /// This convenience factory method provides a cleaner syntax for creating
+    /// numeric column types in custom mappings with floating-point values.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Calculated Price", keyPath: \.basePrice) { price in
+    ///     .double(price * 1.2)  // Add 20% markup
+    /// }
+    /// ```
+    ///
+    /// - Parameter value: The non-optional Double value to display
+    /// - Returns: A configured DoubleColumnType instance
+    public static func double(_ value: Double) -> DoubleColumnType {
+        .init(DoubleColumnConfig(value: value))
+    }
+}
+
+extension ColumnOutputTypeProtocol where Self == IntColumnType {
+    /// Creates an IntColumnType from a non-optional Int value.
+    ///
+    /// This convenience factory method provides a cleaner syntax for creating
+    /// integer column types in custom mappings.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Days Until Due", keyPath: \.dueDate) { date in
+    ///     .int(Calendar.current.dateComponents([.day], from: Date(), to: date).day ?? 0)
+    /// }
+    /// ```
+    ///
+    /// - Parameter value: The non-optional Int value to display
+    /// - Returns: A configured IntColumnType instance
+    public static func int(_ value: Int) -> IntColumnType {
+        .init(IntColumnConfig(value: value))
+    }
+}
+
+extension ColumnOutputTypeProtocol where Self == PercentageColumnType {
+    /// Creates a PercentageColumnType from a non-optional Double value with precision control.
+    ///
+    /// This convenience factory method provides a cleaner syntax for creating
+    /// percentage column types in custom mappings. Values should be provided as
+    /// decimals (0.5 = 50%).
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Completion", keyPath: \.completed) { completed in
+    ///     .percentage(completed / total, precision: 1)  // Shows as "50.0%"
+    /// }
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - value: The non-optional percentage value as decimal (0.5 = 50%)
+    ///   - precision: Number of decimal places to display (default: 2)
+    /// - Returns: A configured PercentageColumnType instance
+    public static func percentage(_ value: Double, precision: Int = 2) -> PercentageColumnType {
+        .init(PercentageColumnConfig(value: value, precision: precision))
+    }
+}
+
+// MARK: - Optional Support
+
+extension ColumnOutputTypeProtocol where Self == TextColumnType {
+    /// Creates a TextColumnType from an optional String value.
+    ///
+    /// This convenience factory method handles optional String values in custom mappings.
+    /// Nil values are preserved and can be handled by Column's nilHandling mechanism.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Notes", keyPath: \.metadata) { metadata in
+    ///     .string(metadata["notes"])  // Returns String?
+    /// }
+    /// .defaultValue("No notes")
+    /// ```
+    ///
+    /// - Parameter text: The optional String value to display
+    /// - Returns: A configured TextColumnType instance that preserves nil
+    public static func string(_ text: String?) -> TextColumnType {
+        .init(TextColumnConfig(value: text))
+    }
+}
+
+extension ColumnOutputTypeProtocol where Self == DoubleColumnType {
+    /// Creates a DoubleColumnType from an optional Double value.
+    ///
+    /// This convenience factory method handles optional numeric values in custom mappings.
+    /// Nil values are preserved and can be handled by Column's nilHandling mechanism.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Discount", keyPath: \.couponCode) { code in
+    ///     .double(discountMap[code])  // Returns Double?
+    /// }
+    /// .defaultValue(0.0)
+    /// ```
+    ///
+    /// - Parameter value: The optional Double value to display
+    /// - Returns: A configured DoubleColumnType instance that preserves nil
+    public static func double(_ value: Double?) -> DoubleColumnType {
+        .init(DoubleColumnConfig(value: value))
+    }
+}
+
+extension ColumnOutputTypeProtocol where Self == IntColumnType {
+    /// Creates an IntColumnType from an optional Int value.
+    ///
+    /// This convenience factory method handles optional integer values in custom mappings.
+    /// Nil values are preserved and can be handled by Column's nilHandling mechanism.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Priority", keyPath: \.tags) { tags in
+    ///     .int(tags.first { $0.type == .priority }?.value)  // Returns Int?
+    /// }
+    /// .defaultValue(0)
+    /// ```
+    ///
+    /// - Parameter value: The optional Int value to display
+    /// - Returns: A configured IntColumnType instance that preserves nil
+    public static func int(_ value: Int?) -> IntColumnType {
+        .init(IntColumnConfig(value: value))
+    }
+}
+
+extension ColumnOutputTypeProtocol where Self == DateColumnType {
+    /// Creates a DateColumnType from an optional Date value with timezone configuration.
+    ///
+    /// This convenience factory method handles optional date values in custom mappings.
+    /// Nil values are preserved and can be handled by Column's nilHandling mechanism.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Completed At", keyPath: \.status) { status in
+    ///     .date(status.isCompleted ? status.completionDate : nil, timeZone: .utc)
+    /// }
+    /// .defaultValue(Date())
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - date: The optional Date value to display
+    ///   - timeZone: The timezone for date interpretation (default: current system timezone)
+    /// - Returns: A configured DateColumnType instance that preserves nil
+    public static func date(_ date: Date?, timeZone: TimeZone = .current) -> DateColumnType {
+        .init(DateColumnConfig(value: date, timeZone: timeZone))
+    }
+}
+
+extension ColumnOutputTypeProtocol where Self == BoolColumnType {
+    /// Creates a BoolColumnType from an optional Bool value.
+    ///
+    /// This convenience factory method handles optional boolean values in custom mappings.
+    /// Nil values are preserved and can be handled by Column's nilHandling mechanism.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Verified", keyPath: \.profile) { profile in
+    ///     .bool(profile?.isVerified)  // Returns Bool?
+    /// }
+    /// .defaultValue(false)
+    /// ```
+    ///
+    /// - Parameter value: The optional Bool value to display
+    /// - Returns: A configured BoolColumnType instance that preserves nil
+    public static func bool(_ value: Bool?) -> BoolColumnType {
+        .init(BoolColumnConfig(value: value))
+    }
+}
+
+extension ColumnOutputTypeProtocol where Self == URLColumnType {
+    /// Creates a URLColumnType from an optional URL value.
+    ///
+    /// This convenience factory method handles optional URL values in custom mappings.
+    /// Nil values are preserved and can be handled by Column's nilHandling mechanism.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Profile Link", keyPath: \.username) { username in
+    ///     .url(URL(string: "https://example.com/\(username)"))  // Might fail
+    /// }
+    /// .defaultValue(URL(string: "https://example.com")!)
+    /// ```
+    ///
+    /// - Parameter url: The optional URL value to display
+    /// - Returns: A configured URLColumnType instance that preserves nil
+    public static func url(_ url: URL?) -> URLColumnType {
+        .init(URLColumnConfig(value: url))
+    }
+}
+
+extension ColumnOutputTypeProtocol where Self == PercentageColumnType {
+    /// Creates a PercentageColumnType from an optional Double value with precision control.
+    ///
+    /// This convenience factory method handles optional percentage values in custom mappings.
+    /// Nil values are preserved and can be handled by Column's nilHandling mechanism.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// Column(name: "Success Rate", keyPath: \.metrics) { metrics in
+    ///     .percentage(metrics?.successRate, precision: 1)  // Returns Double?
+    /// }
+    /// .defaultValue(0.0)  // Shows as "0.0%"
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - value: The optional percentage value as decimal (0.5 = 50%)
+    ///   - precision: Number of decimal places to display (default: 2)
+    /// - Returns: A configured PercentageColumnType instance that preserves nil
+    public static func percentage(_ value: Double?, precision: Int = 2) -> PercentageColumnType {
+        .init(PercentageColumnConfig(value: value, precision: precision))
+    }
+}
