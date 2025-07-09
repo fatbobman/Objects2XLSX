@@ -1071,6 +1071,125 @@ extension Column {
     }
 }
 
+// MARK: - Generic Mapping Constructors
+
+extension Column {
+    /// Creates a simplified column with custom mapping from input type to any supported output type.
+    ///
+    /// This convenience initializer enables transformation of any input type to any supported
+    /// output type through a mapping closure, providing maximum flexibility while maintaining
+    /// the simplified syntax benefits.
+    ///
+    /// ## Common Use Cases
+    /// - Convert enums to text: `Column(name: "Status", keyPath: \.status) { $0.rawValue }`
+    /// - Transform numbers to text: `Column(name: "Age Group", keyPath: \.age) { $0 < 18 ? "Minor" : "Adult" }`
+    /// - Format dates as text: `Column(name: "Year", keyPath: \.date) { String($0.year) }`
+    /// - Convert any type to string representation
+    ///
+    /// Example usage:
+    /// ```swift
+    /// enum Priority { case low, medium, high }
+    /// struct Task {
+    ///     let title: String
+    ///     let priority: Priority
+    ///     let dueDate: Date
+    ///     let progress: Double
+    /// }
+    ///
+    /// // Enum to text conversion
+    /// Column(name: "Priority", keyPath: \.priority) { priority in
+    ///     priority.rawValue.capitalized
+    /// }
+    ///
+    /// // Complex transformation with logic
+    /// Column(name: "Status", keyPath: \.progress) { progress in
+    ///     switch progress {
+    ///     case 0.0: return "Not Started"
+    ///     case 0.0..<1.0: return "In Progress"
+    ///     case 1.0: return "Completed"
+    ///     default: return "Unknown"
+    ///     }
+    /// }
+    ///
+    /// // Date formatting to text
+    /// Column(name: "Due Year", keyPath: \.dueDate) { date in
+    ///     String(Calendar.current.component(.year, from: date))
+    /// }
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: Display name in the Excel header row
+    ///   - keyPath: KeyPath to extract the input value from objects
+    ///   - transform: Closure that converts input values to the desired output type
+    /// - Returns: A configured column with the specified transformation
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, InputType>,
+        transform: @escaping (InputType) -> OutputType
+    ) {
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: nil,
+            bodyStyle: nil,
+            headerStyle: nil,
+            mapping: transform,
+            nilHandling: .keepEmpty)
+    }
+
+    /// Creates a simplified column with custom mapping for optional input types.
+    ///
+    /// This convenience initializer enables transformation of optional input types to any supported
+    /// output type. The transform closure receives the optional value, allowing explicit handling
+    /// of nil cases within the transformation logic.
+    ///
+    /// ## Nil Handling Strategies
+    /// 1. **Transform within closure**: Handle nil explicitly in the transformation
+    /// 2. **Use `.defaultValue()`**: Chain with defaultValue to handle nil at column level
+    /// 3. **Use `.keepEmpty`**: Allow nil values to create empty cells (default behavior)
+    ///
+    /// Example usage:
+    /// ```swift
+    /// struct Employee {
+    ///     let name: String
+    ///     let salary: Double?
+    ///     let manager: Employee?
+    /// }
+    ///
+    /// // Handle nil within transformation
+    /// Column(name: "Salary Range", keyPath: \.salary) { salary in
+    ///     guard let salary = salary else { return "Not Disclosed" }
+    ///     return salary < 50000 ? "Entry Level" : "Senior Level"
+    /// }
+    ///
+    /// // Use with defaultValue for cleaner transformation
+    /// Column(name: "Manager Name", keyPath: \.manager) { manager in
+    ///     manager?.name ?? "No Manager"
+    /// }
+    /// .defaultValue("Direct Report")
+    /// ```
+    ///
+    /// - Parameters:
+    ///   - name: Display name in the Excel header row
+    ///   - keyPath: KeyPath to extract the optional input value from objects
+    ///   - transform: Closure that converts optional input values to the desired output type
+    /// - Returns: A configured column with the specified transformation for optional values
+    public init(
+        name: String,
+        keyPath: KeyPath<ObjectType, InputType>,
+        transform: @escaping (InputType?) -> OutputType
+    ) {
+        self.init(
+            name: name,
+            keyPath: keyPath,
+            width: nil,
+            bodyStyle: nil,
+            headerStyle: nil,
+            mapping: transform,
+            nilHandling: .keepEmpty)
+    }
+}
+
 // MARK: - Sendable Conformance
 
 extension Column: @unchecked Sendable where ObjectType: Sendable, InputType: Sendable,
