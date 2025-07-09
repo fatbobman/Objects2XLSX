@@ -1125,8 +1125,8 @@ extension Column {
     public init(
         name: String,
         keyPath: KeyPath<ObjectType, InputType>,
-        transform: @escaping (InputType) -> OutputType
-    ) {
+        transform: @escaping (InputType) -> OutputType)
+    {
         self.init(
             name: name,
             keyPath: keyPath,
@@ -1177,8 +1177,8 @@ extension Column {
     public init(
         name: String,
         keyPath: KeyPath<ObjectType, InputType>,
-        transform: @escaping (InputType?) -> OutputType
-    ) {
+        transform: @escaping (InputType?) -> OutputType)
+    {
         self.init(
             name: name,
             keyPath: keyPath,
