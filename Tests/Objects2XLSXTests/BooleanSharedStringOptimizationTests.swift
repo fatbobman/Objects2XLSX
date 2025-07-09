@@ -125,7 +125,7 @@ struct BooleanSharedStringOptimizationTests {
         let styleRegister = StyleRegister()
 
         // Generate sheet XML
-        let sheetXML = sheet.makeSheetXML(
+        _ = sheet.makeSheetXML(
             bookStyle: BookStyle(),
             sheetStyle: SheetStyle(),
             styleRegister: styleRegister,
@@ -195,7 +195,7 @@ struct BooleanSharedStringOptimizationTests {
         let shortRegister = ShareStringRegister()
         let shortStyleRegister = StyleRegister()
 
-        let shortXML = shortSheet.makeSheetXML(
+        _ = shortSheet.makeSheetXML(
             bookStyle: BookStyle(),
             sheetStyle: SheetStyle(),
             styleRegister: shortStyleRegister,
@@ -220,7 +220,7 @@ struct BooleanSharedStringOptimizationTests {
         let longRegister = ShareStringRegister()
         let longStyleRegister = StyleRegister()
 
-        let longXML = longSheet.makeSheetXML(
+        _ = longSheet.makeSheetXML(
             bookStyle: BookStyle(),
             sheetStyle: SheetStyle(),
             styleRegister: longStyleRegister,
@@ -265,7 +265,7 @@ struct BooleanSharedStringOptimizationTests {
         let oneZeroRegister = ShareStringRegister()
         let oneZeroStyleRegister = StyleRegister()
 
-        let oneZeroXML = oneZeroSheet.makeSheetXML(
+        _ = oneZeroSheet.makeSheetXML(
             bookStyle: BookStyle(),
             sheetStyle: SheetStyle(),
             styleRegister: oneZeroStyleRegister,
@@ -279,7 +279,7 @@ struct BooleanSharedStringOptimizationTests {
         let trueFalseRegister = ShareStringRegister()
         let trueFalseStyleRegister = StyleRegister()
 
-        let trueFalseXML = trueFalseSheet.makeSheetXML(
+        _ = trueFalseSheet.makeSheetXML(
             bookStyle: BookStyle(),
             sheetStyle: SheetStyle(),
             styleRegister: trueFalseStyleRegister,
