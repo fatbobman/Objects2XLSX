@@ -278,9 +278,15 @@ public struct SimpleZip: Sendable {
      */
     @discardableResult
     public static func createFromDirectoryWithStats(directoryURL: URL, outputURL: URL) throws -> CompressionStats {
+        print("🚀 ZIP createFromDirectoryWithStats called:")
+        print("   From: \(directoryURL.path)")
+        print("   To: \(outputURL.path)")
+        
         let entries = try collectEntries(from: directoryURL)
         let (zipData, stats) = try createWithStats(entries: entries)
         try zipData.write(to: outputURL)
+        
+        print("✅ ZIP creation completed successfully")
         return stats
     }
 
