@@ -612,11 +612,6 @@ public final class Book {
 
             logger.info("Created XLSX directory structure at: \(tempDir.path)")
 
-            // 调试：列出临时目录内容
-            if let contents = try? FileManager.default.contentsOfDirectory(atPath: tempDir.path) {
-                print("📁 TempDir contents: \(contents)")
-            }
-
         } catch {
             throw BookError.fileWriteError(error)
         }
@@ -734,10 +729,6 @@ public final class Book {
     ///   - outputURL: Target URL for the final XLSX file
     /// - Throws: BookError.fileWriteError if ZIP creation fails
     func createZipArchive(from tempDir: URL, to outputURL: URL) throws(BookError) {
-        print("📦 Book.createZipArchive called:")
-        print("   TempDir: \(tempDir.path)")
-        print("   OutputURL: \(outputURL.path)")
-
         do {
             let stats = try zipArchiver.createArchiveWithStats(from: tempDir, to: outputURL)
 
