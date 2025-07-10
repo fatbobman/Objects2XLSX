@@ -307,11 +307,11 @@ public struct SimpleZip: Sendable {
                 // Calculate relative path by removing the base directory path
                 // We need to preserve the internal XLSX structure like "xl/workbook.xml", "_rels/.rels", etc.
                 let relativePath: String
-                
+
                 // Use URL-based path calculation to handle symlinks and path resolution
                 let resolvedDirectoryURL = directoryURL.resolvingSymlinksInPath()
                 let resolvedFileURL = fileURL.resolvingSymlinksInPath()
-                
+
                 if resolvedFileURL.path.hasPrefix(resolvedDirectoryURL.path) {
                     let basePath = resolvedDirectoryURL.path.hasSuffix("/") ? resolvedDirectoryURL.path : resolvedDirectoryURL.path + "/"
                     relativePath = String(resolvedFileURL.path.dropFirst(basePath.count))
