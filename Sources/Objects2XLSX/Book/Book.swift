@@ -611,7 +611,7 @@ public final class Book {
             }
 
             logger.info("Created XLSX directory structure at: \(tempDir.path)")
-            
+
             // 调试：列出临时目录内容
             if let contents = try? FileManager.default.contentsOfDirectory(atPath: tempDir.path) {
                 print("📁 TempDir contents: \(contents)")
@@ -737,7 +737,7 @@ public final class Book {
         print("📦 Book.createZipArchive called:")
         print("   TempDir: \(tempDir.path)")
         print("   OutputURL: \(outputURL.path)")
-        
+
         do {
             let stats = try zipArchiver.createArchiveWithStats(from: tempDir, to: outputURL)
 
