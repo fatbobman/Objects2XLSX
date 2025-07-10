@@ -294,6 +294,8 @@ public struct SimpleZip: Sendable {
     private static func collectEntries(from directoryURL: URL) throws -> [Entry] {
         let fileManager = FileManager.default
         var entries: [Entry] = []
+        
+        print("🔧 ZIP collectEntries started from: \(directoryURL.path)")
 
         let enumerator = fileManager.enumerator(
             at: directoryURL,
@@ -315,9 +317,21 @@ public struct SimpleZip: Sendable {
                 if resolvedFileURL.path.hasPrefix(resolvedDirectoryURL.path) {
                     let basePath = resolvedDirectoryURL.path.hasSuffix("/") ? resolvedDirectoryURL.path : resolvedDirectoryURL.path + "/"
                     relativePath = String(resolvedFileURL.path.dropFirst(basePath.count))
+                    // 强制输出调试信息（移除 DEBUG 条件）
+                    print("✅ ZIP Path calculation success:")
+                    print("   Directory: \(resolvedDirectoryURL.path)")
+                    print("   File: \(resolvedFileURL.path)")
+                    print("   Relative: \(relativePath)")
                 } else {
                     // Fallback to just filename if path calculation fails
                     relativePath = fileURL.lastPathComponent
+                    // 强制输出调试信息（移除 DEBUG 条件）
+                    print("❌ ZIP Path calculation failed:")
+                    print("   Directory original: \(directoryURL.path)")
+                    print("   Directory resolved: \(resolvedDirectoryURL.path)")
+                    print("   File original: \(fileURL.path)")
+                    print("   File resolved: \(resolvedFileURL.path)")
+                    print("   Fallback to: \(relativePath)")
                 }
                 let data = try Data(contentsOf: fileURL)
                 let modificationDate = resourceValues.contentModificationDate ?? Date()
@@ -327,7 +341,12 @@ public struct SimpleZip: Sendable {
         }
 
         // Sort entries by path for consistent output
-        return entries.sorted { $0.path < $1.path }
+        let sortedEntries = entries.sorted { $0.path < $1.path }
+        print("📦 ZIP collectEntries completed: \(sortedEntries.count) files")
+        for entry in sortedEntries {
+            print("   📄 \(entry.path)")
+        }
+        return sortedEntries
     }
 }
 
