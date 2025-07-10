@@ -516,6 +516,78 @@ Task {
 
 ## 🔧 高度な設定
 
+### 作業ディレクトリ管理
+
+Objects2XLSX は XLSX 生成中の一時作業ファイルの保存場所を柔軟にコントロールする機能を提供します。これは一時ディレクトリを扱う際にファイルシステムの汚染を避けるため特に有用です：
+
+```swift
+// デフォルト動作 - 出力ファイルの隣に作業ディレクトリ
+try book.write(to: outputURL)
+// 出力：/path/to/report.xlsx
+// 作業ディレクトリ：/path/to/report.temp/
+
+// システム一時ディレクトリ - 一時出力に推奨
+try book.write(to: outputURL, workingDirectory: .systemTemp)
+// 出力：/path/to/report.xlsx
+// 作業ディレクトリ：/tmp/Objects2XLSX_UUID/
+
+// カスタム作業ディレクトリ
+let workspaceURL = URL(fileURLWithPath: "/custom/workspace")
+try book.write(to: outputURL, workingDirectory: .custom(workspaceURL))
+// 出力：/path/to/report.xlsx
+// 作業ディレクトリ：/custom/workspace/Objects2XLSX_UUID/
+```
+
+**一時ディレクトリ使用のベストプラクティス：**
+
+```swift
+extension Book {
+    /// 適切な作業ディレクトリを自動選択するスマート書き込み
+    func writeSmartly(to url: URL) throws -> URL {
+        let tempDir = FileManager.default.temporaryDirectory
+        
+        if url.path.hasPrefix(tempDir.path) {
+            // 出力が一時ディレクトリ内 - 分離された作業スペースを使用
+            return try write(to: url, workingDirectory: .systemTemp)
+        } else {
+            // 出力が通常ディレクトリ内 - デフォルト動作を使用
+            return try write(to: url)
+        }
+    }
+}
+
+// 使用例
+let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+let tempURL = FileManager.default.temporaryDirectory
+
+// ✅ 良い：ドキュメントディレクトリでデフォルト動作
+try book.write(to: documentsURL.appendingPathComponent("report.xlsx"))
+
+// ✅ 良い：一時ディレクトリで分離された作業スペース
+try book.write(
+    to: tempURL.appendingPathComponent("report.xlsx"), 
+    workingDirectory: .systemTemp
+)
+
+// ✅ 良い：スマート自動選択
+try book.writeSmartly(to: outputURL)
+```
+
+**作業ディレクトリ戦略：**
+
+- **`.alongsideOutput`（デフォルト）**：出力ファイルの隣に `.temp` フォルダを作成
+  - ✅ 適用場面：ドキュメント、ダウンロード、カスタムディレクトリ
+  - ⚠️ 避けるべき：システム一時ディレクトリ（汚染を引き起こす）
+
+- **`.systemTemp`**：分離された一時ディレクトリを使用
+  - ✅ 適用場面：システム一時ディレクトリ内の任意の出力
+  - ✅ 防止：一時ディレクトリ構造の汚染
+  - 🚀 推奨：出力パスが一時ディレクトリで始まる場合
+
+- **`.custom(URL)`**：作業ファイル用に指定されたディレクトリを使用
+  - ✅ 適用場面：カスタムビルドシステム、特定のワークスペース要件
+  - 🔧 制御：作業ファイル位置の完全制御
+
 ### 非同期データ読み込み＆スレッドセーフティ
 
 Objects2XLSX は複雑なシナリオ向けのスレッドセーフな非同期データ読み込みを提供：

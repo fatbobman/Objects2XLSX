@@ -565,6 +565,78 @@ Task {
 
 ## 🔧 Advanced Configuration
 
+### Working Directory Management
+
+Objects2XLSX provides flexible control over where temporary working files are stored during XLSX generation. This is particularly useful when working with temporary directories to avoid file system pollution:
+
+```swift
+// Default behavior - working directory alongside output file
+try book.write(to: outputURL)
+// Output: /path/to/report.xlsx
+// Working dir: /path/to/report.temp/
+
+// System temporary directory - recommended for temp outputs
+try book.write(to: outputURL, workingDirectory: .systemTemp)
+// Output: /path/to/report.xlsx
+// Working dir: /tmp/Objects2XLSX_UUID/
+
+// Custom working directory
+let workspaceURL = URL(fileURLWithPath: "/custom/workspace")
+try book.write(to: outputURL, workingDirectory: .custom(workspaceURL))
+// Output: /path/to/report.xlsx
+// Working dir: /custom/workspace/Objects2XLSX_UUID/
+```
+
+**Best Practices for Temporary Directory Usage:**
+
+```swift
+extension Book {
+    /// Smart writing that automatically chooses appropriate working directory
+    func writeSmartly(to url: URL) throws -> URL {
+        let tempDir = FileManager.default.temporaryDirectory
+        
+        if url.path.hasPrefix(tempDir.path) {
+            // Output is in temp directory - use isolated working space
+            return try write(to: url, workingDirectory: .systemTemp)
+        } else {
+            // Output is in regular directory - use default behavior
+            return try write(to: url)
+        }
+    }
+}
+
+// Usage examples
+let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+let tempURL = FileManager.default.temporaryDirectory
+
+// ✅ Good: Documents directory with default behavior
+try book.write(to: documentsURL.appendingPathComponent("report.xlsx"))
+
+// ✅ Good: Temp directory with isolated working space
+try book.write(
+    to: tempURL.appendingPathComponent("report.xlsx"), 
+    workingDirectory: .systemTemp
+)
+
+// ✅ Good: Smart automatic selection
+try book.writeSmartly(to: outputURL)
+```
+
+**Working Directory Strategies:**
+
+- **`.alongsideOutput` (default)**: Creates `.temp` folder next to output file
+  - ✅ Good for: Documents, Downloads, custom directories
+  - ⚠️ Avoid for: System temporary directories (causes pollution)
+
+- **`.systemTemp`**: Uses isolated temporary directory
+  - ✅ Good for: Any output in system temp directories
+  - ✅ Prevents: Temporary directory structure pollution
+  - 🚀 Recommended: When output path starts with temp directory
+
+- **`.custom(URL)`**: Uses specified directory for working files
+  - ✅ Good for: Custom build systems, specific workspace requirements
+  - 🔧 Control: Full control over working file location
+
 ### Custom Sheet Styling
 
 ```swift

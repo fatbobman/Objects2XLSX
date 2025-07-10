@@ -516,6 +516,78 @@ Task {
 
 ## 🔧 高级配置
 
+### 工作目录管理
+
+Objects2XLSX 提供灵活控制 XLSX 生成过程中临时工作文件存储位置的功能。这在处理临时目录时特别有用，可避免文件系统污染：
+
+```swift
+// 默认行为 - 工作目录在输出文件旁边
+try book.write(to: outputURL)
+// 输出：/path/to/report.xlsx
+// 工作目录：/path/to/report.temp/
+
+// 系统临时目录 - 推荐用于临时输出
+try book.write(to: outputURL, workingDirectory: .systemTemp)
+// 输出：/path/to/report.xlsx
+// 工作目录：/tmp/Objects2XLSX_UUID/
+
+// 自定义工作目录
+let workspaceURL = URL(fileURLWithPath: "/custom/workspace")
+try book.write(to: outputURL, workingDirectory: .custom(workspaceURL))
+// 输出：/path/to/report.xlsx
+// 工作目录：/custom/workspace/Objects2XLSX_UUID/
+```
+
+**临时目录使用最佳实践：**
+
+```swift
+extension Book {
+    /// 智能写入，自动选择合适的工作目录
+    func writeSmartly(to url: URL) throws -> URL {
+        let tempDir = FileManager.default.temporaryDirectory
+        
+        if url.path.hasPrefix(tempDir.path) {
+            // 输出在临时目录 - 使用隔离工作空间
+            return try write(to: url, workingDirectory: .systemTemp)
+        } else {
+            // 输出在常规目录 - 使用默认行为
+            return try write(to: url)
+        }
+    }
+}
+
+// 使用示例
+let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+let tempURL = FileManager.default.temporaryDirectory
+
+// ✅ 好：文档目录使用默认行为
+try book.write(to: documentsURL.appendingPathComponent("report.xlsx"))
+
+// ✅ 好：临时目录使用隔离工作空间
+try book.write(
+    to: tempURL.appendingPathComponent("report.xlsx"), 
+    workingDirectory: .systemTemp
+)
+
+// ✅ 好：智能自动选择
+try book.writeSmartly(to: outputURL)
+```
+
+**工作目录策略：**
+
+- **`.alongsideOutput`（默认）**：在输出文件旁创建 `.temp` 文件夹
+  - ✅ 适用于：文档、下载、自定义目录
+  - ⚠️ 避免用于：系统临时目录（会造成污染）
+
+- **`.systemTemp`**：使用隔离的临时目录
+  - ✅ 适用于：系统临时目录中的任何输出
+  - ✅ 防止：临时目录结构污染
+  - 🚀 推荐：当输出路径以临时目录开头时
+
+- **`.custom(URL)`**：使用指定目录存放工作文件
+  - ✅ 适用于：自定义构建系统、特定工作空间要求
+  - 🔧 控制：完全控制工作文件位置
+
 ### 异步数据加载与线程安全
 
 Objects2XLSX 为复杂场景提供线程安全的异步数据加载：

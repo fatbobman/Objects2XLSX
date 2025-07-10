@@ -9,6 +9,17 @@
 import Foundation
 import SimpleLogger
 
+/// Specifies where the temporary working directory should be located during XLSX generation
+/// Note: Output file location is always determined by the URL provided to write() method
+public enum WorkingDirectoryLocation: Sendable {
+    /// Create temporary working directory alongside the output file (default, matches legacy behavior)
+    case alongsideOutput
+    /// Use system temporary directory for working files
+    case systemTemp
+    /// Use custom directory for working files
+    case custom(URL)
+}
+
 /// Represents an Excel Workbook that contains multiple worksheets and manages XLSX file generation.
 ///
 /// `Book` is the main entry point for creating XLSX files from Swift objects. It manages a
@@ -236,8 +247,11 @@ public final class Book {
     /// incrementally, making it suitable for generating files with thousands of rows while
     /// maintaining reasonable memory consumption.
     @discardableResult
-    public func write(to url: URL) throws(BookError) -> URL {
-        try generateXLSX(to: url, useAsync: false)
+    public func write(
+        to url: URL,
+        workingDirectory: WorkingDirectoryLocation = .alongsideOutput) throws(BookError) -> URL
+    {
+        try generateXLSX(to: url, workingDirectory: workingDirectory, useAsync: false)
     }
 
     /// Asynchronously writes the workbook to an XLSX file at the specified URL.
@@ -300,31 +314,37 @@ public final class Book {
     /// - Progress monitoring via `progressStream` is thread-safe and can be observed from any
     /// thread
     @discardableResult
-    public func writeAsync(to url: URL) async throws(BookError) -> URL {
-        try await generateXLSXAsync(to: url, useAsync: true)
+    public func writeAsync(
+        to url: URL,
+        workingDirectory: WorkingDirectoryLocation = .alongsideOutput) async throws(BookError) -> URL
+    {
+        try await generateXLSXAsync(to: url, workingDirectory: workingDirectory, useAsync: true)
     }
 
     /// Core XLSX generation logic (synchronous version)
     /// - Parameters:
     ///   - url: Target URL for the XLSX file
+    ///   - workingDirectory: Working directory location strategy
     ///   - useAsync: Whether to use async data loading (ignored in sync version)
     /// - Returns: The actual URL where the XLSX file was written
     /// - Throws: BookError if generation fails
-    private func generateXLSX(to url: URL, useAsync: Bool) throws(BookError) -> URL {
-        // Ensure the URL has proper .xlsx extension and directory structure
-        let outputURL = try prepareOutputURL(url)
-
-        // Begin progress reporting
+    private func generateXLSX(
+        to url: URL,
+        workingDirectory: WorkingDirectoryLocation,
+        useAsync: Bool) throws(BookError) -> URL
+    {
         sendProgress(.started)
 
         do {
+            // Use new location determination logic (prepareOutputURL already handles parent directory creation)
+            let (outputURL, tempDir) = try determineOutputLocation(from: url, location: workingDirectory)
+
             // Create registries for optimization
             let styleRegister = StyleRegister()
             let shareStringRegister = ShareStringRegister()
 
-            // Create temporary directory for building XLSX package structure
+            // Create working directory structure
             sendProgress(.creatingDirectory)
-            let tempDir = outputURL.deletingPathExtension().appendingPathExtension("temp")
             try createXLSXDirectoryStructure(at: tempDir)
 
             // Process sheets and collect metadata
@@ -355,24 +375,27 @@ public final class Book {
     /// Core XLSX generation logic (asynchronous version)
     /// - Parameters:
     ///   - url: Target URL for the XLSX file
+    ///   - workingDirectory: Working directory location strategy
     ///   - useAsync: Whether to use async data loading
     /// - Returns: The actual URL where the XLSX file was written
     /// - Throws: BookError if generation fails
-    private func generateXLSXAsync(to url: URL, useAsync: Bool) async throws(BookError) -> URL {
-        // Ensure the URL has proper .xlsx extension and directory structure
-        let outputURL = try prepareOutputURL(url)
-
-        // Begin progress reporting
+    private func generateXLSXAsync(
+        to url: URL,
+        workingDirectory: WorkingDirectoryLocation,
+        useAsync: Bool) async throws(BookError) -> URL
+    {
         sendProgress(.started)
 
         do {
+            // Use new location determination logic (prepareOutputURL already handles parent directory creation)
+            let (outputURL, tempDir) = try determineOutputLocation(from: url, location: workingDirectory)
+
             // Create registries for optimization
             let styleRegister = StyleRegister()
             let shareStringRegister = ShareStringRegister()
 
-            // Create temporary directory for building XLSX package structure
+            // Create working directory structure
             sendProgress(.creatingDirectory)
-            let tempDir = outputURL.deletingPathExtension().appendingPathExtension("temp")
             try createXLSXDirectoryStructure(at: tempDir)
 
             // Process sheets and collect metadata (async version)
@@ -606,6 +629,40 @@ public final class Book {
         try createParentDirectoryIfNeeded(outputURL)
 
         return outputURL
+    }
+
+    /// Determines output location and working directory based on strategy
+    /// - Parameters:
+    ///   - url: Original URL provided by user (output file location is always determined by this URL)
+    ///   - location: Working directory location strategy (only affects temporary working directory)
+    /// - Returns: Tuple containing final output URL and working directory URL
+    /// - Throws: BookError.fileWriteError if directory operations fail
+    private func determineOutputLocation(
+        from url: URL,
+        location: WorkingDirectoryLocation) throws(BookError) -> (outputURL: URL, tempDir: URL)
+    {
+        // Output file location is ALWAYS determined by the user-provided URL
+        // This ensures Foundation URL behavior is respected (relative paths resolve to current directory)
+        let outputURL = try prepareOutputURL(url)
+
+        // Working directory location is determined by the strategy
+        let tempDir: URL
+        switch location {
+            case .alongsideOutput:
+                // Create temporary working directory alongside the output file (legacy behavior)
+                tempDir = outputURL.deletingPathExtension().appendingPathExtension("temp")
+
+            case .systemTemp:
+                // Use system temporary directory for working files
+                tempDir = FileManager.default.temporaryDirectory
+                    .appendingPathComponent("Objects2XLSX_\(UUID().uuidString)")
+
+            case let .custom(customDir):
+                // Use custom directory for working files
+                tempDir = customDir.appendingPathComponent("Objects2XLSX_\(UUID().uuidString)")
+        }
+
+        return (outputURL, tempDir)
     }
 
     /// Ensures the URL has a .xlsx extension
