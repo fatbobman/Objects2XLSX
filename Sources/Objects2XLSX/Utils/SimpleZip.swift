@@ -294,7 +294,7 @@ public struct SimpleZip: Sendable {
     private static func collectEntries(from directoryURL: URL) throws -> [Entry] {
         let fileManager = FileManager.default
         var entries: [Entry] = []
-        
+
         print("🔧 ZIP collectEntries started from: \(directoryURL.path)")
 
         let enumerator = fileManager.enumerator(
