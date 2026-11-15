@@ -38,7 +38,8 @@ struct URLTypeEnhancementTests {
         // Test optional URL with nil
         let nilURL = Cell(row: 1, column: 3, value: .optionalURL(nil))
         let nilXML = nilURL.generateXML()
-        #expect(nilXML.contains("<is><t></t></is>"))
+        #expect(!nilXML.contains("<is>"))
+        #expect(!nilXML.contains("t=\""))
         #expect(nilURL.value.valueString == "")
 
         // Test with shared string

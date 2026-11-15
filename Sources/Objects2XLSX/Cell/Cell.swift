@@ -122,6 +122,9 @@ extension Cell {
 
         // Add cell type attribute based on value type and whether it uses shared strings
         switch value {
+            case .optionalString(nil) where sharedStringID == nil, .optionalURL(nil) where sharedStringID == nil:
+                // A missing string is a blank cell: no type, no value
+                break
             case .stringValue, .optionalString, .urlValue, .optionalURL:
                 if sharedStringID != nil {
                     xml += " t=\"s\""
@@ -159,10 +162,11 @@ extension Cell {
                 if let sharedStringID {
                     // Use shared string reference for memory efficiency
                     xml += "<v>\(sharedStringID)</v>"
-                } else {
+                } else if let stringValue {
                     // Use inline string value directly
-                    xml += "<is><t>\(stringValue ?? "")</t></is>"
+                    xml += "<is><t>\(stringValue)</t></is>"
                 }
+                // nil: a blank cell, not an empty string
             case let .urlValue(url):
                 if let sharedStringID {
                     // Use shared string reference for URL
@@ -175,10 +179,11 @@ extension Cell {
                 if let sharedStringID {
                     // Use shared string reference for URL
                     xml += "<v>\(sharedStringID)</v>"
-                } else {
+                } else if let url {
                     // Use inline URL string value
-                    xml += "<is><t>\(url?.absoluteString ?? "")</t></is>"
+                    xml += "<is><t>\(url.absoluteString)</t></is>"
                 }
+                // nil: a blank cell, not an empty string
             case let .booleanValue(boolean, booleanExpressions, caseStrategy):
                 // Non-optional boolean - use SharedString if available, otherwise inline boolean
                 if let sharedStringID {

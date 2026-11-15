@@ -219,7 +219,7 @@ struct CellXMLTest {
             styleID: 8)
 
         let xml = cell.generateXML()
-        let expected = "<c r=\"A9\" s=\"8\" t=\"inlineStr\"><is><t></t></is></c>"
+        let expected = "<c r=\"A9\" s=\"8\"></c>"
 
         #expect(xml == expected)
     }
@@ -229,7 +229,7 @@ struct CellXMLTest {
         // 字符串类型 - nil
         let stringCell = Cell(row: 10, column: 1, value: .optionalString(nil))
         let stringXML = stringCell.generateXML()
-        let expectedString = "<c r=\"A10\" t=\"inlineStr\"><is><t></t></is></c>"
+        let expectedString = "<c r=\"A10\"></c>"
         #expect(stringXML == expectedString)
 
         // 整数类型 - nil
@@ -271,7 +271,7 @@ struct CellXMLTest {
         // URL类型 - nil
         let urlCell = Cell(row: 10, column: 6, value: .optionalURL(nil))
         let urlXML = urlCell.generateXML()
-        let expectedURL = "<c r=\"F10\" t=\"inlineStr\"><is><t></t></is></c>"
+        let expectedURL = "<c r=\"F10\"></c>"
         #expect(urlXML == expectedURL)
 
         // 百分比类型 - nil
@@ -328,7 +328,7 @@ struct CellXMLTest {
         let xml = row.generateXML()
 
         let expected =
-            "<row r=\"13\"><c r=\"A13\" t=\"inlineStr\"><is><t>Name</t></is></c><c r=\"B13\" t=\"inlineStr\"><is><t></t></is></c><c r=\"C13\"><v>25</v></c><c r=\"D13\"></c><c r=\"E13\"><v>3.14</v></c><c r=\"F13\"></c><c r=\"G13\"><v>1.618</v></c><c r=\"H13\"></c><c r=\"I13\"></c></row>" // swiftlint:disable:this line_length
+            "<row r=\"13\"><c r=\"A13\" t=\"inlineStr\"><is><t>Name</t></is></c><c r=\"B13\"></c><c r=\"C13\"><v>25</v></c><c r=\"D13\"></c><c r=\"E13\"><v>3.14</v></c><c r=\"F13\"></c><c r=\"G13\"><v>1.618</v></c><c r=\"H13\"></c><c r=\"I13\"></c></row>" // swiftlint:disable:this line_length
 
         #expect(xml == expected)
     }
