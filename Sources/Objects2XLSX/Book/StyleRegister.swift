@@ -113,8 +113,9 @@ final class StyleRegister {
     func registerCellStyle(_ style: CellStyle?, cellType: Cell.CellType?) -> Int? {
         guard let style else { return nil }
 
-        // Register individual style components
-        let numberFormat = generateNumberFormat(for: cellType)
+        // Register individual style components. A style's own number format
+        // wins over the one the value type implies.
+        let numberFormat = style.numberFormat ?? generateNumberFormat(for: cellType)
         let numFmtId = registerNumberFormat(numberFormat)
         let fontID = registerFont(style.font)
         let fillID = registerFill(style.fill)
@@ -357,6 +358,9 @@ final class StyleRegister {
             // Add number format ID (defaults to 0 for General format)
             if let numFmtId = resolvedStyle.numFmtId {
                 xml += " numFmtId=\"\(numFmtId)\""
+                if numFmtId != 0 {
+                    xml += " applyNumberFormat=\"1\""
+                }
             } else {
                 xml += " numFmtId=\"0\""
             }

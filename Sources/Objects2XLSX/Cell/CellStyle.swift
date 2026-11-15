@@ -19,6 +19,7 @@ import Foundation
 /// - **Fill**: Background colors and patterns
 /// - **Alignment**: Text positioning and flow control
 /// - **Border**: Cell boundary styling and colors
+/// - **Number format**: How a number or date is displayed, e.g. `#,##0.00`
 ///
 /// ## Style Hierarchy and Merging
 /// Styles can be merged with different priority levels:
@@ -49,6 +50,10 @@ public struct CellStyle: Equatable, Sendable, Hashable {
     public let alignment: Alignment?
     /// Border styling for cell boundaries (nil = no border)
     public let border: Border?
+    /// How the cell's number or date is displayed (nil = the format the
+    /// cell's value type implies: a date format for dates, a percentage for
+    /// percentages, General otherwise)
+    public let numberFormat: NumberFormat?
 
     /// Creates a new cell style with the specified formatting components.
     ///
@@ -60,11 +65,20 @@ public struct CellStyle: Equatable, Sendable, Hashable {
     ///   - fill: Background styling (nil uses no fill)
     ///   - alignment: Text positioning (nil uses default alignment)
     ///   - border: Cell boundary styling (nil uses no border)
-    public init(font: Font? = nil, fill: Fill? = nil, alignment: Alignment? = nil, border: Border? = nil) {
+    ///   - numberFormat: Display format for numbers and dates (nil uses the
+    ///     format the value type implies)
+    public init(
+        font: Font? = nil,
+        fill: Fill? = nil,
+        alignment: Alignment? = nil,
+        border: Border? = nil,
+        numberFormat: NumberFormat? = nil)
+    {
         self.font = font
         self.fill = fill
         self.alignment = alignment
         self.border = border
+        self.numberFormat = numberFormat
     }
 }
 
@@ -114,7 +128,8 @@ extension CellStyle {
             font: additional.font ?? base.font,
             fill: additional.fill ?? base.fill,
             alignment: additional.alignment ?? base.alignment,
-            border: additional.border ?? base.border)
+            border: additional.border ?? base.border,
+            numberFormat: additional.numberFormat ?? base.numberFormat)
     }
 
     /// Merges multiple cell styles in priority order from lowest to highest precedence.
