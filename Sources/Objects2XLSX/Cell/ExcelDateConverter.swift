@@ -21,8 +21,9 @@ import Foundation
 /// - **Range**: Supports dates from 1900 to approximately 9999
 ///
 /// ## Precision and Accuracy
-/// The conversion includes empirical adjustments to match Excel's exact calculations,
-/// ensuring that dates round-trip perfectly between Swift and Excel representations.
+/// A serial has no time zone: it is a calendar date and a clock time. The conversion
+/// reads both in the given time zone, so a cell shows the same day and time a user in
+/// that zone saw, daylight saving included, and dates round-trip to the millisecond.
 ///
 /// ## Usage Examples
 /// ```swift
@@ -31,100 +32,84 @@ import Foundation
 /// let backToDate = Date.from(excelDate: 45123.75) // Original date
 /// ```
 extension Date {
-    /// Converts a Swift Date to Excel's numeric date representation.
-    ///
-    /// Transforms the date into Excel's day-based numbering system, accounting for
-    /// Excel's historical 1900 leap year bug and timezone considerations.
-    ///
-    /// ## Format Details
-    /// - Integer part: Days since December 30, 1899
-    /// - Fractional part: Time of day (0.5 = noon, 0.75 = 6 PM)
-    /// - Precision: 8 decimal places to handle sub-second accuracy
-    ///
-    /// ## Excel Compatibility
-    /// The conversion includes empirical adjustments to ensure perfect round-trip
-    /// compatibility with Excel's date calculations, including the 1900 leap year quirk.
-    ///
-    /// - Parameter timeZone: Timezone for date interpretation (defaults to system timezone)
-    /// - Returns: Excel date number as string with 8 decimal places of precision
-    func excelDate(timeZone: TimeZone = TimeZone.current) -> String {
+    /// Excel's day 0, December 30, 1899. Counting from it rather than from
+    /// January 1, 1900 absorbs Excel's treatment of 1900 as a leap year for
+    /// every date from March 1, 1900 on.
+    private static let excelEpoch = DateComponents(year: 1899, month: 12, day: 30)
+
+    /// A Gregorian calendar in `timeZone`, independent of the user's settings
+    private static func excelCalendar(in timeZone: TimeZone) -> Calendar {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = timeZone
-        calendar.locale = Locale(identifier: "en_US_POSIX") // Standardized
-
-        // Excel base date calculation accounting for the 1900 leap year bug
-        // Excel incorrectly treats 1900 as a leap year (it's not), which shifts all dates
-        // We use December 30, 1899 as the base to compensate for this historical error
-        // This ensures our calculations match Excel's behavior exactly
-        let excelBaseComponents = DateComponents(
-            calendar: calendar,
-            timeZone: timeZone,
-            year: 1899,
-            month: 12,
-            day: 30,
-            hour: 0,
-            minute: 0,
-            second: 0)
-        let excelBaseDate = calendar.date(from: excelBaseComponents)!
-
-        // Calculate time interval (seconds)
-        let timeInterval = timeIntervalSince(excelBaseDate)
-
-        // Convert to days
-        let excelDays = timeInterval / (24 * 60 * 60)
-
-        // Apply empirical adjustment to match Excel's exact calculations
-        let adjustedDays = excelDays - 0.00396991 // Compensate for observed systematic difference
-
-        // Format with 8 decimal places for sub-second precision while avoiding floating-point noise
-        return String(format: "%.8f", adjustedDays)
+        calendar.locale = Locale(identifier: "en_US_POSIX")
+        return calendar
     }
 
-    /// Creates a Swift Date from Excel's numeric date representation.
+    /// The date as an Excel serial number: whole days since December 30,
+    /// 1899, plus the time of day as a fraction, both as read on a clock in
+    /// `timeZone`.
     ///
-    /// Converts Excel's day-based numbering back to a Swift Date object, applying
-    /// the same base date and empirical adjustments used in the forward conversion.
+    /// Excel serials have no time zone, so the date is first turned into
+    /// the calendar date and wall-clock time it has in `timeZone`. Counting
+    /// elapsed seconds instead would be off by the zone's daylight saving
+    /// shift for half the year, and by the difference between its 1899
+    /// local mean time and today's offset all year.
     ///
-    /// ## Input Format
-    /// - Whole numbers: Days since December 30, 1899
-    /// - Fractional parts: Time within the day (0.5 = noon)
-    /// - Range: Typically 1.0 to ~3652060.0 (years 1900-9999)
+    /// - Parameter timeZone: The zone whose calendar date and clock time
+    ///   the cell shows (default: the current zone)
+    /// - Returns: The serial with eight decimals, e.g. `"45822.50000000"`
+    func excelDate(timeZone: TimeZone = TimeZone.current) -> String {
+        let local = Date.excelCalendar(in: timeZone)
+            .dateComponents([.year, .month, .day, .hour, .minute, .second, .nanosecond], from: self)
+
+        // Whole days between two calendar dates, counted in UTC where
+        // every day has 24 hours
+        let utc = Date.excelCalendar(in: TimeZone(identifier: "UTC")!)
+        let epoch = utc.date(from: Date.excelEpoch)!
+        let day = utc.date(from: DateComponents(year: local.year, month: local.month, day: local.day))!
+        let days = utc.dateComponents([.day], from: epoch, to: day).day!
+
+        let seconds = Double((local.hour ?? 0) * 3600 + (local.minute ?? 0) * 60 + (local.second ?? 0))
+            + Double(local.nanosecond ?? 0) / 1_000_000_000
+        return String(format: "%.8f", Double(days) + seconds / 86400)
+    }
+
+    /// The date an Excel serial number stands for when read in `timeZone`,
+    /// the inverse of `excelDate(timeZone:)`.
     ///
     /// - Parameters:
-    ///   - excelDate: Excel's numeric date representation
-    ///   - timeZone: Timezone for the resulting date (defaults to system timezone)
-    /// - Returns: Swift Date object, or nil if the input is invalid
+    ///   - excelDate: Days since December 30, 1899, with the time of day as
+    ///     a fraction
+    ///   - timeZone: The zone the serial's calendar date and clock time are
+    ///     in (default: the current zone)
+    /// - Returns: The date, or nil when the serial is not finite. A clock
+    ///   time skipped by a daylight saving change resolves to the instant
+    ///   just after it.
     static func from(excelDate: Double, timeZone: TimeZone = TimeZone.current) -> Date? {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = timeZone
-        calendar.locale = Locale(identifier: "en_US_POSIX") // Standardized
+        guard excelDate.isFinite else { return nil }
 
-        // Use the same Excel base date as the forward conversion
-        let excelBaseComponents = DateComponents(
-            calendar: calendar,
-            timeZone: timeZone,
-            year: 1899,
-            month: 12,
-            day: 30,
-            hour: 0,
-            minute: 0,
-            second: 0)
-        guard let excelBaseDate = calendar.date(from: excelBaseComponents) else {
+        let wholeDays = excelDate.rounded(.down)
+        // Rounded to the millisecond, so 0.5 days is exactly 12:00:00
+        let milliseconds = ((excelDate - wholeDays) * 86_400_000).rounded()
+
+        let utc = excelCalendar(in: TimeZone(identifier: "UTC")!)
+        guard let epoch = utc.date(from: excelEpoch),
+              let day = utc.date(byAdding: .day, value: Int(wholeDays), to: epoch) else {
             return nil
         }
+        var components = utc.dateComponents([.year, .month, .day], from: day)
+        let totalSeconds = Int(milliseconds / 1000)
+        components.hour = totalSeconds / 3600
+        components.minute = totalSeconds % 3600 / 60
+        components.second = totalSeconds % 60
+        components.nanosecond = Int(milliseconds.truncatingRemainder(dividingBy: 1000)) * 1_000_000
 
-        // Reverse the empirical adjustment applied in the forward conversion
-        let adjustedExcelDate = excelDate + 0.00396991 // Add back the systematic correction
-
-        // Convert days to seconds and create the final date
-        let timeInterval = adjustedExcelDate * 24 * 60 * 60
-        return excelBaseDate.addingTimeInterval(timeInterval)
+        return excelCalendar(in: timeZone).date(from: components)
     }
 
     /// Compares two Excel date strings for approximate equality within a tolerance range.
     ///
-    /// Due to floating-point precision limitations and the empirical adjustments made
-    /// for Excel compatibility, exact equality comparisons may fail. This method provides
+    /// Due to floating-point precision limitations, exact equality comparisons may fail. This method provides
     /// a tolerance-based comparison suitable for validating date conversions.
     ///
     /// - Parameters:
