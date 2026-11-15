@@ -461,7 +461,8 @@ struct BookXMLGenerationTests {
         // Verify application info
         #expect(xml.contains("<Application>Objects2XLSX</Application>"))
         #expect(xml.contains("<AppVersion>1.0</AppVersion>"))
-        #expect(xml.contains("<Company>Objects2XLSX Library</Company>"))
+        // No company unless the document properties name one
+        #expect(!xml.contains("<Company>"))
 
         // Verify worksheet names (with XML escaping)
         #expect(xml.contains("<vt:lpstr>Sales Data</vt:lpstr>"))
@@ -473,6 +474,23 @@ struct BookXMLGenerationTests {
 
         print("Generated App Props XML:")
         print(xml)
+    }
+
+    @Test("generateAppPropsXML takes the application, version, company and manager from the document properties")
+    func generateAppPropsXMLFromProperties() {
+        var properties = DocumentProperties()
+        properties.application = "My <Wallet> & Co"
+        properties.appVersion = "2.1"
+        properties.company = "Block21"
+        properties.manager = "A & B"
+        let book = Book(style: BookStyle(documentProperties: properties))
+        let xml = book.generateAppPropsXML(metas: [])
+
+        #expect(xml.contains("<Application>My &lt;Wallet&gt; &amp; Co</Application>"))
+        #expect(xml.contains("<AppVersion>2.1</AppVersion>"))
+        #expect(xml.contains("<Company>Block21</Company>"))
+        #expect(xml.contains("<Manager>A &amp; B</Manager>"))
+        #expect(!xml.contains("Objects2XLSX"))
     }
 
     @Test("test generateAppPropsXML No Sheets")
