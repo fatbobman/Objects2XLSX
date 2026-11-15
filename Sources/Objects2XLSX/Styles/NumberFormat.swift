@@ -147,6 +147,8 @@ public enum NumberFormat: Equatable, Sendable, Hashable, Identifiable {
     /// - Returns: Excel built-in format ID, or `nil` for custom formats
     var builtinId: Int? {
         switch self {
+            case .general:
+                0 // Excel's General, which needs no definition
             case .date:
                 14 // Excel built-in date format (m/d/yyyy)
             case .dateTime:
