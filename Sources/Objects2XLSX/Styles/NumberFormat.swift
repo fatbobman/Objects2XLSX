@@ -87,6 +87,12 @@ public enum NumberFormat: Equatable, Sendable, Hashable, Identifiable {
     case currency
     /// Scientific notation format (future extension).
     case scientific
+    /// A format given by its Excel format code, e.g. `"#,##0.00"`.
+    ///
+    /// Codes Excel has built in, such as `0.00` and `#,##0.00`, are written
+    /// as the built-in format, so they show with the reader's own decimal
+    /// and thousands separators; other codes become custom formats.
+    case custom(String)
 
     /// Unique string identifier for the format.
     ///
@@ -109,6 +115,8 @@ public enum NumberFormat: Equatable, Sendable, Hashable, Identifiable {
                 "Currency"
             case .scientific:
                 "Scientific"
+            case let .custom(code):
+                "Custom(\(code))"
         }
     }
 
@@ -135,6 +143,8 @@ public enum NumberFormat: Equatable, Sendable, Hashable, Identifiable {
                 "\"$\"#,##0.00"
             case .scientific:
                 "0.00E+00"
+            case let .custom(code):
+                code
         }
     }
 
@@ -153,8 +163,22 @@ public enum NumberFormat: Equatable, Sendable, Hashable, Identifiable {
                 14 // Excel built-in date format (m/d/yyyy)
             case .dateTime:
                 22 // Excel built-in date-time format (m/d/yyyy h:mm)
+            case let .custom(code):
+                Self.builtinIds[code]
             default:
                 nil
         }
     }
+
+    /// Excel's built-in number formats by format code
+    private static let builtinIds: [String: Int] = [
+        "General": 0,
+        "0": 1,
+        "0.00": 2,
+        "#,##0": 3,
+        "#,##0.00": 4,
+        "0%": 9,
+        "0.00%": 10,
+        "0.00E+00": 11,
+    ]
 }

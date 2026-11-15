@@ -1,7 +1,7 @@
 //
 // NumberFormatStyleTests.swift
 //
-// General as Excel's built-in format.
+// Number formats chosen by a cell style, and General as Excel's built-in format.
 
 import Foundation
 @testable import Objects2XLSX
@@ -28,5 +28,40 @@ struct NumberFormatStyleTests {
         #expect(try xf(number, in: xml).contains(#"numFmtId="0""#))
         #expect(!xml.contains("<numFmts"))
         #expect(!xml.contains(#"numFmtId="164""#))
+    }
+
+    @Test("A style's number format wins over the one the value implies")
+    func styleFormatWins() throws {
+        let register = StyleRegister()
+        let date = register.registerCellStyle(CellStyle(numberFormat: .date), cellType: .dateValue(Date(), timeZone: .gmt))
+        let amount = register.registerCellStyle(CellStyle(numberFormat: .custom("#,##0.00")), cellType: .optionalDouble(nil))
+        let plainDate = register.registerCellStyle(CellStyle(), cellType: .dateValue(Date(), timeZone: .gmt))
+        let xml = register.generateXML()
+
+        #expect(try xf(date, in: xml).contains(#"numFmtId="14" applyNumberFormat="1""#))
+        #expect(try xf(amount, in: xml).contains(#"numFmtId="4" applyNumberFormat="1""#))
+        #expect(try xf(plainDate, in: xml).contains(#"numFmtId="22" applyNumberFormat="1""#))
+    }
+
+    @Test("Built-in codes use Excel's own numbers; other codes are defined as custom formats")
+    func customCodes() throws {
+        #expect(NumberFormat.custom("0.00").builtinId == 2)
+        #expect(NumberFormat.custom("#,##0").builtinId == 3)
+        #expect(NumberFormat.custom("#,##0.00").builtinId == 4)
+
+        let register = StyleRegister()
+        let style = register.registerCellStyle(CellStyle(numberFormat: .custom("#,##0.000")), cellType: .doubleValue(1))
+        let xml = register.generateXML()
+        #expect(try xf(style, in: xml).contains(#"numFmtId="164""#))
+        #expect(xml.contains(##"<numFmts count="1"><numFmt numFmtId="164" formatCode="#,##0.000"/></numFmts>"##))
+    }
+
+    @Test("Merging keeps a number format unless the higher style sets its own")
+    func merging() {
+        let sheet = CellStyle(font: .default, numberFormat: .custom("0.00"))
+        let column = CellStyle(numberFormat: .custom("#,##0.00"))
+        #expect(CellStyle.merge(sheet, CellStyle(fill: .none))?.numberFormat == .custom("0.00"))
+        #expect(CellStyle.merge(sheet, column)?.numberFormat == .custom("#,##0.00"))
+        #expect(CellStyle.merge(sheet, column)?.font == .default)
     }
 }
