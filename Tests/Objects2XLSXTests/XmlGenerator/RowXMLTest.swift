@@ -178,7 +178,7 @@ struct RowXMLTest {
         let xml = row.generateXML()
 
         let expected =
-            "<row r=\"8\"><c r=\"A8\" t=\"inlineStr\"><is><t></t></is></c><c r=\"B8\"><v></v></c><c r=\"C8\"><v></v></c></row>"
+            "<row r=\"8\"><c r=\"A8\" t=\"inlineStr\"><is><t></t></is></c><c r=\"B8\"></c><c r=\"C8\"></c></row>"
 
         #expect(xml == expected)
     }

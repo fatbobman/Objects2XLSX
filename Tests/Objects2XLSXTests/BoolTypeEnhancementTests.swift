@@ -46,7 +46,7 @@ struct BoolTypeEnhancementTests {
         let nilBool = Cell(row: 1, column: 4, value: .optionalBoolean(nil))
         let nilXML = nilBool.generateXML()
         #expect(nilXML.contains("t=\"b\""))
-        #expect(nilXML.contains("<v></v>"))
+        #expect(!nilXML.contains("<v>"))
         #expect(nilBool.value.valueString == "")
 
         // Test different boolean expressions

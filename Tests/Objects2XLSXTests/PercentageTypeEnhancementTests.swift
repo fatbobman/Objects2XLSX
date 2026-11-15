@@ -42,7 +42,7 @@ struct PercentageTypeEnhancementTests {
         // Test optional Percentage with nil
         let nilPct = Cell(row: 1, column: 4, value: .optionalPercentage(nil, precision: 2))
         let nilXML = nilPct.generateXML()
-        #expect(nilXML.contains("<v></v>"))
+        #expect(!nilXML.contains("<v>"))
         #expect(nilPct.value.valueString == "")
 
         // Test legacy percentage (now use new type-safe enum)

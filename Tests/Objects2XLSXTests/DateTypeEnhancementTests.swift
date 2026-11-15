@@ -39,7 +39,7 @@ struct DateTypeEnhancementTests {
         // Test optional date with nil
         let nilDate = Cell(row: 1, column: 3, value: .optionalDate(nil, timeZone: testTimeZone))
         let nilXML = nilDate.generateXML()
-        #expect(nilXML.contains("<v></v>"))
+        #expect(!nilXML.contains("<v>"))
         #expect(nilDate.value.valueString == "")
     }
 
