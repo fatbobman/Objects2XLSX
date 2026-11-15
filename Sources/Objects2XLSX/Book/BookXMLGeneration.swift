@@ -420,14 +420,21 @@ extension Book {
             <Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes">
             """
 
-        // 应用程序信息
-        xml += "<Application>Objects2XLSX</Application>"
+        // Application information, from the document properties. Company
+        // and manager are written only when set.
+        let properties = style.properties
+        xml += "<Application>\(properties.application.xmlEscaped)</Application>"
         xml += "<DocSecurity>0</DocSecurity>"
         xml += "<LinksUpToDate>false</LinksUpToDate>"
         xml += "<SharedDoc>false</SharedDoc>"
         xml += "<HyperlinksChanged>false</HyperlinksChanged>"
-        xml += "<AppVersion>1.0</AppVersion>"
-        xml += "<Company>Objects2XLSX Library</Company>"
+        xml += "<AppVersion>\(properties.appVersion.xmlEscaped)</AppVersion>"
+        if let company = properties.company, !company.isEmpty {
+            xml += "<Company>\(company.xmlEscaped)</Company>"
+        }
+        if let manager = properties.manager, !manager.isEmpty {
+            xml += "<Manager>\(manager.xmlEscaped)</Manager>"
+        }
 
         // 工作表名称列表
         if !metas.isEmpty {
