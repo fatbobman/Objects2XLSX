@@ -122,6 +122,9 @@ extension Cell {
 
         // Add cell type attribute based on value type and whether it uses shared strings
         switch value {
+            case .optionalString(nil) where sharedStringID == nil, .optionalURL(nil) where sharedStringID == nil:
+                // A missing string is a blank cell: no type, no value
+                break
             case .stringValue, .optionalString, .urlValue, .optionalURL:
                 if sharedStringID != nil {
                     xml += " t=\"s\""
@@ -159,10 +162,11 @@ extension Cell {
                 if let sharedStringID {
                     // Use shared string reference for memory efficiency
                     xml += "<v>\(sharedStringID)</v>"
-                } else {
+                } else if let stringValue {
                     // Use inline string value directly
-                    xml += "<is><t>\(stringValue ?? "")</t></is>"
+                    xml += "<is><t>\(stringValue)</t></is>"
                 }
+                // nil: a blank cell, not an empty string
             case let .urlValue(url):
                 if let sharedStringID {
                     // Use shared string reference for URL
@@ -175,10 +179,11 @@ extension Cell {
                 if let sharedStringID {
                     // Use shared string reference for URL
                     xml += "<v>\(sharedStringID)</v>"
-                } else {
+                } else if let url {
                     // Use inline URL string value
-                    xml += "<is><t>\(url?.absoluteString ?? "")</t></is>"
+                    xml += "<is><t>\(url.absoluteString)</t></is>"
                 }
+                // nil: a blank cell, not an empty string
             case let .booleanValue(boolean, booleanExpressions, caseStrategy):
                 // Non-optional boolean - use SharedString if available, otherwise inline boolean
                 if let sharedStringID {
@@ -204,36 +209,33 @@ extension Cell {
                         let boolValue = finalText.lowercased() == "true" || finalText == "1" || finalText.lowercased() == "yes" ? "1" : "0"
                         xml += "<v>\(boolValue)</v>"
                     }
-                } else {
-                    xml += "<v></v>"
                 }
+                // nil: a blank cell, with no value
             case let .doubleValue(double):
                 // Non-optional double - guaranteed to have value, optimized path
-                if double.isInfinite || double.isNaN {
-                    xml += "<v></v>"
-                } else {
+                // Infinity and NaN cannot be stored: a blank cell
+                if double.isFinite {
                     xml += "<v>\(String(double))</v>"
                 }
             case let .optionalDouble(double):
                 // Optional double - handle nil case
-                xml += "<v>\(double.cellValueString)</v>"
+                xml += Self.valueElement(double.cellValueString)
             case let .intValue(int):
                 // Non-optional int - guaranteed to have value, optimized path
                 xml += "<v>\(String(int))</v>"
             case let .optionalInt(int):
                 // Optional int - handle nil case
-                xml += "<v>\(int.cellValueString)</v>"
+                xml += Self.valueElement(int.cellValueString)
             case let .dateValue(date, timeZone):
                 // Non-optional date - guaranteed to have value, optimized path
                 xml += "<v>\(date.cellValueString(timeZone: timeZone))</v>"
             case let .optionalDate(date, timeZone):
                 // Optional date - handle nil case
-                xml += "<v>\(date.cellValueString(timeZone: timeZone))</v>"
+                xml += Self.valueElement(date.cellValueString(timeZone: timeZone))
             case let .percentageValue(percentage, precision):
                 // Non-optional percentage - guaranteed to have value, optimized path
-                if percentage.isInfinite || percentage.isNaN {
-                    xml += "<v></v>"
-                } else {
+                // Infinity and NaN cannot be stored: a blank cell
+                if percentage.isFinite {
                     var decimal = Decimal(percentage)
                     var rounded = Decimal()
                     NSDecimalRound(&rounded, &decimal, precision + 2, .plain)
@@ -241,14 +243,22 @@ extension Cell {
                 }
             case let .optionalPercentage(percentage, precision):
                 // Optional percentage - handle nil case
-                xml += "<v>\(percentage.cellValueString(precision: precision))</v>"
+                xml += Self.valueElement(percentage.cellValueString(precision: precision))
             case .empty:
-                // Explicitly empty cell
-                xml += "<v></v>"
+                // Explicitly empty cell: no value
+                break
         }
 
         xml += "</c>"
         return xml
+    }
+
+    /// A value element, or nothing for an empty value.
+    ///
+    /// An empty `<v></v>` in a numeric cell is not a number, so a missing
+    /// value leaves the cell without one: a blank cell that keeps its style.
+    private static func valueElement(_ value: String) -> String {
+        value.isEmpty ? "" : "<v>\(value)</v>"
     }
 }
 

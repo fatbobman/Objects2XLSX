@@ -35,7 +35,11 @@ struct StringTypeEnhancementTests {
         // Test optional string with nil
         let nilString = Cell(row: 1, column: 3, value: .optionalString(nil))
         let nilXML = nilString.generateXML()
-        #expect(nilXML == "<c r=\"C1\" t=\"inlineStr\"><is><t></t></is></c>")
+        #expect(nilXML == "<c r=\"C1\"></c>")
+
+        // An empty string is still a string, unlike nil
+        let emptyXML = Cell(row: 1, column: 4, value: .optionalString("")).generateXML()
+        #expect(emptyXML == "<c r=\"D1\" t=\"inlineStr\"><is><t></t></is></c>")
         #expect(nilString.value.valueString == "")
 
         // Test with shared string
